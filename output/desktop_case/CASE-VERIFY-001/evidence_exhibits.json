@@ -1,0 +1,32 @@
+[
+  {
+    "id": "EVID-01",
+    "num": 1,
+    "index": 10,
+    "ts": "12:44:19 UTC",
+    "alt": 28.5,
+    "spd": 18.2,
+    "hdg": 90.0,
+    "pitch": -12.4,
+    "roll": 8.5,
+    "lat": 19.076012,
+    "lon": 72.877715,
+    "note": "Rapid descent detected near geofence boundary.",
+    "image_path": "C:\\Users\\pawan\\Desktop\\df\\output\\desktop_case\\CASE-VERIFY-001\\exhibits\\EVID-01.png"
+  },
+  {
+    "id": "EVID-02",
+    "num": 2,
+    "index": 45,
+    "ts": "12:48:30 UTC",
+    "alt": 5.2,
+    "spd": 0.5,
+    "hdg": 180.0,
+    "pitch": 1.2,
+    "roll": 0.3,
+    "lat": 19.07689,
+    "lon": 72.8784,
+    "note": "Emergency landing touchdown location.",
+    "image_path": "C:\\Users\\pawan\\Desktop\\df\\output\\desktop_case\\CASE-VERIFY-001\\exhibits\\EVID-02.png"
+  }
+]

@@ -1,0 +1,390 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            72.87769999999999,
+            19.076,
+            10.0
+          ],
+          [
+            72.87819999999999,
+            19.0765,
+            20.0
+          ],
+          [
+            72.8787,
+            19.076999999999998,
+            30.0
+          ],
+          [
+            72.8792,
+            19.0775,
+            40.0
+          ],
+          [
+            72.8797,
+            19.078,
+            50.0
+          ],
+          [
+            72.8802,
+            19.0785,
+            60.0
+          ],
+          [
+            72.88069999999999,
+            19.079,
+            70.0
+          ],
+          [
+            72.88119999999999,
+            19.0795,
+            80.0
+          ],
+          [
+            72.8817,
+            19.08,
+            90.0
+          ],
+          [
+            72.8822,
+            19.0805,
+            100.0
+          ]
+        ]
+      },
+      "properties": {
+        "feature_type": "flight_path",
+        "platform": "ardupilot",
+        "start_time_utc": "2025-01-20T03:46:22+00:00",
+        "end_time_utc": "2025-01-20T03:46:31+00:00",
+        "total_points": 10,
+        "max_altitude_m": 100.0,
+        "max_speed_mps": 12.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.87769999999999,
+          19.076,
+          10.0
+        ]
+      },
+      "properties": {
+        "feature_type": "takeoff_point",
+        "timestamp_utc": "2025-01-20T03:46:22+00:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8822,
+          19.0805,
+          100.0
+        ]
+      },
+      "properties": {
+        "feature_type": "landing_or_termination_point",
+        "timestamp_utc": "2025-01-20T03:46:31+00:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.87819999999999,
+          19.0765,
+          20.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "713c33fe-e691-4521-b52b-6c10b8963b63",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:23+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.076,
+            72.87769999999999
+          ],
+          "current_coordinates": [
+            19.0765,
+            72.87819999999999
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8787,
+          19.076999999999998,
+          30.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "730b481a-312b-44ed-9e3b-7a47c30dd465",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:24+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.0765,
+            72.87819999999999
+          ],
+          "current_coordinates": [
+            19.076999999999998,
+            72.8787
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8792,
+          19.0775,
+          40.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "0f0070a4-e1d9-469a-a97d-d4ecd2493d3b",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:25+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.076999999999998,
+            72.8787
+          ],
+          "current_coordinates": [
+            19.0775,
+            72.8792
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8797,
+          19.078,
+          50.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "f1f3a3d7-7bb9-4552-bd78-b6faa559ad4a",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:26+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.0775,
+            72.8792
+          ],
+          "current_coordinates": [
+            19.078,
+            72.8797
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8802,
+          19.0785,
+          60.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "91408a93-2290-4af4-9dfd-7cd7a2f90efa",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:27+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.078,
+            72.8797
+          ],
+          "current_coordinates": [
+            19.0785,
+            72.8802
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.88069999999999,
+          19.079,
+          70.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "c6b1b4f1-77cd-41d5-925f-d4e1d2fc00e1",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:28+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.0785,
+            72.8802
+          ],
+          "current_coordinates": [
+            19.079,
+            72.88069999999999
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.88119999999999,
+          19.0795,
+          80.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "382bd8a3-6a9a-4c00-8615-e79a833ef2b7",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:29+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.079,
+            72.88069999999999
+          ],
+          "current_coordinates": [
+            19.0795,
+            72.88119999999999
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8817,
+          19.08,
+          90.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "275d99f5-1c97-47d4-9d65-a63a501b3222",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:30+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.0795,
+            72.88119999999999
+          ],
+          "current_coordinates": [
+            19.08,
+            72.8817
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8822,
+          19.0805,
+          100.0
+        ]
+      },
+      "properties": {
+        "feature_type": "forensic_anomaly",
+        "anomaly_id": "687bfba2-217f-4ca2-b09e-ee134cf68d90",
+        "anomaly_type": "gps_spoofing_or_teleportation",
+        "severity": "HIGH",
+        "timestamp_utc": "2025-01-20T03:46:31+00:00",
+        "description": "Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s",
+        "context": {
+          "computed_velocity_mps": 76.5,
+          "displacement_meters": 76.5,
+          "time_delta_seconds": 1.0,
+          "previous_coordinates": [
+            19.08,
+            72.8817
+          ],
+          "current_coordinates": [
+            19.0805,
+            72.8822
+          ]
+        }
+      }
+    }
+  ]
+}

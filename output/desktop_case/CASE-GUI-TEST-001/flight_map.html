@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_e21bfcf06d0905db78899e1b8661dc59 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_e21bfcf06d0905db78899e1b8661dc59" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_e21bfcf06d0905db78899e1b8661dc59 = L.map(
+                "map_e21bfcf06d0905db78899e1b8661dc59",
+                {
+                    center: [19.07825, 72.87995],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 15,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_f889d2449e92ef56adda8d3e7808ea03 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_f889d2449e92ef56adda8d3e7808ea03.addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+            var poly_line_52b7530eb01986f8a6a2c984c4adab48 = L.polyline(
+                [[19.076, 72.87769999999999], [19.0765, 72.87819999999999], [19.076999999999998, 72.8787], [19.0775, 72.8792], [19.078, 72.8797], [19.0785, 72.8802], [19.079, 72.88069999999999], [19.0795, 72.88119999999999], [19.08, 72.8817], [19.0805, 72.8822]],
+                {"bubblingMouseEvents": true, "color": "#0066cc", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0066cc", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.85, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+            poly_line_52b7530eb01986f8a6a2c984c4adab48.bindTooltip(
+                `<div>
+                     Flight Trajectory (10 points)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_6698c60d252c4b4dc152a633552cfb47 = L.marker(
+                [19.076, 72.87769999999999],
+                {
+}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+            var icon_2b56cc12610b324418c99752996d99a3 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "play",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2ae457befd91c6c9016f0d2fe2ebe5cf = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_49aee5c8123d5877488a5873c070854c = $(`<div id="html_49aee5c8123d5877488a5873c070854c" style="width: 100.0%; height: 100.0%;"><b>Takeoff</b><br>UTC: 2025-01-20T03:46:22+00:00<br>Alt: 10.0m</div>`)[0];
+                popup_2ae457befd91c6c9016f0d2fe2ebe5cf.setContent(html_49aee5c8123d5877488a5873c070854c);
+            
+        
+
+        marker_6698c60d252c4b4dc152a633552cfb47.bindPopup(popup_2ae457befd91c6c9016f0d2fe2ebe5cf)
+        ;
+
+        
+    
+    
+                marker_6698c60d252c4b4dc152a633552cfb47.setIcon(icon_2b56cc12610b324418c99752996d99a3);
+            
+    
+            var marker_60245b25f6ecc0af1afae114aa01c080 = L.marker(
+                [19.0805, 72.8822],
+                {
+}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+            var icon_20a6542e2ff1bd5085be1f0ca8f9986a = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "stop",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_64006f625132638552bf2dfb44452f83 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_f6e551d376df78531be1e0de16cb960e = $(`<div id="html_f6e551d376df78531be1e0de16cb960e" style="width: 100.0%; height: 100.0%;"><b>Landing / Termination</b><br>UTC: 2025-01-20T03:46:31+00:00<br>Alt: 100.0m</div>`)[0];
+                popup_64006f625132638552bf2dfb44452f83.setContent(html_f6e551d376df78531be1e0de16cb960e);
+            
+        
+
+        marker_60245b25f6ecc0af1afae114aa01c080.bindPopup(popup_64006f625132638552bf2dfb44452f83)
+        ;
+
+        
+    
+    
+                marker_60245b25f6ecc0af1afae114aa01c080.setIcon(icon_20a6542e2ff1bd5085be1f0ca8f9986a);
+            
+    
+            var circle_marker_df75699b6eb158550591c22e61c18c63 = L.circleMarker(
+                [19.0765, 72.87819999999999],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_c66ef662b2610ee9381aa6a73c88e401 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_0fe3087e58051cb649d7f856672f9487 = $(`<div id="html_0fe3087e58051cb649d7f856672f9487" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:23+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_c66ef662b2610ee9381aa6a73c88e401.setContent(html_0fe3087e58051cb649d7f856672f9487);
+            
+        
+
+        circle_marker_df75699b6eb158550591c22e61c18c63.bindPopup(popup_c66ef662b2610ee9381aa6a73c88e401)
+        ;
+
+        
+    
+    
+            var circle_marker_5442aaf00b7bf1f7e51f2b8f2ab7eb5c = L.circleMarker(
+                [19.076999999999998, 72.8787],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_f1c84dde9a41b0f40b4f8f866280972e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_e3d7fa05f3532351f48f2ac496cdcd00 = $(`<div id="html_e3d7fa05f3532351f48f2ac496cdcd00" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:24+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_f1c84dde9a41b0f40b4f8f866280972e.setContent(html_e3d7fa05f3532351f48f2ac496cdcd00);
+            
+        
+
+        circle_marker_5442aaf00b7bf1f7e51f2b8f2ab7eb5c.bindPopup(popup_f1c84dde9a41b0f40b4f8f866280972e)
+        ;
+
+        
+    
+    
+            var circle_marker_86597989339ad8790d5875f7b7a4f5d0 = L.circleMarker(
+                [19.0775, 72.8792],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_a3708a34a12e0ebf235cad3c0ffbdcf9 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_54698053576aa6bd9f33a25fa516de48 = $(`<div id="html_54698053576aa6bd9f33a25fa516de48" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:25+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_a3708a34a12e0ebf235cad3c0ffbdcf9.setContent(html_54698053576aa6bd9f33a25fa516de48);
+            
+        
+
+        circle_marker_86597989339ad8790d5875f7b7a4f5d0.bindPopup(popup_a3708a34a12e0ebf235cad3c0ffbdcf9)
+        ;
+
+        
+    
+    
+            var circle_marker_d3e88d3beb0d0f2ade938d4f69462801 = L.circleMarker(
+                [19.078, 72.8797],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_243804421b88b03c19ba3364b6081a69 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c9b64e9cd0001a3b831912454ce8d3c4 = $(`<div id="html_c9b64e9cd0001a3b831912454ce8d3c4" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:26+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_243804421b88b03c19ba3364b6081a69.setContent(html_c9b64e9cd0001a3b831912454ce8d3c4);
+            
+        
+
+        circle_marker_d3e88d3beb0d0f2ade938d4f69462801.bindPopup(popup_243804421b88b03c19ba3364b6081a69)
+        ;
+
+        
+    
+    
+            var circle_marker_98871ddc49de0f9c12c746fb8d253e42 = L.circleMarker(
+                [19.0785, 72.8802],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_7f928384957b92b60da1e4beaa1724d7 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_fc6edb65cc605f6d45babac027fd226c = $(`<div id="html_fc6edb65cc605f6d45babac027fd226c" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:27+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_7f928384957b92b60da1e4beaa1724d7.setContent(html_fc6edb65cc605f6d45babac027fd226c);
+            
+        
+
+        circle_marker_98871ddc49de0f9c12c746fb8d253e42.bindPopup(popup_7f928384957b92b60da1e4beaa1724d7)
+        ;
+
+        
+    
+    
+            var circle_marker_c5bd6f11bc6a406a2ae83961b25c44f9 = L.circleMarker(
+                [19.079, 72.88069999999999],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_839fe44e5584dd8a7821d5a30b48db6d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_6626e56ec20e0417c6a72d649aaac3f0 = $(`<div id="html_6626e56ec20e0417c6a72d649aaac3f0" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:28+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_839fe44e5584dd8a7821d5a30b48db6d.setContent(html_6626e56ec20e0417c6a72d649aaac3f0);
+            
+        
+
+        circle_marker_c5bd6f11bc6a406a2ae83961b25c44f9.bindPopup(popup_839fe44e5584dd8a7821d5a30b48db6d)
+        ;
+
+        
+    
+    
+            var circle_marker_c2a657f33bd7de0f8be3375dc59b3bd7 = L.circleMarker(
+                [19.0795, 72.88119999999999],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_911d5cb2c243dce890f0a8c7e8d39bf3 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_883bf54bb89eee8be9e89ebfa7ec8934 = $(`<div id="html_883bf54bb89eee8be9e89ebfa7ec8934" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:29+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_911d5cb2c243dce890f0a8c7e8d39bf3.setContent(html_883bf54bb89eee8be9e89ebfa7ec8934);
+            
+        
+
+        circle_marker_c2a657f33bd7de0f8be3375dc59b3bd7.bindPopup(popup_911d5cb2c243dce890f0a8c7e8d39bf3)
+        ;
+
+        
+    
+    
+            var circle_marker_9ba6f0466e04bbf7c7cea629d2379aed = L.circleMarker(
+                [19.08, 72.8817],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_a187b6a8671f5e6aa60bacef97ad6f70 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_fd5af8c22a152058e3fea350e06a00ea = $(`<div id="html_fd5af8c22a152058e3fea350e06a00ea" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:30+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_a187b6a8671f5e6aa60bacef97ad6f70.setContent(html_fd5af8c22a152058e3fea350e06a00ea);
+            
+        
+
+        circle_marker_9ba6f0466e04bbf7c7cea629d2379aed.bindPopup(popup_a187b6a8671f5e6aa60bacef97ad6f70)
+        ;
+
+        
+    
+    
+            var circle_marker_b448506b0362f076a88df78fff81e21e = L.circleMarker(
+                [19.0805, 72.8822],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_e21bfcf06d0905db78899e1b8661dc59);
+        
+    
+        var popup_4d7ac4a8d34a9c23a66e6e3656109f41 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_48e27d7efcd563016d1bb19a61890e6d = $(`<div id="html_48e27d7efcd563016d1bb19a61890e6d" style="width: 100.0%; height: 100.0%;"><div style='font-family: Arial; min-width: 180px;'><h4 style='color: #cc0000; margin-bottom: 4px;'>GPS_SPOOFING_OR_TELEPORTATION</h4><b>Severity:</b> HIGH<br><b>Time UTC:</b> 2025-01-20T03:46:31+00:00<br><b>Description:</b> Impossible kinematic displacement: calculated velocity 76.5 m/s exceeds airframe limit (45.0 m/s) over 1.00s</div></div>`)[0];
+                popup_4d7ac4a8d34a9c23a66e6e3656109f41.setContent(html_48e27d7efcd563016d1bb19a61890e6d);
+            
+        
+
+        circle_marker_b448506b0362f076a88df78fff81e21e.bindPopup(popup_4d7ac4a8d34a9c23a66e6e3656109f41)
+        ;
+
+        
+    
+</script>
+</html>

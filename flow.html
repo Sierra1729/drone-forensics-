@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research-Ready Drone Forensics Framework</title>
+<style>
+:root{
+  --ink:#172033; --muted:#5d687c; --line:#9aa6b8; --paper:#ffffff;
+  --bg:#eef2f7; --accent:#243b63; --green:#2d6848; --orange:#8a5a20;
+  --red:#8a3030; --purple:#5b467e;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+.page{width:1200px;max-width:96%;margin:28px auto 50px;background:var(--paper);
+      padding:46px 52px;box-shadow:0 8px 30px rgba(20,30,50,.10)}
+h1{text-align:center;font-size:28px;margin:0 0 8px}
+.subtitle{text-align:center;color:var(--muted);font-size:14px;margin-bottom:34px}
+.figure-title{text-align:center;font-weight:700;font-size:17px;margin-bottom:24px}
+.flow{display:flex;flex-direction:column;align-items:center}
+.node{width:430px;border:2px solid var(--accent);border-radius:12px;padding:15px 20px;
+      text-align:center;background:#f8fafc;position:relative}
+.node h3{margin:0 0 6px;font-size:16px}.node p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.45}
+.node.start{border-radius:50px;background:#edf7f1;border-color:var(--green)}
+.node.end{border-radius:50px;background:#f9eeee;border-color:var(--red)}
+.arrow{height:34px;width:2px;background:var(--line);position:relative}
+.arrow:after{content:"";position:absolute;bottom:-1px;left:-5px;border-left:6px solid transparent;
+             border-right:6px solid transparent;border-top:9px solid var(--line)}
+.stage{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;
+       color:var(--muted);margin:18px 0 8px}
+.sources{width:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.source{border:1.5px solid #7d899b;border-radius:9px;padding:13px 8px;text-align:center;background:#fbfcfe}
+.source b{font-size:12.5px}.source span{display:block;color:var(--muted);font-size:10.5px;line-height:1.4;margin-top:5px}
+.decision-wrap{width:100%;display:flex;justify-content:center;align-items:center;position:relative;margin:8px 0 18px}
+.decision{width:190px;height:110px;transform:rotate(45deg);border:2px solid var(--orange);
+          background:#fff8ed;display:flex;align-items:center;justify-content:center}
+.decision span{transform:rotate(-45deg);font-weight:700;font-size:12.5px;text-align:center;width:130px}
+.branches{width:760px;max-width:100%;display:grid;grid-template-columns:1fr 1fr;gap:45px;position:relative}
+.branch{border:1.8px solid var(--purple);border-radius:10px;padding:15px;background:#fbf9fe}
+.branch b{font-size:13px}.branch p{font-size:11.5px;color:var(--muted);line-height:1.45;margin:7px 0 0}
+.tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;display:inline-block;margin-bottom:7px}
+.tag.yes{background:#e7f3eb;color:var(--green)}.tag.no{background:#f8eaea;color:var(--red)}
+.grid{width:820px;max-width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{border:1.3px solid #ccd3dd;border-radius:9px;padding:13px;background:#fff}
+.card b{font-size:12px}.card p{font-size:10.5px;color:var(--muted);line-height:1.4;margin:5px 0 0}
+.note{width:820px;max-width:100%;border-left:4px solid var(--accent);background:#f4f7fb;
+      padding:12px 15px;font-size:11px;line-height:1.5;color:#485468;margin:8px 0}
+.caption{font-size:11px;line-height:1.5;color:var(--muted);margin:28px auto 0;max-width:900px}
+.references{margin-top:35px;border-top:1px solid #d8dee7;padding-top:18px}
+.references h2{font-size:16px;margin:0 0 10px}.references p{font-size:10.5px;line-height:1.5;color:#4f5b70;margin:6px 0}
+@media print{
+ body{background:white}.page{width:100%;max-width:none;margin:0;box-shadow:none;padding:30px}
+}
+@media(max-width:800px){
+ .page{padding:25px 18px}.sources,.grid,.branches{grid-template-columns:1fr;width:100%}
+ .node{width:90%}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Comprehensive Drone Forensic Investigation Framework</h1>
+  <div class="subtitle">Evidence preservation • multi-source acquisition • protected-data handling • artifact analysis • evidence fusion • flight reconstruction</div>
+  <div class="figure-title">Figure X. Proposed end-to-end workflow for UAV digital forensic investigation</div>
+
+  <section class="flow">
+    <div class="stage">Phase I — Incident & Evidence Identification</div>
+    <div class="node start">
+      <h3>Drone-Related Incident / Seizure</h3>
+      <p>Identify the UAV and establish the investigative scope, authority and initial case context.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="sources">
+      <div class="source"><b>UAV / Onboard Storage</b><span>flight logs, firmware, telemetry, configuration</span></div>
+      <div class="source"><b>Remote Controller</b><span>logs, pairing records, configuration</span></div>
+      <div class="source"><b>Mobile Device</b><span>control app, databases, cache, maps</span></div>
+      <div class="source"><b>SD / Removable Media</b><span>images, video, metadata, residual data</span></div>
+      <div class="source"><b>Cloud / Computer</b><span>synchronized records, backups, exports</span></div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage">Phase II — Preservation & Acquisition</div>
+    <div class="node">
+      <h3>Secure, Document & Isolate</h3>
+      <p>Photograph and inventory evidence; record identifiers, condition, power state and handling; preserve chain of custody.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <h3>Forensic Acquisition</h3>
+      <p>Acquire available volatile/non-volatile artifacts using an appropriate, documented forensic method. Work from verified copies.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <h3>Integrity Verification</h3>
+      <p>Calculate cryptographic hashes and preserve acquisition metadata so the analytical copy can be verified against the acquired evidence.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage">Phase III — Protected / Inaccessible Data Handling</div>
+    <div class="decision-wrap"><div class="decision"><span>Is the required artifact encrypted or otherwise inaccessible?</span></div></div>
+
+    <div class="branches">
+      <div class="branch">
+        <span class="tag yes">YES</span>
+        <b>Protected-data pathway</b>
+        <p>Characterize the protection; preserve the protected artifact; identify authorized credentials, keys, synchronized copies, backups or other lawful access paths. If inaccessible, document the limitation and retain the artifact for correlation.</p>
+      </div>
+      <div class="branch">
+        <span class="tag no">NO</span>
+        <b>Direct-analysis pathway</b>
+        <p>Validate the acquired artifact and proceed to format identification, parsing and extraction.</p>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="stage">Phase IV — Artifact Extraction & Normalization</div>
+    <div class="node">
+      <h3>Artifact Identification & Parsing</h3>
+      <p>Identify proprietary or standard formats and extract structured records from flight logs, application data, media and device artifacts.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="grid">
+      <div class="card"><b>Flight Logs</b><p>flight/session identifiers, event records and operational states</p></div>
+      <div class="card"><b>GPS / Position</b><p>latitude, longitude, altitude and route points</p></div>
+      <div class="card"><b>Telemetry</b><p>speed, heading, sensor values, battery and system status</p></div>
+      <div class="card"><b>Media</b><p>photos, video, EXIF and temporal metadata</p></div>
+      <div class="card"><b>Application Artifacts</b><p>accounts, maps, cache, databases and pairing information</p></div>
+      <div class="card"><b>Residual / Deleted Data</b><p>recoverable remnants where technically and forensically appropriate</p></div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <h3>Normalization & Unified Evidence Model</h3>
+      <p>Convert heterogeneous artifacts into a common schema using consistent timestamps, coordinate systems, identifiers and provenance.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage">Phase V — Analytical Layer</div>
+    <div class="grid">
+      <div class="card"><b>Temporal Analysis</b><p>construct an event timeline and resolve timestamp relationships</p></div>
+      <div class="card"><b>Geospatial Analysis</b><p>map trajectories, takeoff/landing and areas of interest</p></div>
+      <div class="card"><b>Telemetry Analysis</b><p>evaluate altitude, speed, heading and system behaviour</p></div>
+      <div class="card"><b>Media Correlation</b><p>link capture events with position and flight time</p></div>
+      <div class="card"><b>Anomaly Analysis</b><p>identify unusual states, gaps, inconsistencies or suspicious events</p></div>
+      <div class="card"><b>Cross-Source Correlation</b><p>compare UAV, controller, mobile, cloud and external evidence</p></div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <h3>Evidence Fusion & Consistency Assessment</h3>
+      <p>Combine independent artifacts, identify corroboration and contradictions, assess provenance and explicitly retain uncertainty.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage">Phase VI — Reconstruction & Forensic Inference</div>
+    <div class="node">
+      <h3>Flight & Event Reconstruction</h3>
+      <p>Reconstruct takeoff → route → altitude/speed changes → hovering → camera events → landing, while identifying missing or uncertain intervals.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <h3>Forensic Findings & Confidence Assessment</h3>
+      <p>State supported findings, alternative explanations, evidence gaps, limitations and confidence/uncertainty associated with each inference.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage">Phase VII — Validation & Reporting</div>
+    <div class="node">
+      <h3>Tool / Method Validation</h3>
+      <p>Verify extraction and analytical results against known test data, repeatable procedures and documented tool behaviour.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <h3>Forensic Report & Evidence Package</h3>
+      <p>Document acquisition, hashes, artifacts, analytical methods, timeline, reconstruction, findings and limitations for reproducibility and legal review.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node end">
+      <h3>Case Conclusion</h3>
+      <p>Evidence-supported reconstruction with traceable provenance and explicitly stated uncertainty.</p>
+    </div>
+  </section>
+
+  <p class="caption">
+    <b>Figure note:</b> The framework treats drone forensics as an ecosystem-level investigation rather than a single-device log extraction task. It separates preservation and acquisition from analysis, provides an explicit pathway for encrypted/inaccessible artifacts, and uses multi-source correlation before forensic inference.
+  </p>
+
+  <section class="references">
+    <h2>Research basis for the framework</h2>
+    <p>[1] Renduchintala, A. et al. (2019). <i>A comprehensive micro unmanned aerial vehicle (UAV/Drone) forensic framework.</i> Digital Investigation, 30, 52–72.</p>
+    <p>[2] Gülataş, İ. & Baktır, S. (2018). <i>Unmanned Aerial Vehicle (UAV) Digital Forensic Investigation Framework.</i> Journal of Naval Sciences and Engineering, 14(1).</p>
+    <p>[3] UAV Forensics survey literature has highlighted the need for enhanced forensic frameworks and identified gaps across artifacts, frameworks, forensic readiness and tools.</p>
+    <p>[4] Recent work has also emphasized heterogeneous evidence, encryption, anomaly detection, evidence fusion, reconstruction and confidence-aware forensic inference.</p>
+  </section>
+</main>
+</body>
+</html>

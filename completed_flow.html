@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUSHPAK Indigenous Drone Forensics Toolkit - Implementation Status</title>
+<style>
+:root {
+  --ink: #0f172a;
+  --muted: #475569;
+  --line: #94a3b8;
+  --paper: #ffffff;
+  --bg: #f1f5f9;
+  --accent: #1e3a8a;
+  --green: #15803d;
+  --green-bg: #dcfce7;
+  --blue: #0284c7;
+  --blue-bg: #e0f2fe;
+  --purple: #6b21a8;
+  --purple-bg: #f3e8ff;
+  --amber: #b45309;
+  --amber-bg: #fef3c7;
+  --card-border: #cbd5e1;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.page {
+  width: 1240px;
+  max-width: 96%;
+  margin: 30px auto 60px;
+  background: var(--paper);
+  padding: 50px 60px;
+  border-radius: 16px;
+  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+}
+.header-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+h1 {
+  text-align: center;
+  font-size: 30px;
+  margin: 0 0 10px;
+  color: #0f172a;
+}
+.subtitle {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14.5px;
+  margin-bottom: 30px;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid #86efac;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 30px;
+  margin-bottom: 25px;
+}
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.stage-tag {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: var(--accent);
+  margin: 22px 0 10px;
+  background: #eff6ff;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid #bfdbfe;
+}
+.node {
+  width: 580px;
+  max-width: 100%;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px 22px;
+  text-align: center;
+  background: #f8fafc;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.node h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #0f172a;
+}
+.node p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.node.verified {
+  border-color: var(--green);
+  background: #f0fdf4;
+}
+.arrow {
+  height: 32px;
+  width: 2px;
+  background: var(--line);
+  position: relative;
+  margin: 2px 0;
+}
+.arrow:after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: -5px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 9px solid var(--line);
+}
+.grid-sources {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin: 4px 0;
+}
+.source-card {
+  border: 1.5px solid var(--card-border);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  background: #ffffff;
+}
+.source-card b {
+  display: block;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+.source-card span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+.badge-check {
+  display: inline-block;
+  background: var(--green-bg);
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+.grid-parsers {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 6px 0;
+}
+.parser-card {
+  border: 1.5px solid #cbd5e1;
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #ffffff;
+}
+.parser-card.tier-os { border-left-color: #0284c7; }
+.parser-card.tier-prop { border-left-color: #7c3aed; }
+.parser-card.tier-rogue { border-left-color: #dc2626; }
+.parser-card b { font-size: 12.5px; color: #0f172a; }
+.parser-card p { font-size: 11px; color: var(--muted); margin: 4px 0 0; }
+.grid-analytics {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.analytic-card {
+  border: 1.5px solid var(--card-border);
+  border-radius: 8px;
+  padding: 13px 15px;
+  background: #ffffff;
+}
+.decision-diamond {
+  width: 260px;
+  background: #fef3c7;
+  border: 2px solid #d97706;
+  border-radius: 8px;
+  padding: 12px 18px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 13px;
+  color: #92400e;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.15);
+}
+.branch-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 820px;
+  margin: 10px 0;
+}
+.branch-card {
+  border-radius: 10px;
+  padding: 16px 18px;
+  border: 2px solid;
+}
+.branch-card.protected {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+.branch-card.direct {
+  background: #f0fdf4;
+  border-color: #10b981;
+}
+.branch-title {
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.branch-card.protected .branch-title { color: #b91c1c; }
+.branch-card.direct .branch-title { color: #15803d; }
+.branch-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.6;
+}
+.deliverables {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.deliv-card {
+  border: 1.5px solid #cbd5e1;
+  border-top: 3px solid var(--green);
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+  text-align: center;
+}
+.deliv-card b { font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px; }
+.deliv-card span { font-size: 11px; color: var(--muted); }
+.benchmark-box {
+  width: 100%;
+  border: 2px solid #86efac;
+  background: #f0fdf4;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 25px 0 10px;
+}
+.benchmark-box h3 { margin: 0 0 10px; font-size: 16px; color: #166534; }
+.benchmark-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.stat-item {
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: center;
+}
+.stat-val { font-size: 18px; font-weight: 800; color: #15803d; }
+.stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+footer {
+  margin-top: 40px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+@media (max-width: 900px) {
+  .page { padding: 25px 18px; }
+  .grid-sources, .grid-parsers, .grid-analytics, .deliverables, .benchmark-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <div style="text-align:center;">
+    <span class="header-badge">PUSHPAK Grand Challenge 2026 | Objective 1</span>
+    <h1>Indigenous Drone Forensics Toolkit</h1>
+    <div class="subtitle">Complete Technical Architecture & Implementation Flowchart (Built & Tested Status)</div>
+    <span class="status-pill">✓ 65 / 65 TESTS PASSING (100% SUCCESS) • 9 PARSERS REGISTERED • REAL 27.4 MB PX4 LOG VERIFIED</span>
+  </div>
+
+  <section class="flow">
+    <!-- PHASE I -->
+    <div class="stage-tag">Phase I — Evidence Acquisition Interfaces</div>
+    <div class="grid-sources">
+      <div class="source-card">
+        <span class="badge-check">SUPPORTED</span>
+        <b>Removable Media</b>
+        <span>MicroSD / SD Cards via write-blocker (.ulg, .bin, .txt)</span>
+      </div>
+      <div class="source-card">
+        <span class="badge-check">SUPPORTED</span>
+        <b>Direct USB Port</b>
+        <span>Internal eMMC / Mass Storage / Serial DataFlash dump</span>
+      </div>
+      <div class="source-card">
+        <span class="badge-check">SUPPORTED</span>
+        <b>Remote Controller</b>
+        <span>Smart RC / Android Tablet companion logs (.txt, .tlog)</span>
+      </div>
+      <div class="source-card">
+        <span class="badge-check">SUPPORTED</span>
+        <b>GCS Downlink</b>
+        <span>Mission Planner / QGroundControl live radio logs</span>
+      </div>
+      <div class="source-card">
+        <span class="badge-check">SUPPORTED</span>
+        <b>Rogue FPV SPI Flash</b>
+        <span>Betaflight / INAV onboard Blackbox memory dumps</span>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- PHASE II -->
+    <div class="stage-tag">Phase II — Cryptographic Integrity & Chain-of-Custody (ISO/IEC 27037)</div>
+    <div class="node verified">
+      <h3>Dual Hashing & Merkle Custody Ledger (custody/ledger.py)</h3>
+      <p>Simultaneous computation of <b>SHA-256</b> and <b>BLAKE3</b> digests before parsing. Entries sealed into immutable <code>chain_of_custody.jsonl</code> with atomic <code>os.fsync</code> durability and automated tampering detection.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- PROTECTION DECISION & PROTECTED-DATA ANALYSIS -->
+    <div class="decision-diamond">
+      🔒 Is Data Encrypted / Protected?
+    </div>
+    <div class="arrow"></div>
+
+    <div class="branch-container">
+      <div class="branch-card protected">
+        <div class="branch-title">
+          <span>🔑 [YES] Protected-data Analysis (crypto/protected_data.py)</span>
+        </div>
+        <ul class="branch-list">
+          <li><b>Identify encryption type:</b> AES-128/256-CBC, XOR Scramble, Password Zip, Shannon entropy audit</li>
+          <li><b>Find keys / access method:</b> Auto vendor masks (DJI 0x77, Autel), firmware keystores, investigator passphrase</li>
+          <li><b>Use authorized decryption:</b> In-memory or verified derivative working copy</li>
+          <li><b>Preserve encrypted data:</b> Dual-hash raw ciphertext; record PROTECTED_DATA_DECRYPT in Merkle ledger</li>
+        </ul>
+      </div>
+
+      <div class="branch-card direct">
+        <div class="branch-title">
+          <span>📄 [NO] Direct Extraction</span>
+        </div>
+        <ul class="branch-list">
+          <li><b>Extract data directly:</b> Open autopilot logs (PX4, ArduPilot, Parrot, MAVLink, Betaflight, Yuneec, EXIF)</li>
+          <li><b>Verify integrity:</b> Confirm unadulterated bitstream against acquisition ledger</li>
+          <li><b>Proceed to parsing:</b> Feed stream directly to multi-vendor deserializer</li>
+        </ul>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- PHASE III -->
+    <div class="stage-tag">Phase III — Automated Multi-Vendor & Media Parsing (9 Platforms Built)</div>
+    <div class="node">
+      <h3>Automatic Magic-Byte Sniffer & Dynamic Registry (parsers/base.py)</h3>
+      <p>Inspects binary magic bytes and file headers with zero manual configuration or vendor flags.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="grid-parsers">
+      <div class="parser-card tier-os">
+        <b>1. PX4 Autopilot (ULog)</b>
+        <p><code>.ulg</code>, <code>.ugl</code> | uORB dump, 3D GNSS, RTK, attitude quaternions, 1300+ params.</p>
+      </div>
+      <div class="parser-card tier-os">
+        <b>2. ArduPilot / Pixhawk</b>
+        <p><code>.BIN</code> | Native DataFlash binary parser, dynamic FMT definitions, GPS week sync.</p>
+      </div>
+      <div class="parser-card tier-prop">
+        <b>3. DJI Commercial Fleet</b>
+        <p><code>.txt</code>, <code>.DAT</code> | 0x55 frame resync, OSD telemetry, pilot stick inputs, home point.</p>
+      </div>
+      <div class="parser-card tier-prop">
+        <b>4. Parrot Defense (ANAFI)</b>
+        <p><code>.json</code> | FreeFlight telemetry, dual Drone + Skycontroller serials, battery, RTH.</p>
+      </div>
+      <div class="parser-card tier-os">
+        <b>5. MAVLink Telemetry</b>
+        <p><code>.tlog</code> | MAVLink v1/v2 packet framing, Global Position Int, Attitude, System Status.</p>
+      </div>
+      <div class="parser-card tier-rogue">
+        <b>6. Betaflight / INAV Blackbox</b>
+        <p><code>.bbl</code>, <code>.csv</code> | Improvised FPV kamikaze quads, gyro rates, GPS fixes, craft name.</p>
+      </div>
+      <div class="parser-card tier-prop">
+        <b>7. Autel Robotics Fleet</b>
+        <p><code>.csv</code> | EVO II, Max 4T, Dragonfish telemetry, speed, gimbal angles, battery state.</p>
+      </div>
+      <div class="parser-card tier-prop">
+        <b>8. Yuneec Commercial</b>
+        <p><code>.csv</code> | Typhoon H, H520 ST16 ground station logs, flight modes, motor status.</p>
+      </div>
+      <div class="parser-card tier-os">
+        <b>9. Drone Media Carver</b>
+        <p><code>.jpg</code>, <code>.dng</code>, <code>.srt</code> | EXIF/XMP geolocation, drone serial numbers, video telemetry tracks.</p>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- PHASE IV -->
+    <div class="stage-tag">Phase IV — Canonical Normalization</div>
+    <div class="node verified">
+      <h3>Platform-Agnostic Telemetry Schema (normalize/schema.py)</h3>
+      <p>Standardizes heterogeneous records into unified <code>NormalizedEvent</code> stream (<code>events.jsonl</code>) with strict UTC ISO-8601 timestamps, WGS-84 coordinates, Euler angles, battery %, and flight modes.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- PHASE V -->
+    <div class="stage-tag">Phase V — Forensic Correlation & Threat Analytics</div>
+    <div class="grid-analytics">
+      <div class="analytic-card">
+        <b>Geofence & NFZ Breach</b>
+        <p>Point-in-polygon ray-casting algorithm detects unauthorized airspace penetration.</p>
+      </div>
+      <div class="analytic-card">
+        <b>GPS Spoofing / Teleportation</b>
+        <p>Haversine kinematic filter detects unrealistic velocity jumps (>45 m/s) and coordinate shifts.</p>
+      </div>
+      <div class="analytic-card">
+        <b>Signal Health & Jamming</b>
+        <p>Flags severe HDOP degradation (>4.0) and sudden satellite dropouts (<6 satellites).</p>
+      </div>
+      <div class="analytic-card">
+        <b>Critical Battery Collapse</b>
+        <p>Detects rapid voltage drops and forced emergency landings below 18% charge.</p>
+      </div>
+      <div class="analytic-card">
+        <b>Crash & Impact Dynamics</b>
+        <p>Identifies terminal kinetic impacts when pitch or roll exceeds 70° angular deflection.</p>
+      </div>
+      <div class="analytic-card">
+        <b>Mode & Event Progression</b>
+        <p>Reconstructs timeline: Takeoff → Autonomous Mission → Loiter → RTH → Landing.</p>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- PHASE VI -->
+    <div class="stage-tag">Phase VI — Legal Deliverables & Courtroom Reporting</div>
+    <div class="deliverables">
+      <div class="deliv-card">
+        <b>Courtroom PDF Report</b>
+        <span>Sec 63 BSA 2023 & Sec 65B IEA certified ReportLab PDF with hash table</span>
+      </div>
+      <div class="deliv-card">
+        <b>3D Google Earth KML</b>
+        <span>Extruded altitude profile with ground curtain fill via simplekml</span>
+      </div>
+      <div class="deliv-card">
+        <b>RFC 7946 GeoJSON</b>
+        <span>Standardized GIS feature collection for QGIS, ArcGIS, and police CAD</span>
+      </div>
+      <div class="deliv-card">
+        <b>Interactive Leaflet Map</b>
+        <span>Browser-based standalone HTML flight map with waypoint markers</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENCHMARK BOX -->
+  <div class="benchmark-box">
+    <h3>Real-World Evidence Ingestion Benchmark (Tested & Verified)</h3>
+    <div class="benchmark-grid">
+      <div class="stat-item">
+        <div class="stat-val">27.4 MB</div>
+        <div class="stat-lbl">Real PX4 ULog File</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">1,180</div>
+        <div class="stat-lbl">Valid 3D GPS Fixes</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">1,394</div>
+        <div class="stat-lbl">Parameters Recovered</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">100% INTACT</div>
+        <div class="stat-lbl">Merkle Chain of Custody</div>
+      </div>
+    </div>
+    <p style="margin:12px 0 0;font-size:12px;color:#166534;">
+      <b>Hardware Detected:</b> PX4_FMU_V6X &nbsp;|&nbsp; <b>Firmware Commit:</b> 17826559 &nbsp;|&nbsp; <b>GNSS State:</b> 32 Satellites Tracked (RTK Fixed) &nbsp;|&nbsp; <b>Flight Profile:</b> AUTO_MISSION → AUTO_LOITER → AUTO_RTL → POSCTL
+    </p>
+  </div>
+
+  <footer>
+    PUSHPAK Grand Challenge 2026 • Host: IIT Bombay • Co-Host: VJTI Mumbai • Funding: Ministry of Electronics and Information Technology (MeitY)<br/>
+    Architecture standard: ISO/IEC 27037:2012 & NIST SP 800-86 | Legal standard: Bharatiya Sakshya Adhiniyam 2023 (Section 63)
+  </footer>
+</main>
+</body>
+</html>

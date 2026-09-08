@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="1">
+        <Style id="4">
+            <LineStyle id="5">
+                <color>ffffff00</color>
+                <colorMode>normal</colorMode>
+                <width>4</width>
+            </LineStyle>
+            <PolyStyle id="6">
+                <color>50ffff00</color>
+                <colorMode>normal</colorMode>
+                <fill>1</fill>
+                <outline>1</outline>
+            </PolyStyle>
+        </Style>
+        <Style id="9">
+            <IconStyle id="10">
+                <color>ff008000</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+                <heading>0</heading>
+                <Icon id="11">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="14">
+            <IconStyle id="15">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+                <heading>0</heading>
+                <Icon id="16">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="19">
+            <IconStyle id="20">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="21">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="24">
+            <IconStyle id="25">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="26">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="29">
+            <IconStyle id="30">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="31">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="34">
+            <IconStyle id="35">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="36">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="39">
+            <IconStyle id="40">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="41">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="44">
+            <IconStyle id="45">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="46">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="49">
+            <IconStyle id="50">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="51">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="54">
+            <IconStyle id="55">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="56">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="59">
+            <IconStyle id="60">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.4</scale>
+                <heading>0</heading>
+                <Icon id="61">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <name>UAV Forensic Trajectory</name>
+        <Placemark id="3">
+            <name>Flight Trajectory</name>
+            <styleUrl>#4</styleUrl>
+            <LineString id="2">
+                <extrude>1</extrude>
+                <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>72.8777,19.076,5.0 72.878,19.0763,8.5 72.8783,19.0766,12.0 72.8786,19.0769,15.5 72.8789,19.0772,19.0 72.8792,19.0775,22.5 72.8795,19.0778,26.0 72.8798,19.0781,29.5 72.8801,19.0784,33.0 72.8804,19.0787,36.5</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="8">
+            <name>Takeoff Point</name>
+            <description>Takeoff UTC: 2026-09-01T10:00:01+00:00</description>
+            <styleUrl>#9</styleUrl>
+            <Point id="7">
+                <coordinates>72.8777,19.076,5.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="13">
+            <name>Landing / Incident Termination</name>
+            <description>Termination UTC: 2026-09-01T10:00:10+00:00</description>
+            <styleUrl>#14</styleUrl>
+            <Point id="12">
+                <coordinates>72.8804,19.0787,36.5</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="18">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:02+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#19</styleUrl>
+            <Point id="17">
+                <coordinates>72.878,19.0763,8.5</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="23">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:03+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#24</styleUrl>
+            <Point id="22">
+                <coordinates>72.8783,19.0766,12.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="28">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:04+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#29</styleUrl>
+            <Point id="27">
+                <coordinates>72.8786,19.0769,15.5</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="33">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:05+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#34</styleUrl>
+            <Point id="32">
+                <coordinates>72.8789,19.0772,19.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="38">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:06+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#39</styleUrl>
+            <Point id="37">
+                <coordinates>72.8792,19.0775,22.5</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="43">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:07+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#44</styleUrl>
+            <Point id="42">
+                <coordinates>72.8795,19.0778,26.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="48">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:08+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#49</styleUrl>
+            <Point id="47">
+                <coordinates>72.8798,19.0781,29.5</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="53">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:09+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#54</styleUrl>
+            <Point id="52">
+                <coordinates>72.8801,19.0784,33.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="58">
+            <name>ANOMALY: GPS_SPOOFING_OR_TELEPORTATION</name>
+            <description>Severity: HIGH
+Timestamp UTC: 2026-09-01T10:00:10+00:00
+Details: Impossible kinematic displacement: calculated velocity 45.9 m/s exceeds airframe limit (45.0 m/s) over 1.00s</description>
+            <styleUrl>#59</styleUrl>
+            <Point id="57">
+                <coordinates>72.8804,19.0787,36.5</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>
