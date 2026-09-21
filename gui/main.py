@@ -1,4 +1,4 @@
-﻿"""
+"""
 gui/main.py
 
 Desktop Entrypoint for PUSHPAK Indigenous Drone Forensics Workstation.
@@ -17,7 +17,30 @@ if str(root_dir) not in sys.path:
 from gui.api import DesktopForensicAPI
 
 
+def ensure_output_junction(root: Path) -> None:
+    """Ensure gui/output links to workspace root output folder so pywebview resolves output assets."""
+    gui_output = root / "gui" / "output"
+    target_output = root / "output"
+    target_output.mkdir(parents=True, exist_ok=True)
+    if not gui_output.exists():
+        try:
+            import os
+            import platform
+            if platform.system() == "Windows":
+                import subprocess
+                subprocess.run(
+                    ["cmd", "/c", "mklink", "/J", str(gui_output), str(target_output)],
+                    capture_output=True,
+                    check=False,
+                )
+            else:
+                os.symlink(target_output, gui_output)
+        except Exception:
+            pass
+
+
 def main():
+    ensure_output_junction(root_dir)
     api = DesktopForensicAPI()
     html_path = Path(__file__).resolve().parent / "index.html"
 

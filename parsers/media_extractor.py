@@ -29,6 +29,10 @@ class DroneMediaExtractorParser(BaseParser):
         return "drone_media_carver"
 
     @property
+    def parser_version(self) -> str:
+        return "1.0.0"
+
+    @property
     def supported_platforms(self) -> list[str]:
         return ["dji_media", "autel_media", "parrot_media", "drone_sd_card"]
 

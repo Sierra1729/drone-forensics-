@@ -1,0 +1,78 @@
+# ================================
+# Python
+# ================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# ================================
+# IDE / Editor
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ================================
+# OS files
+# ================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================================
+# Environment / Secrets
+# ================================
+.env
+.env.*
+!.env.example
+
+# ================================
+# Python testing / coverage
+# ================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ================================
+# Generated drone forensic outputs
+# ================================
+output/
+
+# ================================
+# Temporary / test artifacts
+# ================================
+*.tmp
+*.temp
+*.log
+
+# ================================
+# Generated maps / caches
+# ================================
+*.cache
+.geocache.json
+cases/.geocache.json
+
+# ================================
+# Generated archives
+# ================================
+*.zip
+
+# ================================
+# Generated PDFs
+# ================================
+# Uncomment if you don't want PDFs in GitHub
+# *.pdf
+
+# Temporary binary test files
+*.bin

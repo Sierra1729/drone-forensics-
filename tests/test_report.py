@@ -229,3 +229,42 @@ def test_http_bridge_exhibit_sync_and_courtroom_pdf_rebuild(tmp_path):
     assert "image_path" in exhibits_on_disk[0]
     assert Path(exhibits_on_disk[0]["image_path"]).exists()
 
+
+def test_reverse_geocoding_in_pdf_and_api(tmp_path):
+    """Verify reverse geocoding accuracy and inclusion in both PDF reports and GUI API."""
+    from analytics.geocoding import reverse_geocode
+    from gui.api import DesktopForensicAPI
+
+    # 1. Reverse geocoding on coordinates
+    res = reverse_geocode(46.52122, 6.567401)
+    assert res is not None
+    assert "pinpoint_name" in res
+    assert "full_address" in res
+    assert "display_text" in res
+    assert len(res["pinpoint_name"]) > 0
+
+    # 2. Offline fallback on null/invalid coordinates
+    null_res = reverse_geocode(0.0, 0.0)
+    assert null_res["source"] == "offline_coord"
+
+    # 3. Analyze evidence through API and verify geocoded locations
+    bin_path = tmp_path / "flight_geo_test.bin"
+    generate_synthetic_ardupilot_bin(bin_path)
+
+    api = DesktopForensicAPI()
+    api.output_dir = tmp_path / "desktop_case"
+    api_res = api.analyze_evidence(str(bin_path), case_id="CASE-GEO-TEST")
+
+    assert api_res["status"] == "success"
+    assert "launch_location" in api_res
+    assert "recovery_location" in api_res
+    assert api_res["launch_location"] is not None
+    assert "pinpoint_name" in api_res["launch_location"]
+    assert "full_address" in api_res["launch_location"]
+
+    # 4. Confirm Courtroom PDF was produced with the location fields
+    pdf_path = Path(api_res["pdf_path"])
+    assert pdf_path.exists()
+    assert pdf_path.stat().st_size > 10000
+
+

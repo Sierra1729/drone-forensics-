@@ -1,4 +1,4 @@
-﻿"""
+"""
 tests/test_autel.py
 
 Unit tests for Autel Robotics CSV flight log parser.
@@ -86,3 +86,20 @@ def test_autel_custody_integration(tmp_path, sample_autel_csv):
     ok, broken_at = ledger.verify_chain()
     assert ok is True
     assert broken_at is None
+
+
+def test_autel_pdf_generation_without_serial(tmp_path, sample_autel_csv):
+    from reports.generator import generate_pdf_report, ForensicCaseMetadata
+    parser = AutelFlightLogParser()
+    events = parser.parse(sample_autel_csv)
+
+    pdf_out = tmp_path / "autel_report.pdf"
+    meta = ForensicCaseMetadata(case_id="CASE-AUTEL-CSV-001")
+    generated = generate_pdf_report(
+        evidence_path=sample_autel_csv,
+        events=events,
+        metadata=meta,
+        output_pdf_path=pdf_out,
+    )
+    assert generated.exists()
+    assert generated.stat().st_size > 5000

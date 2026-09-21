@@ -16,6 +16,7 @@ import parsers.parrot                # auto-registers ParrotFlightLogParser
 import parsers.px4_ulog              # auto-registers PX4ULogParser
 import parsers.mavlink_tlog          # auto-registers MAVLinkTLogParser
 import parsers.betaflight_blackbox   # auto-registers BetaflightBlackboxParser
+import parsers.dji_csv               # auto-registers DJICSVFlightLogParser (CsvView, DatCon, Airdata)
 import parsers.autel                 # auto-registers AutelFlightLogParser
 import parsers.yuneec                # auto-registers YuneecFlightLogParser
 import parsers.media_extractor        # auto-registers DroneMediaExtractorParser

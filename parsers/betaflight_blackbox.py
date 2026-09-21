@@ -1,4 +1,4 @@
-﻿"""
+"""
 parsers/betaflight_blackbox.py
 
 Forensic flight log parser for Betaflight, INAV, and Cleanflight Blackbox logs (.bbl, .csv).
@@ -25,6 +25,10 @@ class BetaflightBlackboxParser(BaseParser):
     @property
     def parser_name(self) -> str:
         return "betaflight_blackbox"
+
+    @property
+    def parser_version(self) -> str:
+        return "1.0.0"
 
     @property
     def supported_platforms(self) -> list[str]:

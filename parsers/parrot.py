@@ -32,6 +32,10 @@ class ParrotFlightLogParser(BaseParser):
         return "parrot_anafi_json"
 
     @property
+    def parser_version(self) -> str:
+        return "1.0.0"
+
+    @property
     def supported_platforms(self) -> list[str]:
         return ["parrot", "parrot_anafi", "parrot_bebop"]
 

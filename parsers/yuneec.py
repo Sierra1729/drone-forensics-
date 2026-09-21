@@ -1,4 +1,4 @@
-﻿"""
+"""
 parsers/yuneec.py
 
 Forensic flight log parser for Yuneec commercial UAVs (Typhoon H, H520, Mantis Q, Tornado).
@@ -24,6 +24,10 @@ class YuneecFlightLogParser(BaseParser):
     @property
     def parser_name(self) -> str:
         return "yuneec_telemetry_csv"
+
+    @property
+    def parser_version(self) -> str:
+        return "1.0.0"
 
     @property
     def supported_platforms(self) -> list[str]:

@@ -120,6 +120,10 @@ class ArduPilotDataFlashParser(BaseParser):
         return "ardupilot_dataflash_bin"
 
     @property
+    def parser_version(self) -> str:
+        return "1.0.0"
+
+    @property
     def supported_platforms(self) -> list[str]:
         return ["ardupilot", "px4", "pixhawk"]
 

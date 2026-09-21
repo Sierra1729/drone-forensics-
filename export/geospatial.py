@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 from typing import Any, Optional
 
@@ -20,6 +21,7 @@ import folium
 import simplekml
 
 from analytics.correlation import ForensicAnomaly, NoFlyZone
+from analytics.geocoding import reverse_geocode
 from normalize.schema import NormalizedEvent
 
 
@@ -271,23 +273,44 @@ class GeospatialExporter:
                 tooltip=f"Flight Trajectory ({len(gps_events)} points)",
             ).add_to(fmap)
 
+            launch_loc = reverse_geocode(gps_events[0].latitude, gps_events[0].longitude)
+            recovery_loc = reverse_geocode(gps_events[-1].latitude, gps_events[-1].longitude)
+
+            takeoff_title = launch_loc.get("pinpoint_name", "Takeoff Site")
+            takeoff_addr = launch_loc.get("full_address", f"{gps_events[0].latitude:.6f}°, {gps_events[0].longitude:.6f}°")
+            takeoff_popup = (
+                f"<div style='font-family:sans-serif; min-width:200px;'>"
+                f"<b style='color:#10b981; font-size:13px;'>🚀 Flight Takeoff (Launch Site)</b><br>"
+                f"<b>{takeoff_title}</b><br>"
+                f"<span style='color:#4b5563; font-size:11px;'>{takeoff_addr}</span><hr style='margin:6px 0; border:0; border-top:1px solid #e5e7eb;'/>"
+                f"<b>UTC:</b> {gps_events[0].timestamp_utc.strftime('%Y-%m-%d %H:%M:%S UTC')}<br>"
+                f"<b>Alt:</b> {gps_events[0].altitude_m or 0:.1f} m"
+                f"</div>"
+            )
+
+            recovery_title = recovery_loc.get("pinpoint_name", "Recovery Site")
+            recovery_addr = recovery_loc.get("full_address", f"{gps_events[-1].latitude:.6f}°, {gps_events[-1].longitude:.6f}°")
+            recovery_popup = (
+                f"<div style='font-family:sans-serif; min-width:200px;'>"
+                f"<b style='color:#ef4444; font-size:13px;'>🎯 Flight Landing (Recovery Site)</b><br>"
+                f"<b>{recovery_title}</b><br>"
+                f"<span style='color:#4b5563; font-size:11px;'>{recovery_addr}</span><hr style='margin:6px 0; border:0; border-top:1px solid #e5e7eb;'/>"
+                f"<b>UTC:</b> {gps_events[-1].timestamp_utc.strftime('%Y-%m-%d %H:%M:%S UTC')}<br>"
+                f"<b>Alt:</b> {gps_events[-1].altitude_m or 0:.1f} m"
+                f"</div>"
+            )
+
             # Takeoff marker
             folium.Marker(
                 location=track_points[0],
-                popup=folium.Popup(
-                    f"<b>Takeoff</b><br>UTC: {gps_events[0].timestamp_utc.isoformat()}<br>Alt: {gps_events[0].altitude_m or 0}m",
-                    max_width=300,
-                ),
+                popup=folium.Popup(takeoff_popup, max_width=320),
                 icon=folium.Icon(color="green", icon="play", prefix="fa"),
             ).add_to(fmap)
 
             # Landing / Termination marker
             folium.Marker(
                 location=track_points[-1],
-                popup=folium.Popup(
-                    f"<b>Landing / Termination</b><br>UTC: {gps_events[-1].timestamp_utc.isoformat()}<br>Alt: {gps_events[-1].altitude_m or 0}m",
-                    max_width=300,
-                ),
+                popup=folium.Popup(recovery_popup, max_width=320),
                 icon=folium.Icon(color="red", icon="stop", prefix="fa"),
             ).add_to(fmap)
 
@@ -329,6 +352,99 @@ class GeospatialExporter:
         target_file = Path(output_path) if output_path else Path("flight_map.html")
         target_file.parent.mkdir(parents=True, exist_ok=True)
         fmap.save(str(target_file))
+
+        # Air-gapped resilience: Inject offline Leaflet script fallback and Tactical Grid layer
+        try:
+            html_str = target_file.read_text(encoding="utf-8")
+            local_fallback = """
+    <!-- Air-gapped Leaflet fallback -->
+    <script>
+    if (typeof L === 'undefined') {
+        document.write('<script src="../../gui/vendor/leaflet.js"><\\/script>');
+        document.write('<link rel="stylesheet" href="../../gui/vendor/leaflet.css" />');
+    }
+    </script>
+"""
+            grid_fallback = """
+    <!-- Offline Tactical Grid Fallback Engine -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof L !== 'undefined') {
+            var TacticalGrid = L.GridLayer.extend({
+                createTile: function(coords) {
+                    var tile = document.createElement('canvas');
+                    var size = this.getTileSize();
+                    tile.width = size.x;
+                    tile.height = size.y;
+                    var ctx = tile.getContext('2d');
+                    ctx.fillStyle = '#060a12';
+                    ctx.fillRect(0, 0, size.x, size.y);
+                    ctx.strokeStyle = '#152033';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(0, 0, size.x, size.y);
+                    ctx.strokeStyle = 'rgba(30, 41, 59, 0.45)';
+                    ctx.lineWidth = 0.5;
+                    var step = size.x / 4;
+                    ctx.beginPath();
+                    for (var i = 1; i < 4; i++) {
+                        ctx.moveTo(i * step, 0); ctx.lineTo(i * step, size.y);
+                        ctx.moveTo(0, i * step); ctx.lineTo(size.x, i * step);
+                    }
+                    ctx.stroke();
+                    ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+                    ctx.lineWidth = 1;
+                    var cx = size.x / 2, cy = size.y / 2;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 7, cy); ctx.lineTo(cx + 7, cy);
+                    ctx.moveTo(cx, cy - 7); ctx.lineTo(cx, cy + 7);
+                    ctx.stroke();
+                    try {
+                        if (this._map) {
+                            var nw = this._map.unproject(coords.scaleBy(size), coords.z);
+                            ctx.fillStyle = '#64748b';
+                            ctx.font = '9px monospace';
+                            ctx.fillText((nw.lat>=0?'+':'') + nw.lat.toFixed(4) + '°, ' + (nw.lng>=0?'+':'') + nw.lng.toFixed(4) + '°', 6, 13);
+                            ctx.fillStyle = '#334155';
+                            ctx.fillText('Z' + coords.z, size.x - 24, size.y - 6);
+                        }
+                    } catch(e) {}
+                    return tile;
+                }
+            });
+
+            for (var key in window) {
+                if (key.startsWith("map_") && window[key] && typeof window[key].addLayer === 'function') {
+                    var m = window[key];
+                    var gridLayer = new TacticalGrid({ attribution: 'PUSHPAK Offline Tactical Grid' });
+                    if (!navigator.onLine) {
+                        gridLayer.addTo(m);
+                    }
+                    m.eachLayer(function(l) {
+                        if (l instanceof L.TileLayer) {
+                            var errCount = 0;
+                            l.on('tileerror', function() {
+                                errCount++;
+                                if (errCount >= 3 && !m.hasLayer(gridLayer)) {
+                                    gridLayer.addTo(m);
+                                }
+                            });
+                        }
+                    });
+                    break;
+                }
+            }
+        }
+    });
+    </script>
+"""
+            if "</head>" in html_str:
+                html_str = html_str.replace("</head>", f"{local_fallback}\n</head>", 1)
+            if "</body>" in html_str:
+                html_str = html_str.replace("</body>", f"{grid_fallback}\n</body>", 1)
+            target_file.write_text(html_str, encoding="utf-8")
+        except Exception:
+            pass
+
         return target_file
 
     @staticmethod
@@ -364,6 +480,7 @@ class GeospatialExporter:
                 sampled.append(gps_events[-1])
 
             cos_lat0 = math.cos(math.radians(lat0))
+            start_ts = gps_events[0].timestamp_utc
 
             for ev in sampled:
                 d_lat = ev.latitude - lat0
@@ -372,6 +489,7 @@ class GeospatialExporter:
                 z = round(-d_lat * 111319.5, 2)  # In Three.js: -Z is North
                 curr_alt = ev.altitude_m if ev.altitude_m is not None else min_alt
                 y = round(max(0.5, curr_alt - min_alt), 2)  # Relative height above ground
+                t_sec = round((ev.timestamp_utc - start_ts).total_seconds(), 2)
 
                 coords_3d.append({
                     "x": x,
@@ -384,6 +502,7 @@ class GeospatialExporter:
                     "hdg": round(ev.heading_deg or 0.0, 0),
                     "pitch": round(ev.pitch_deg or 0.0, 1),
                     "roll": round(ev.roll_deg or 0.0, 1),
+                    "t_sec": t_sec,
                     "ts": ev.timestamp_utc.strftime("%H:%M:%S UTC"),
                 })
 
@@ -392,10 +511,12 @@ class GeospatialExporter:
             local_evs = [e for e in events if e.payload and "local_x" in e.payload]
             step = max(1, len(local_evs) // 1000)
             sampled = local_evs[::step]
+            start_ts = local_evs[0].timestamp_utc
             for ev in sampled:
                 lx = float(ev.payload.get("local_x", 0.0))
                 ly = float(ev.payload.get("local_y", 0.0))
                 lz = float(ev.payload.get("local_z", 0.0))
+                t_sec = round((ev.timestamp_utc - start_ts).total_seconds(), 2)
                 coords_3d.append({
                     "x": round(ly, 2),
                     "y": round(max(0.5, -lz), 2),
@@ -407,28 +528,31 @@ class GeospatialExporter:
                     "hdg": round(ev.heading_deg or 0.0, 0),
                     "pitch": round(ev.pitch_deg or 0.0, 1),
                     "roll": round(ev.roll_deg or 0.0, 1),
+                    "t_sec": t_sec,
                     "ts": ev.timestamp_utc.strftime("%H:%M:%S UTC"),
                 })
 
-        # Derive kinematic ground speed from movement if missing
+        # Derive kinematic ground speed from movement if missing or suppressed
         for i in range(1, len(coords_3d)):
-            if coords_3d[i]["spd"] == 0.0:
+            if coords_3d[i]["spd"] == 0.0 or coords_3d[i]["spd"] < 0.15:
                 p0 = coords_3d[i - 1]
                 p1 = coords_3d[i]
                 dx = p1["x"] - p0["x"]
                 dz = p1["z"] - p0["z"]
                 dist = math.hypot(dx, dz)
                 if dist > 0.05:
-                    try:
-                        t0 = datetime.strptime(p0["ts"], "%H:%M:%S UTC")
-                        t1 = datetime.strptime(p1["ts"], "%H:%M:%S UTC")
-                        dt = (t1 - t0).total_seconds()
-                        if 0.05 <= dt <= 10.0:
-                            calc_spd = dist / dt
-                            if 0.0 < calc_spd < 150.0:
-                                coords_3d[i]["spd"] = round(calc_spd, 1)
-                    except Exception:
-                        pass
+                    dt = p1.get("t_sec", 0.0) - p0.get("t_sec", 0.0)
+                    if dt <= 0.01:
+                        try:
+                            t0 = datetime.strptime(p0["ts"], "%H:%M:%S UTC")
+                            t1 = datetime.strptime(p1["ts"], "%H:%M:%S UTC")
+                            dt = (t1 - t0).total_seconds()
+                        except Exception:
+                            dt = 0.2
+                    if 0.05 <= dt <= 15.0:
+                        calc_spd = dist / dt
+                        if 0.0 < calc_spd < 150.0:
+                            coords_3d[i]["spd"] = round(calc_spd, 1)
 
         # Derive kinematic pitch & roll from 3D trajectory climb/descent slope and turns if missing or 0.0
         for i in range(1, len(coords_3d)):
@@ -474,8 +598,37 @@ class GeospatialExporter:
                         "ts": a.timestamp_utc.strftime("%H:%M:%S UTC"),
                     })
 
+        launch_loc = None
+        recovery_loc = None
+        if gps_events:
+            launch_loc = reverse_geocode(gps_events[0].latitude, gps_events[0].longitude)
+            recovery_loc = reverse_geocode(gps_events[-1].latitude, gps_events[-1].longitude)
+        else:
+            launch_loc = {
+                "pinpoint_name": "Indoor / Local Facility",
+                "full_address": "Bench Test / Indoor Trajectory",
+                "city": "Local Lab",
+                "state": "Station",
+                "country": "",
+                "display_text": "Indoor Bench Coordinates",
+            }
+            recovery_loc = launch_loc
+
         json_coords = json.dumps(coords_3d)
         json_anomalies = json.dumps(anomalies_3d)
+        json_launch_loc = json.dumps(launch_loc)
+        json_recovery_loc = json.dumps(recovery_loc)
+
+        loc_pinpoint = launch_loc.get("pinpoint_name", "Flight Vicinity")
+        loc_display = launch_loc.get("display_text", launch_loc.get("full_address", "Coordinates Unavailable"))
+
+        target_file = Path(output_path) if output_path else Path("flight_3d_map.html")
+        target_resolved = target_file.resolve()
+        vendor_dir = Path(__file__).resolve().parent.parent / "gui" / "vendor"
+        try:
+            rel_vendor = os.path.relpath(vendor_dir, target_resolved.parent).replace("\\", "/")
+        except Exception:
+            rel_vendor = "../../gui/vendor"
 
         html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -483,29 +636,68 @@ class GeospatialExporter:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PUSHPAK 3D Aerospace Flight Trajectory Visualizer</title>
-<!-- Three.js + OrbitControls (CDN with local air-gapped fallback) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Three.js + OrbitControls (Air-Gapped Multi-Tier Offline Engine) -->
+<script src="{rel_vendor}/three.min.js"></script>
+<script>
+if (typeof THREE === 'undefined') {{
+  document.write('<script src="http://127.0.0.1:{http_port}/vendor/three.min.js"><\\/script>');
+}}
+</script>
+<script>
+if (typeof THREE === 'undefined') {{
+  document.write('<script src="../../../gui/vendor/three.min.js"><\\/script>');
+}}
+</script>
 <script>
 if (typeof THREE === 'undefined') {{
   document.write('<script src="../../gui/vendor/three.min.js"><\\/script>');
 }}
 </script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+if (typeof THREE === 'undefined') {{
+  document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\\/script>');
+}}
+</script>
+
+<script src="{rel_vendor}/OrbitControls.js"></script>
+<script>
+if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {{
+  document.write('<script src="http://127.0.0.1:{http_port}/vendor/OrbitControls.js"><\\/script>');
+}}
+</script>
+<script>
+if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {{
+  document.write('<script src="../../../gui/vendor/OrbitControls.js"><\\/script>');
+}}
+</script>
 <script>
 if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {{
   document.write('<script src="../../gui/vendor/OrbitControls.js"><\\/script>');
 }}
 </script>
+<script>
+if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {{
+  document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\\/script>');
+}}
+</script>
+<!-- Google Fonts: Space Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 body {{
   background: #060911;
   color: #f3f4f6;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Space Mono', 'Consolas', monospace, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
   height: 100vh;
   overflow: hidden;
   user-select: none;
 }}
+button, input, select, .h-val, .cardinal-lbl, .inst-val-sm, .log-row, .time-label, .case-lbl {{
+  font-family: 'Space Mono', 'Consolas', monospace;
+}}
+
 #canvas-container {{
   width: 100vw;
   height: 100vh;
@@ -556,6 +748,25 @@ body {{
   color: #94a3b8;
   font-family: monospace;
 }}
+
+/* Geocoded Location Banner */
+.location-pill {{
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid #1e293d;
+  border-radius: 8px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  max-width: 480px;
+}}
+.loc-pin {{ font-size: 15px; color: #10b981; flex-shrink: 0; }}
+.loc-content {{ display: flex; flex-direction: column; overflow: hidden; }}
+.loc-title {{ font-size: 11.5px; font-weight: 700; color: #38bdf8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.loc-sub {{ font-size: 9.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
 
 /* Camera Presets & Actions */
 .actions-pill {{
@@ -881,14 +1092,16 @@ body {{
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(880px, 92vw);
-  background: rgba(15, 23, 42, 0.9);
+  width: min(1180px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+  background: rgba(15, 23, 42, 0.92);
   border: 1px solid #1e293d;
   border-radius: 10px;
-  padding: 10px 18px;
+  padding: 8px 14px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   z-index: 10;
@@ -897,13 +1110,13 @@ body {{
   background: #0284c7;
   border: none;
   color: #fff;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   flex-shrink: 0;
 }}
@@ -911,7 +1124,8 @@ body {{
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  min-width: 120px;
 }}
 input[type="range"] {{
   flex: 1;
@@ -919,34 +1133,37 @@ input[type="range"] {{
   cursor: pointer;
 }}
 .time-label {{
-  font-size: 12px;
+  font-size: 11.5px;
   font-family: monospace;
   color: #cbd5e1;
-  width: 90px;
+  width: auto;
+  min-width: 65px;
   flex-shrink: 0;
 }}
 .speed-select {{
   background: #0b0f19;
   border: 1px solid #1e293d;
   color: #38bdf8;
-  padding: 5px 8px;
+  padding: 5px 6px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 700;
   outline: none;
   cursor: pointer;
+  flex-shrink: 0;
 }}
 .ext-actions {{
   display: flex;
-  gap: 8px;
+  gap: 6px;
   border-left: 1px solid #334155;
-  padding-left: 12px;
+  padding-left: 10px;
+  flex-shrink: 0;
 }}
 .ext-btn {{
   background: #1e293b;
   border: 1px solid #334155;
   color: #cbd5e1;
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
@@ -961,18 +1178,19 @@ input[type="range"] {{
 /* Evidence Action Buttons in Playback Bar */
 .evidence-actions {{
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
   border-left: 1px solid #334155;
-  padding-left: 12px;
+  padding-left: 10px;
+  flex-shrink: 0;
 }}
 .btn-evidence {{
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 5px 10px;
   border-radius: 6px;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -1000,6 +1218,22 @@ input[type="range"] {{
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(2, 132, 199, 0.5);
 }}
+
+@media (max-width: 1100px) {{
+  .playback-panel {{
+    gap: 6px;
+    padding: 6px 10px;
+  }}
+  .evidence-actions, .ext-actions {{
+    gap: 4px;
+    padding-left: 6px;
+  }}
+  .btn-evidence, .ext-btn {{
+    padding: 4px 6px;
+    font-size: 10px;
+  }}
+}}
+
 
 /* Evidence Exhibits Drawer (Pinned Right) */
 .evidence-drawer {{
@@ -1378,6 +1612,15 @@ input[type="range"] {{
     <span class="case-lbl">[{case_id}]</span>
   </div>
 
+  <!-- Geocoded Location Banner -->
+  <div class="location-pill" id="locationPill" title="Geocoded Flight Vicinity">
+    <span class="loc-pin">📍</span>
+    <div class="loc-content">
+      <div class="loc-title" id="locTitle">{loc_pinpoint}</div>
+      <div class="loc-sub" id="locSub">{loc_display}</div>
+    </div>
+  </div>
+
   <div class="actions-pill">
     <button class="cam-btn active" id="btnOrbit" onclick="setCameraMode('orbit')">🌐 3D Orbit</button>
     <button class="cam-btn" id="btnTop" onclick="setCameraMode('top')">⬇️ Top-Down</button>
@@ -1491,9 +1734,9 @@ input[type="range"] {{
   </div>
 
   <select class="speed-select" id="speedSelect" onchange="changeSpeed(this.value)">
-    <option value="1">1x Speed</option>
+    <option value="1" selected>1x (Real-Time)</option>
     <option value="2">2x Speed</option>
-    <option value="5" selected>5x Speed</option>
+    <option value="5">5x Speed</option>
     <option value="10">10x Speed</option>
     <option value="20">20x Speed</option>
   </select>
@@ -1595,13 +1838,18 @@ input[type="range"] {{
 <script>
 const flightData = {json_coords};
 const anomaliesData = {json_anomalies};
+const launchLoc = {json_launch_loc};
+const recoveryLoc = {json_recovery_loc};
 
 let scene, camera, renderer, controls;
 let droneMesh, pathLine, curtainMesh;
 let currentIndex = 0;
+let currentSimTime = 0.0;
+let totalFlightDuration = 0.0;
 let isPlaying = false;
-let playSpeed = 5;
+let playSpeed = 1.0;
 let cameraMode = 'orbit';
+let lastFrameTime = performance.now();
 
 // Forensic Evidence Exhibits State
 let markedEvidence = [];
@@ -1705,15 +1953,25 @@ function initScene() {{
   // Build Ground Plane & 3D Flight Geometry
   buildEnvironment();
   if (flightData.length > 0) {{
+    for (let i = 0; i < flightData.length; i++) {{
+      if (flightData[i].t_sec === undefined || isNaN(flightData[i].t_sec)) {{
+        flightData[i].t_sec = i * 0.2;
+      }}
+    }}
+    totalFlightDuration = flightData[flightData.length - 1].t_sec || (flightData.length - 1);
+
     buildFlightGeometry();
     buildDroneModel();
     fitCameraToTrajectory();
 
     populateTelemetryLog();
     const scrubber = document.getElementById('scrubber');
-    scrubber.max = flightData.length - 1;
+    scrubber.min = 0;
+    scrubber.max = Math.ceil(totalFlightDuration);
+    scrubber.step = 0.1;
     scrubber.value = 0;
-    updateHUD(0);
+    currentSimTime = 0;
+    renderAtSimTime(0);
     loadEvidenceFromStorage();
   }}
 
@@ -1861,11 +2119,13 @@ function buildFlightGeometry() {{
 
   // 3. Takeoff Pin (Green Glowing Beacon)
   const startPt = pts[0];
-  createBeacon(startPt, 0x10b981, "TAKEOFF POINT");
+  const takeoffLabel = (launchLoc && launchLoc.pinpoint_name) ? `TAKEOFF: ${{launchLoc.pinpoint_name}}` : "TAKEOFF POINT";
+  createBeacon(startPt, 0x10b981, takeoffLabel);
 
   // 4. Landing Pin (Red Glowing Beacon)
   const endPt = pts[pts.length - 1];
-  createBeacon(endPt, 0xef4444, "TERMINATION / LANDING");
+  const landingLabel = (recoveryLoc && recoveryLoc.pinpoint_name) ? `LANDING: ${{recoveryLoc.pinpoint_name}}` : "TERMINATION / LANDING";
+  createBeacon(endPt, 0xef4444, landingLabel);
 
   // 5. Threat Cones
   anomaliesData.forEach(a => {{
@@ -1892,6 +2152,14 @@ function createBeacon(pos, colorHex, label) {{
   const sph = new THREE.Mesh(sphGeo, sphMat);
   sph.position.set(pos.x, pos.y, pos.z);
   scene.add(sph);
+
+  // 3D Text Label
+  if (label) {{
+    const spriteColor = colorHex === 0x10b981 ? "#34d399" : "#f87171";
+    const labelSprite = makeTextSprite(label, spriteColor, "rgba(6, 10, 18, 0.85)");
+    labelSprite.position.set(pos.x, pos.y + 7.5, pos.z);
+    scene.add(labelSprite);
+  }}
 }}
 
 function buildDroneModel() {{
@@ -1978,73 +2246,128 @@ function setCameraMode(mode) {{
   }}
 }}
 
-function updateHUD(idx) {{
-  if (idx < 0 || idx >= flightData.length) return;
-  const p = flightData[idx];
+function renderAtSimTime(simTime) {{
+  if (!flightData || flightData.length === 0) return;
+  simTime = Math.max(0, Math.min(totalFlightDuration, simTime));
+  currentSimTime = simTime;
 
+  // Find bounding waypoint indices
+  let i = 0;
+  while (i < flightData.length - 1 && flightData[i + 1].t_sec <= simTime) {{
+    i++;
+  }}
+  const p0 = flightData[i];
+  const p1 = flightData[Math.min(i + 1, flightData.length - 1)];
+
+  let alpha = 0.0;
+  const segDt = p1.t_sec - p0.t_sec;
+  if (segDt > 0.001) {{
+    alpha = Math.max(0.0, Math.min(1.0, (simTime - p0.t_sec) / segDt));
+  }}
+
+  // Smoothly interpolated position
+  const interpX = p0.x + alpha * (p1.x - p0.x);
+  const interpY = p0.y + alpha * (p1.y - p0.y);
+  const interpZ = p0.z + alpha * (p1.z - p0.z);
+  const interpAlt = p0.alt + alpha * (p1.alt - p0.alt);
+  const interpSpd = p0.spd + alpha * (p1.spd - p0.spd);
+
+  // Angular interpolation for heading (shortest angle path around circle)
+  let dHdg = ((p1.hdg - p0.hdg + 540) % 360) - 180;
+  const interpHdg = (p0.hdg + alpha * dHdg + 360) % 360;
+
+  const interpPitch = p0.pitch + alpha * (p1.pitch - p0.pitch);
+  const interpRoll = p0.roll + alpha * (p1.roll - p0.roll);
+
+  const interpLat = (p0.lat !== undefined && p0.lat !== 0.0) ? (p0.lat + alpha * (p1.lat - p0.lat)) : 0;
+  const interpLon = (p0.lon !== undefined && p0.lon !== 0.0) ? (p0.lon + alpha * (p1.lon - p0.lon)) : 0;
+
+  currentIndex = i;
+
+  // 1. Update HUD Text
   const altElem = document.getElementById('hudAlt');
-  if (altElem) altElem.innerText = p.alt.toFixed(1) + " m";
+  if (altElem) altElem.innerText = interpAlt.toFixed(1) + " m";
 
   const spdElem = document.getElementById('hudSpd');
-  if (spdElem) spdElem.innerText = p.spd.toFixed(1) + " m/s";
+  if (spdElem) spdElem.innerText = interpSpd.toFixed(1) + " m/s";
 
   const latElem = document.getElementById('hudLat');
-  if (latElem) latElem.innerText = (p.lat !== undefined && p.lat !== 0.0) ? p.lat.toFixed(6) + "°" : "Indoor Local";
+  if (latElem) latElem.innerText = (interpLat !== 0.0) ? interpLat.toFixed(6) + "°" : "Indoor Local";
 
   const lonElem = document.getElementById('hudLon');
-  if (lonElem) lonElem.innerText = (p.lon !== undefined && p.lon !== 0.0) ? p.lon.toFixed(6) + "°" : "Indoor Local";
+  if (lonElem) lonElem.innerText = (interpLon !== 0.0) ? interpLon.toFixed(6) + "°" : "Indoor Local";
 
-  const deg = ((p.hdg % 360) + 360) % 360;
+  const deg = ((interpHdg % 360) + 360) % 360;
   const card = getCardinalDir(deg);
   const hdgElem = document.getElementById('hudHdg');
   if (hdgElem) hdgElem.innerText = `${{deg.toFixed(0)}}° (${{card}})`;
 
-  const pSign = p.pitch >= 0 ? '+' : '';
-  const rSign = p.roll >= 0 ? '+' : '';
+  const pSign = interpPitch >= 0 ? '+' : '';
+  const rSign = interpRoll >= 0 ? '+' : '';
   const attElem = document.getElementById('hudAtt');
-  if (attElem) attElem.innerText = `P:${{pSign}}${{p.pitch.toFixed(1)}}° R:${{rSign}}${{p.roll.toFixed(1)}}°`;
+  if (attElem) attElem.innerText = `P:${{pSign}}${{interpPitch.toFixed(1)}}° R:${{rSign}}${{interpRoll.toFixed(1)}}°`;
 
   const attInst = document.getElementById('hudAttInst');
-  if (attInst) attInst.innerText = `P: ${{pSign}}${{p.pitch.toFixed(1)}}° | R: ${{rSign}}${{p.roll.toFixed(1)}}°`;
+  if (attInst) attInst.innerText = `P: ${{pSign}}${{interpPitch.toFixed(1)}}° | R: ${{rSign}}${{interpRoll.toFixed(1)}}°`;
 
   const cmpInst = document.getElementById('hudCmpInst');
   if (cmpInst) cmpInst.innerText = `${{deg.toFixed(0)}}° ${{card}}`;
 
+  // Time display
+  const totalSecs = Math.floor(simTime);
+  const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
+  const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
+  const secs = String(totalSecs % 60).padStart(2, '0');
   const timeLabel = document.getElementById('timeLabel');
-  if (timeLabel) timeLabel.innerText = p.ts;
-
-  // 1. Update 3D Attitude Indicator (Horizon)
-  const sphere = document.getElementById('hudHorizonSphere');
-  if (sphere) {{
-    const pitchPx = Math.max(-26, Math.min(26, p.pitch * 1.3));
-    sphere.style.transform = `translateY(${{pitchPx}}px) rotate(${{-p.roll}}deg)`;
+  if (timeLabel) {{
+    timeLabel.innerText = p0.ts ? `${{p0.ts}} (${{hrs}}:${{mins}}:${{secs}})` : `${{hrs}}:${{mins}}:${{secs}}`;
   }}
 
-  // 2. Update 3D Compass Needle
+  // 2. Update 3D Attitude Indicator (Horizon)
+  const sphere = document.getElementById('hudHorizonSphere');
+  if (sphere) {{
+    const pitchPx = Math.max(-26, Math.min(26, interpPitch * 1.3));
+    sphere.style.transform = `translateY(${{pitchPx}}px) rotate(${{-interpRoll}}deg)`;
+  }}
+
+  // 3. Update 3D Compass Needle
   const needle = document.getElementById('hudCompassNeedle');
   if (needle) {{
     needle.style.transform = `translateX(-50%) rotate(${{deg}}deg)`;
   }}
 
-  // 3. Highlight & auto-scroll live telemetry log
-  highlightLogRow(idx);
+  // 4. Highlight & auto-scroll live telemetry log
+  highlightLogRow(i);
 
+  // 5. Update Drone Mesh position and attitude
   if (droneMesh) {{
-    droneMesh.position.set(p.x, p.y, p.z);
-    // Rotate drone with heading and attitude
-    const hdgRad = -THREE.MathUtils.degToRad(p.hdg || 0);
-    const pitchRad = THREE.MathUtils.degToRad(p.pitch || 0);
-    const rollRad = THREE.MathUtils.degToRad(p.roll || 0);
+    droneMesh.position.set(interpX, interpY, interpZ);
+    const hdgRad = -THREE.MathUtils.degToRad(interpHdg);
+    const pitchRad = THREE.MathUtils.degToRad(interpPitch);
+    const rollRad = THREE.MathUtils.degToRad(interpRoll);
     droneMesh.rotation.set(pitchRad, hdgRad, rollRad, 'YXZ');
   }}
 
   if (cameraMode === 'chase' && droneMesh) {{
-    const hdgRad = -THREE.MathUtils.degToRad(p.hdg || 0);
+    const hdgRad = -THREE.MathUtils.degToRad(interpHdg);
     const offset = new THREE.Vector3(0, 12, 35);
     offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), hdgRad);
     camera.position.copy(droneMesh.position).add(offset);
     camera.lookAt(droneMesh.position.x, droneMesh.position.y + 2, droneMesh.position.z);
   }}
+
+  // Sync timeline scrubber
+  const scrubber = document.getElementById('scrubber');
+  if (scrubber && !scrubber.matches(':active')) {{
+    scrubber.value = simTime;
+  }}
+}}
+
+function updateHUD(idx) {{
+  if (idx < 0 || idx >= flightData.length) return;
+  const p = flightData[idx];
+  const t = (p && p.t_sec !== undefined) ? p.t_sec : idx;
+  renderAtSimTime(t);
 }}
 
 function getCardinalDir(deg) {{
@@ -2098,7 +2421,7 @@ function populateTelemetryLog() {{
     const latStr = (p.lat !== undefined && p.lat !== 0.0) ? p.lat.toFixed(5) + '°' : 'Indoor';
     const lonStr = (p.lon !== undefined && p.lon !== 0.0) ? p.lon.toFixed(5) + '°' : 'Indoor';
     html += `
-      <div class="log-row" id="logRow-${{i}}" onclick="onScrub(${{i}})">
+      <div class="log-row" id="logRow-${{i}}" onclick="onLogRowClick(${{i}})">
         <div class="log-row-top">
           <span class="log-ts">${{p.ts}}</span>
           <span class="log-spd">${{p.spd.toFixed(1)}} m/s</span>
@@ -2111,6 +2434,14 @@ function populateTelemetryLog() {{
     `;
   }});
   container.innerHTML = html;
+}}
+
+function onLogRowClick(idx) {{
+  if (flightData[idx] && flightData[idx].t_sec !== undefined) {{
+    renderAtSimTime(flightData[idx].t_sec);
+  }} else {{
+    renderAtSimTime(idx);
+  }}
 }}
 
 function makeTextSprite(message, color, bg) {{
@@ -2143,15 +2474,15 @@ function makeTextSprite(message, color, bg) {{
 function togglePlay() {{
   isPlaying = !isPlaying;
   document.getElementById('playBtn').innerText = isPlaying ? "⏸" : "▶";
+  lastFrameTime = performance.now();
 }}
 
 function onScrub(val) {{
-  currentIndex = parseInt(val);
-  updateHUD(currentIndex);
+  renderAtSimTime(parseFloat(val));
 }}
 
 function changeSpeed(val) {{
-  playSpeed = parseInt(val) || 5;
+  playSpeed = parseFloat(val) || 1.0;
 }}
 
 function toggleFullscreen() {{
@@ -2170,21 +2501,19 @@ function onResize() {{
   renderer.setSize(w, h);
 }}
 
-let lastTime = performance.now();
 function animate() {{
   requestAnimationFrame(animate);
 
   const now = performance.now();
-  const dt = (now - lastTime) / 1000;
-  lastTime = now;
+  const dtReal = Math.min(0.2, (now - lastFrameTime) / 1000.0);
+  lastFrameTime = now;
 
-  if (isPlaying && flightData.length > 0) {{
-    currentIndex += playSpeed;
-    if (currentIndex >= flightData.length) {{
-      currentIndex = 0;
+  if (isPlaying && flightData.length > 1) {{
+    currentSimTime += dtReal * playSpeed;
+    if (currentSimTime > totalFlightDuration) {{
+      currentSimTime = 0.0;
     }}
-    document.getElementById('scrubber').value = currentIndex;
-    updateHUD(currentIndex);
+    renderAtSimTime(currentSimTime);
   }}
 
   // Rotate 3D Evidence Diamond Beacons

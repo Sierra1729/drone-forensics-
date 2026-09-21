@@ -1,0 +1,6 @@
+PUSHPAK GRAND CHALLENGE 2026-27 | SUBMISSION ARCHIVE MANIFEST
+Archive File: Pushpak_GC3_Drone_Forensics_Toolkit_Submission.zip
+Archive Size: 47,777,661 bytes
+SHA-256 Digest: b06761dff06c5077402a691314837f1c1030cbfff4c2440bcda5a5092bcdc61b
+BLAKE3 Digest:  541d7332611df2bf06fffd66f228f87f23af10144cf4bb8850d8f13a7389abe5
+Total Included Files: 454

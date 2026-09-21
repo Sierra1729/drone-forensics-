@@ -34,6 +34,10 @@ class PX4ULogParser(BaseParser):
         return "px4_ulog"
 
     @property
+    def parser_version(self) -> str:
+        return "1.0.0"
+
+    @property
     def supported_platforms(self) -> list[str]:
         return ["px4", "pixhawk", "auterion", "skynode", "cube"]
 

@@ -1,4 +1,4 @@
-﻿"""
+"""
 parsers/autel.py
 
 Forensic flight log parser for Autel Robotics UAVs (Autel EVO, EVO II, EVO Max 4T, Dragonfish).
@@ -27,6 +27,10 @@ class AutelFlightLogParser(BaseParser):
         return "autel_robotics_csv"
 
     @property
+    def parser_version(self) -> str:
+        return "1.0.0"
+
+    @property
     def supported_platforms(self) -> list[str]:
         return ["autel", "autel_evo", "autel_robotics", "dragonfish"]
 
@@ -41,6 +45,10 @@ class AutelFlightLogParser(BaseParser):
                 first_lines = [f.readline() for _ in range(5)]
 
             combined = " ".join(first_lines)
+            # Exclude DJI CsvView / DatCon files
+            if "CUSTOM.date" in combined or "OSD.flycState" in combined:
+                return False
+
             if "Autel" in combined or "FlyModel" in combined:
                 return True
             if "OSD.latitude" in combined and "OSD.longitude" in combined:

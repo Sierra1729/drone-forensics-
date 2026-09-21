@@ -36,6 +36,10 @@ class MAVLinkTLogParser(BaseParser):
         return "mavlink_telemetry_tlog"
 
     @property
+    def parser_version(self) -> str:
+        return "1.0.0"
+
+    @property
     def supported_platforms(self) -> list[str]:
         return ["mavlink", "ardupilot", "px4", "qgroundcontrol", "mission_planner"]
 

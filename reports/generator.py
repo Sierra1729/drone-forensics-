@@ -33,6 +33,7 @@ from reportlab.platypus import (
 )
 
 from analytics.correlation import ForensicAnomaly
+from analytics.geocoding import reverse_geocode
 from custody.ledger import ChainOfCustodyLedger, hash_file
 from normalize.schema import NormalizedEvent, EventType
 
@@ -274,14 +275,19 @@ class ForensicReportGenerator:
         target_path = Path(output_pdf_path)
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
-        doc = SimpleDocTemplate(
-            str(target_path),
-            pagesize=letter,
-            leftMargin=40,
-            rightMargin=40,
-            topMargin=50,
-            bottomMargin=50,
-        )
+        # Handle Windows file locks (e.g. if previous report is currently open in Adobe Acrobat or Edge)
+        def _get_writable_path(desired_path: Path) -> Path:
+            if not desired_path.exists():
+                return desired_path
+            try:
+                with open(desired_path, "a+b"):
+                    pass
+                return desired_path
+            except (PermissionError, OSError):
+                timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+                return desired_path.with_name(f"{desired_path.stem}_{timestamp_str}.pdf")
+
+        actual_target_path = _get_writable_path(target_path)
 
         elements: list[Any] = []
 
@@ -304,14 +310,18 @@ class ForensicReportGenerator:
         serial_no = "N/A"
         for ev in events:
             if ev.event_type == EventType.CONFIG_PARAM.value and isinstance(ev.payload, dict):
-                if "aircraft_model" in ev.payload:
-                    model_name = ev.payload["aircraft_model"]
-                if "serial_number" in ev.payload:
-                    serial_no = ev.payload["serial_number"]
+                if ev.payload.get("aircraft_model"):
+                    model_name = str(ev.payload["aircraft_model"])
+                if ev.payload.get("serial_number"):
+                    serial_no = str(ev.payload["serial_number"])
 
         start_time_str = gps_events[0].timestamp_utc.strftime("%Y-%m-%d %H:%M:%S UTC") if gps_events else "N/A"
         end_time_str = gps_events[-1].timestamp_utc.strftime("%Y-%m-%d %H:%M:%S UTC") if gps_events else "N/A"
         duration_s = (gps_events[-1].timestamp_utc - gps_events[0].timestamp_utc).total_seconds() if len(gps_events) > 1 else 0.0
+
+        # Reverse geocoding for pinpoint launch and recovery locations
+        launch_loc = reverse_geocode(gps_events[0].latitude, gps_events[0].longitude) if gps_events else None
+        recovery_loc = reverse_geocode(gps_events[-1].latitude, gps_events[-1].longitude) if gps_events else None
 
         max_alt = max((e.altitude_m for e in gps_events if e.altitude_m is not None), default=0.0)
         max_spd = max((e.ground_speed_mps for e in gps_events if e.ground_speed_mps is not None), default=0.0)
@@ -381,6 +391,20 @@ class ForensicReportGenerator:
                 Paragraph(exam_time_utc, self.styles["TableText"]),
                 Paragraph("<b>Forensic Engine:</b>", self.styles["TableTextBold"]),
                 Paragraph(f"{self.metadata.tool_name} ({self.metadata.tool_version})", self.styles["TableText"]),
+            ],
+            [
+                Paragraph("<b>Flight Launch Site:</b>", self.styles["TableTextBold"]),
+                Paragraph(
+                    f"<b>{launch_loc['pinpoint_name']}</b><br/><font color='#4B5563' size=6.5>{launch_loc['full_address']}</font>"
+                    if launch_loc else "No GPS Data",
+                    self.styles["TableText"],
+                ),
+                Paragraph("<b>Recovery Site:</b>", self.styles["TableTextBold"]),
+                Paragraph(
+                    f"<b>{recovery_loc['pinpoint_name']}</b><br/><font color='#4B5563' size=6.5>{recovery_loc['full_address']}</font>"
+                    if recovery_loc else "No GPS Data",
+                    self.styles["TableText"],
+                ),
             ],
         ]
         t_case = Table(case_data, colWidths=[110, 155, 110, 155])
@@ -456,14 +480,28 @@ class ForensicReportGenerator:
         elements.append(Spacer(1, 6))
 
         # Plain-English Narrative Overview
+        serial_str = f", Serial: {serial_no}" if (serial_no and serial_no != "N/A") else ""
         narrative_text = (
             f"<b>Incident Narrative (Plain Language):</b> On {exam_date_short}, digital flight evidence for case "
             f"<b>{self.metadata.case_id}</b> was acquired for forensic analysis. Physical and telemetry artifacts confirm "
-            f"the aircraft is a <b>{platform_str}</b> UAV (Model: <i>{model_name}</i>"
-            f"{', Serial: ' + serial_no if serial_no != 'N/A' else ''}). "
+            f"the aircraft is a <b>{platform_str}</b> UAV (Model: <i>{model_name or 'N/A'}</i>"
+            f"{serial_str}). "
         )
         if gps_events:
+            loc_narrative = ""
+            if launch_loc and recovery_loc:
+                if launch_loc["pinpoint_name"] == recovery_loc["pinpoint_name"]:
+                    loc_narrative = (
+                        f"The flight operated in the vicinity of <b>{launch_loc['pinpoint_name']}</b> "
+                        f"({launch_loc['city']}, {launch_loc['country']}). "
+                    )
+                else:
+                    loc_narrative = (
+                        f"The aircraft launched from <b>{launch_loc['pinpoint_name']}</b> ({launch_loc['city']}) "
+                        f"and was recovered at <b>{recovery_loc['pinpoint_name']}</b> ({recovery_loc['city']}, {recovery_loc['country']}). "
+                    )
             narrative_text += (
+                loc_narrative +
                 f"The recorded flight operated between <b>{start_time_str}</b> and <b>{end_time_str}</b>, "
                 f"remaining airborne for a duration of <b>{duration_s/60:.1f} minutes</b> across <b>{len(gps_events):,} recorded positions</b>. "
                 f"The aircraft attained a peak altitude of <b>{max_alt:.1f} meters ({max_alt*3.28084:.0f} ft AGL)</b> "
@@ -622,10 +660,10 @@ class ForensicReportGenerator:
         serial_no = "N/A"
         for ev in events:
             if ev.event_type == EventType.CONFIG_PARAM.value and isinstance(ev.payload, dict):
-                if "aircraft_model" in ev.payload:
-                    model_name = ev.payload["aircraft_model"]
-                if "serial_number" in ev.payload:
-                    serial_no = ev.payload["serial_number"]
+                if ev.payload.get("aircraft_model"):
+                    model_name = str(ev.payload["aircraft_model"])
+                if ev.payload.get("serial_number"):
+                    serial_no = str(ev.payload["serial_number"])
 
         start_time_str = gps_events[0].timestamp_utc.strftime("%Y-%m-%d %H:%M:%S UTC") if gps_events else "N/A"
         end_time_str = gps_events[-1].timestamp_utc.strftime("%Y-%m-%d %H:%M:%S UTC") if gps_events else "N/A"
@@ -640,11 +678,11 @@ class ForensicReportGenerator:
                 Paragraph("<b>Platform / Architecture:</b>", self.styles["TableTextBold"]),
                 Paragraph(platform_str, self.styles["TableText"]),
                 Paragraph("<b>Aircraft Model:</b>", self.styles["TableTextBold"]),
-                Paragraph(model_name, self.styles["TableText"]),
+                Paragraph(str(model_name or "N/A"), self.styles["TableText"]),
             ],
             [
                 Paragraph("<b>Hardware Serial No:</b>", self.styles["TableTextBold"]),
-                Paragraph(serial_no, self.styles["TableText"]),
+                Paragraph(str(serial_no or "N/A"), self.styles["TableText"]),
                 Paragraph("<b>Total Telemetry Records:</b>", self.styles["TableTextBold"]),
                 Paragraph(f"{len(events):,} events", self.styles["TableText"]),
             ],
@@ -666,6 +704,20 @@ class ForensicReportGenerator:
                 Paragraph("<b>Peak Ground Velocity:</b>", self.styles["TableTextBold"]),
                 Paragraph(f"{max_spd:.1f} m/s ({max_spd_kmh:.1f} km/h)", self.styles["TableText"]),
             ],
+            [
+                Paragraph("<b>Launch Site (Takeoff):</b>", self.styles["TableTextBold"]),
+                Paragraph(
+                    f"<b>{launch_loc['pinpoint_name']}</b><br/>{launch_loc['city']}, {launch_loc['country']}<br/><font color='#4B5563' size=6.5>({gps_events[0].latitude:.6f}°, {gps_events[0].longitude:.6f}°)</font>"
+                    if (launch_loc and gps_events) else "N/A",
+                    self.styles["TableText"],
+                ),
+                Paragraph("<b>Recovery Site (Landing):</b>", self.styles["TableTextBold"]),
+                Paragraph(
+                    f"<b>{recovery_loc['pinpoint_name']}</b><br/>{recovery_loc['city']}, {recovery_loc['country']}<br/><font color='#4B5563' size=6.5>({gps_events[-1].latitude:.6f}°, {gps_events[-1].longitude:.6f}°)</font>"
+                    if (recovery_loc and gps_events) else "N/A",
+                    self.styles["TableText"],
+                ),
+            ],
         ]
         t_telem = Table(telem_data, colWidths=[130, 135, 130, 135])
         t_telem.setStyle(
@@ -682,8 +734,9 @@ class ForensicReportGenerator:
         elements.append(Spacer(1, 6))
 
         # Plain-English Takeaway for Section 3
+        launch_mention = f"The drone launched from {launch_loc['pinpoint_name']} ({launch_loc['city']}), " if (gps_events and launch_loc) else "The drone "
         dur_note = (
-            f"The drone remained airborne for {duration_s/60:.1f} minutes, reached a peak ground speed of {max_spd_kmh:.1f} km/h, "
+            f"{launch_mention}remained airborne for {duration_s/60:.1f} minutes, reached a peak ground speed of {max_spd_kmh:.1f} km/h, "
             f"and climbed to {max_alt:.1f} meters ({max_alt*3.28084:.0f} ft AGL)."
             if gps_events
             else "Flight profile and parameters were successfully extracted from device storage."
@@ -1077,8 +1130,30 @@ class ForensicReportGenerator:
         elements.append(KeepTogether(cert_block))
 
         # Build document with multi-pass NumberedCanvas
-        doc.build(elements, canvasmaker=NumberedCanvas)
-        return target_path
+        try:
+            doc = SimpleDocTemplate(
+                str(actual_target_path),
+                pagesize=letter,
+                leftMargin=40,
+                rightMargin=40,
+                topMargin=50,
+                bottomMargin=50,
+            )
+            doc.build(elements, canvasmaker=NumberedCanvas)
+        except (PermissionError, OSError):
+            timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")[:22]
+            actual_target_path = target_path.with_name(f"{target_path.stem}_{timestamp_str}.pdf")
+            doc = SimpleDocTemplate(
+                str(actual_target_path),
+                pagesize=letter,
+                leftMargin=40,
+                rightMargin=40,
+                topMargin=50,
+                bottomMargin=50,
+            )
+            doc.build(elements, canvasmaker=NumberedCanvas)
+
+        return actual_target_path
 
 
 def generate_pdf_report(

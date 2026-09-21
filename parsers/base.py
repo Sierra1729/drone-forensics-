@@ -35,6 +35,11 @@ class BaseParser(abc.ABC):
         """List of platform identifiers this parser handles (e.g. ['ardupilot', 'px4'])."""
         pass
 
+    @property
+    def parser_version(self) -> str:
+        """Semantic version of the parser plugin for strict forensic reproducibility."""
+        return "1.0.0"
+
     @abc.abstractmethod
     def can_parse(self, file_path: Path) -> bool:
         """Inspect file header/magic bytes to determine if this parser can handle it.
