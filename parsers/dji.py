@@ -176,7 +176,7 @@ class DJIFlightLogParser(BaseParser):
 
         # Case B: Onboard .DAT with ASCII BUILD banner or header text
         else:
-            header_sample = raw_bytes[:2048]
+            header_sample = raw_bytes[:4096]
             # Detect model names in ASCII header
             for model_candidate in [
                 "Mavic 3 Enterprise", "Mavic 3", "Mavic 2 Pro", "Mavic 2 Zoom", "Mavic 2 Enterprise",
@@ -194,12 +194,45 @@ class DJIFlightLogParser(BaseParser):
                     aircraft_model = f"DJI UAV Platform (Onboard Log {file_path.name})"
 
             # Extract BUILD timestamp if present
-            build_match = re.search(rb"BUILD\s+([0-9\-_: ]+)", header_sample, re.IGNORECASE)
+            build_match = re.search(rb"BUILD\s+([A-Za-z0-9\-_: ]+)", header_sample, re.IGNORECASE)
             if build_match:
                 try:
                     b_str = build_match.group(1).decode("ascii", errors="ignore").strip()
                     if b_str:
                         serial_number = f"Build:{b_str}"
+                        for b_fmt in ("%b %d %Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y_%m_%d_%H_%M_%S"):
+                            try:
+                                start_time_utc = datetime.strptime(b_str, b_fmt).replace(tzinfo=timezone.utc)
+                                break
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
+
+            # Pre-scan first 2MB for GPS flight date and battery hardware barcode
+            pre_scan_sample = raw_bytes[:min(2097152, file_len)]
+            date_match = re.search(rb"read gps date:([0-9]{8})", pre_scan_sample)
+            if date_match:
+                try:
+                    d_str = date_match.group(1).decode("ascii")
+                    start_time_utc = datetime.strptime(d_str, "%Y%m%d").replace(tzinfo=timezone.utc)
+                except Exception:
+                    pass
+
+            battery_match = re.search(rb"Battery barcode:([A-Za-z0-9]+)", pre_scan_sample)
+            if battery_match:
+                try:
+                    b_code = battery_match.group(1).decode("ascii")
+                    serial_number += f" | Battery:{b_code}"
+                except Exception:
+                    pass
+
+            fmu_match = re.search(rb"success reg dev type\s+\d+\(([^)]+)\)", pre_scan_sample)
+            if fmu_match and "UAV" in aircraft_model:
+                try:
+                    f_dev = fmu_match.group(1).decode("ascii", errors="ignore")
+                    if f_dev in ("A3", "N3"):
+                        aircraft_model = f"DJI {f_dev} Flight Controller"
                 except Exception:
                     pass
 
@@ -237,155 +270,139 @@ class DJIFlightLogParser(BaseParser):
         prev_gps_spd: float = 0.0
 
         while offset < file_len - 6:
-            if raw_bytes[offset] == DJI_FRAME_SYNC:
-                # 1. Try DatCon Onboard Frame (0x55, len, sub, crc, msg_type_low, msg_type_high)
-                frame_len = raw_bytes[offset + 1]
-                sub = raw_bytes[offset + 2]
-                crc_hdr = raw_bytes[offset + 3]
+            idx = raw_bytes.find(bytes([DJI_FRAME_SYNC]), offset)
+            if idx == -1 or idx >= file_len - 6:
+                break
+            offset = idx
 
-                if 10 <= frame_len <= 250 and (offset + frame_len <= file_len):
-                    msg_type = struct.unpack_from("<H", raw_bytes, offset + 4)[0]
-                    tick = struct.unpack_from("<I", raw_bytes, offset + 6)[0] if frame_len >= 10 else 0
+            # 1. Try DatCon Onboard Frame (0x55, len, sub, crc, msg_type_low, msg_type_high)
+            frame_len = raw_bytes[offset + 1]
+            sub = raw_bytes[offset + 2]
+            crc_hdr = raw_bytes[offset + 3]
 
-                    # A. Primary DJI V3/V4 High-Precision Telemetry & Trajectory (Type 2048 / 0x0800)
-                    if msg_type == 2048 and frame_len >= 32:
-                        is_v3 = True
-                        # Sample at ~5Hz (every 200ms tick interval) to keep browser map lightning-fast
-                        if last_gps_tick is None or (tick - last_gps_tick) >= 200000:
-                            key = tick % 256
-                            payload_v3 = bytes([b ^ key for b in raw_bytes[offset + 10 : offset + frame_len]])
-                            lon_rad, lat_rad = struct.unpack_from("<dd", payload_v3, 0)
-                            if 0.01 < abs(lon_rad) < 3.1416 and 0.01 < abs(lat_rad) < 1.5708:
-                                lon_deg = math.degrees(lon_rad)
-                                lat_deg = math.degrees(lat_rad)
-                                if -90.0 <= lat_deg <= 90.0 and -180.0 <= lon_deg <= 180.0:
-                                    alt_raw = float(struct.unpack_from("<f", payload_v3, 16)[0])
-                                    alt = alt_raw if (not math.isnan(alt_raw) and -500.0 <= alt_raw <= 12000.0) else 0.0
+            if 10 <= frame_len <= 250 and (offset + frame_len <= file_len):
+                msg_type = struct.unpack_from("<H", raw_bytes, offset + 4)[0]
+                tick = struct.unpack_from("<I", raw_bytes, offset + 6)[0] if frame_len >= 10 else 0
 
-                                    event_ts = start_time_utc + timedelta(milliseconds=(tick // 1000) % 86400000)
-
-                                    # 1. Autopilot Attitude Quaternion (offsets 48..64 in payload_v3)
-                                    pitch = 0.0
-                                    roll = 0.0
-                                    hdg = 0.0
-                                    if len(payload_v3) >= 64:
-                                        qw, qx, qy, qz = struct.unpack_from("<ffff", payload_v3, 48)
-                                        norm_sq = qw * qw + qx * qx + qy * qy + qz * qz
-                                        if 0.80 < norm_sq < 1.20:
-                                            # Yaw (Heading)
-                                            siny_cosp = 2.0 * (qw * qz + qx * qy)
-                                            cosy_cosp = 1.0 - 2.0 * (qy * qy + qz * qz)
-                                            yaw = math.degrees(math.atan2(siny_cosp, cosy_cosp))
-                                            hdg = float((yaw + 360.0) % 360.0)
-
-                                            # Pitch
-                                            sinp = 2.0 * (qw * qy - qz * qx)
-                                            pitch = float(math.degrees(math.asin(max(-1.0, min(1.0, sinp)))))
-
-                                            # Roll
-                                            sinr_cosp = 2.0 * (qw * qx + qy * qz)
-                                            cosr_cosp = 1.0 - 2.0 * (qx * qx + qy * qy)
-                                            roll = float(math.degrees(math.atan2(sinr_cosp, cosr_cosp)))
-
-                                    # 2. Kinematic Ground Speed
-                                    spd = 0.0
-                                    if prev_gps_lat is not None and prev_gps_lon is not None and prev_gps_ts is not None:
-                                        dt = (event_ts - prev_gps_ts).total_seconds()
-                                        if 0.05 <= dt <= 2.0:
-                                            d_lat = math.radians(lat_deg - prev_gps_lat)
-                                            d_lon = math.radians(lon_deg - prev_gps_lon)
-                                            a_dist = math.sin(d_lat / 2.0) ** 2 + math.cos(math.radians(prev_gps_lat)) * math.cos(math.radians(lat_deg)) * math.sin(d_lon / 2.0) ** 2
-                                            dist_m = 6371000.0 * 2.0 * math.atan2(math.sqrt(a_dist), math.sqrt(max(0.0, 1.0 - a_dist)))
-                                            calc_spd = dist_m / dt
-                                            if calc_spd < 150.0:
-                                                spd = round(0.4 * calc_spd + 0.6 * prev_gps_spd, 2)
-                                                if calc_spd < 0.15:
-                                                    spd = 0.0
-                                            if hdg == 0.0 and dist_m > 0.4:
-                                                hdg = float((math.degrees(math.atan2(d_lon, d_lat)) + 360.0) % 360.0)
-
-                                    prev_gps_lat = lat_deg
-                                    prev_gps_lon = lon_deg
-                                    prev_gps_ts = event_ts
-                                    prev_gps_spd = spd
-
-                                    events.append(
-                                        NormalizedEvent(
-                                            timestamp_utc=event_ts,
-                                            source_platform="dji",
-                                            event_type=EventType.GPS_FIX.value,
-                                            source_file=str(file_path),
-                                            source_file_sha256=file_sha256,
-                                            latitude=round(lat_deg, 7),
-                                            longitude=round(lon_deg, 7),
-                                            altitude_m=round(alt, 2),
-                                            ground_speed_mps=round(spd, 2),
-                                            heading_deg=round(hdg, 1),
-                                            pitch_deg=round(pitch, 1),
-                                            roll_deg=round(roll, 1),
-                                            yaw_deg=round(hdg, 1),
-                                            satellites_visible=18,
-                                            flight_mode="P-GPS",
-                                            payload={"rec_type": "DJI_V3_OSD", "tick": tick},
-                                        )
-                                    )
-                                    last_gps_tick = tick
-                        offset += frame_len
-                        continue
-
-                    # B. DJI V3 System Logs & Events (Type 32768 / 0x8000)
-                    if msg_type == 32768 and frame_len >= 12:
-                        is_v3 = True
+                # A. Primary DJI V3/V4 High-Precision Telemetry & Trajectory (Type 2048 / 0x0800)
+                if msg_type == 2048 and frame_len >= 32:
+                    is_v3 = True
+                    # Sample at ~5Hz (every 200ms tick interval) to keep browser map lightning-fast
+                    if last_gps_tick is None or (tick - last_gps_tick) >= 200000:
                         key = tick % 256
-                        text_bytes = bytes([b ^ key for b in raw_bytes[offset + 10 : offset + frame_len]])
-                        msg = text_bytes.split(b"\x00")[0].decode("ascii", errors="ignore").strip()
-                        if msg and any(k in msg.lower() for k in ["rth", "arm", "takeoff", "land", "failsafe", "motor"]):
-                            ev_type = EventType.RAW.value
-                            if "rth" in msg.lower() or "return" in msg.lower():
-                                ev_type = EventType.RTH_TRIGGER.value
-                            elif "arm" in msg.lower():
-                                ev_type = EventType.ARM_DISARM.value
-                            events.append(
-                                NormalizedEvent(
-                                    timestamp_utc=start_time_utc + timedelta(milliseconds=(tick // 1000) % 86400000),
-                                    source_platform="dji",
-                                    event_type=ev_type,
-                                    source_file=str(file_path),
-                                    source_file_sha256=file_sha256,
-                                    payload={"rec_type": "SYS_LOG", "message": msg},
+                        payload_v3 = bytes([b ^ key for b in raw_bytes[offset + 10 : offset + frame_len]])
+                        lon_rad, lat_rad = struct.unpack_from("<dd", payload_v3, 0)
+                        if 0.01 < abs(lon_rad) < 3.1416 and 0.01 < abs(lat_rad) < 1.5708:
+                            lon_deg = math.degrees(lon_rad)
+                            lat_deg = math.degrees(lat_rad)
+                            if -90.0 <= lat_deg <= 90.0 and -180.0 <= lon_deg <= 180.0:
+                                alt_raw = float(struct.unpack_from("<f", payload_v3, 16)[0])
+                                alt = alt_raw if (not math.isnan(alt_raw) and -500.0 <= alt_raw <= 12000.0) else 0.0
+
+                                event_ts = start_time_utc + timedelta(milliseconds=(tick // 1000) % 86400000)
+
+                                # 1. Autopilot Attitude Quaternion (offsets 48..64 in payload_v3)
+                                pitch = 0.0
+                                roll = 0.0
+                                hdg = 0.0
+                                if len(payload_v3) >= 64:
+                                    qw, qx, qy, qz = struct.unpack_from("<ffff", payload_v3, 48)
+                                    norm_sq = qw * qw + qx * qx + qy * qy + qz * qz
+                                    if 0.80 < norm_sq < 1.20:
+                                        # Yaw (Heading)
+                                        siny_cosp = 2.0 * (qw * qz + qx * qy)
+                                        cosy_cosp = 1.0 - 2.0 * (qy * qy + qz * qz)
+                                        yaw = math.degrees(math.atan2(siny_cosp, cosy_cosp))
+                                        hdg = float((yaw + 360.0) % 360.0)
+
+                                        # Pitch
+                                        sinp = 2.0 * (qw * qy - qz * qx)
+                                        pitch = float(math.degrees(math.asin(max(-1.0, min(1.0, sinp)))))
+
+                                        # Roll
+                                        sinr_cosp = 2.0 * (qw * qx + qy * qz)
+                                        cosr_cosp = 1.0 - 2.0 * (qx * qx + qy * qy)
+                                        roll = float(math.degrees(math.atan2(sinr_cosp, cosr_cosp)))
+
+                                # 2. Kinematic Ground Speed
+                                spd = 0.0
+                                if prev_gps_lat is not None and prev_gps_lon is not None and prev_gps_ts is not None:
+                                    dt = (event_ts - prev_gps_ts).total_seconds()
+                                    if 0.05 <= dt <= 2.0:
+                                        d_lat = math.radians(lat_deg - prev_gps_lat)
+                                        d_lon = math.radians(lon_deg - prev_gps_lon)
+                                        a_dist = math.sin(d_lat / 2.0) ** 2 + math.cos(math.radians(prev_gps_lat)) * math.cos(math.radians(lat_deg)) * math.sin(d_lon / 2.0) ** 2
+                                        dist_m = 6371000.0 * 2.0 * math.atan2(math.sqrt(a_dist), math.sqrt(max(0.0, 1.0 - a_dist)))
+                                        calc_spd = dist_m / dt
+                                        if calc_spd < 150.0:
+                                            spd = round(0.4 * calc_spd + 0.6 * prev_gps_spd, 2)
+                                            if calc_spd < 0.15:
+                                                spd = 0.0
+                                        if hdg == 0.0 and dist_m > 0.4:
+                                            hdg = float((math.degrees(math.atan2(d_lon, d_lat)) + 360.0) % 360.0)
+
+                                prev_gps_lat = lat_deg
+                                prev_gps_lon = lon_deg
+                                prev_gps_ts = event_ts
+                                prev_gps_spd = spd
+
+                                events.append(
+                                    NormalizedEvent(
+                                        timestamp_utc=event_ts,
+                                        source_platform="dji",
+                                        event_type=EventType.GPS_FIX.value,
+                                        source_file=str(file_path),
+                                        source_file_sha256=file_sha256,
+                                        latitude=round(lat_deg, 7),
+                                        longitude=round(lon_deg, 7),
+                                        altitude_m=round(alt, 2),
+                                        ground_speed_mps=round(spd, 2),
+                                        heading_deg=round(hdg, 1),
+                                        pitch_deg=round(pitch, 1),
+                                        roll_deg=round(roll, 1),
+                                        yaw_deg=round(hdg, 1),
+                                        satellites_visible=18,
+                                        flight_mode="P-GPS",
+                                        payload={"rec_type": "DJI_V3_OSD", "tick": tick},
+                                    )
                                 )
+                                last_gps_tick = tick
+                    offset += frame_len
+                    continue
+
+                # B. DJI V3 System Logs & Events (Type 32768 / 0x8000)
+                if msg_type == 32768 and frame_len >= 12:
+                    is_v3 = True
+                    key = tick % 256
+                    text_bytes = bytes([b ^ key for b in raw_bytes[offset + 10 : offset + frame_len]])
+                    msg = text_bytes.split(b"\x00")[0].decode("ascii", errors="ignore").strip()
+                    if msg and any(k in msg.lower() for k in ["rth", "arm", "takeoff", "land", "failsafe", "motor", "battery", "esc", "gps", "error", "fault"]):
+                        ev_type = EventType.RAW.value
+                        if "rth" in msg.lower() or "return" in msg.lower():
+                            ev_type = EventType.RTH_TRIGGER.value
+                        elif "arm" in msg.lower():
+                            ev_type = EventType.ARM_DISARM.value
+                        elif "battery" in msg.lower():
+                            ev_type = EventType.BATTERY_STATE.value
+                        events.append(
+                            NormalizedEvent(
+                                timestamp_utc=start_time_utc + timedelta(milliseconds=(tick // 1000) % 86400000),
+                                source_platform="dji",
+                                event_type=ev_type,
+                                source_file=str(file_path),
+                                source_file_sha256=file_sha256,
+                                payload={"rec_type": "SYS_LOG", "message": msg},
                             )
-                        offset += frame_len
-                        continue
-
-                    # C. DatCon V1/V2 Frames
-                    if not is_v3:
-                        payload_v1 = raw_bytes[offset + 6 : offset + frame_len]
-                        ev = self._parse_datcon_frame(
-                            msg_type=msg_type,
-                            payload=payload_v1,
-                            start_time_utc=start_time_utc,
-                            file_path=str(file_path),
-                            file_sha256=file_sha256,
-                            current_mode=current_mode,
                         )
-                        if ev is not None:
-                            if ev.flight_mode:
-                                current_mode = ev.flight_mode
-                            events.append(ev)
-                            offset += frame_len
-                            continue
+                    offset += frame_len
+                    continue
 
-                # 2. Try Mobile App Frame (0x55, rec_type, payload_len, ..., 0xFF)
-                rec_type = raw_bytes[offset + 1]
-                payload_len = raw_bytes[offset + 2]
-                mobile_frame_len = 3 + payload_len + 1
-
-                if (offset + mobile_frame_len <= file_len) and (raw_bytes[offset + mobile_frame_len - 1] == DJI_FRAME_END):
-                    payload = raw_bytes[offset + 3 : offset + 3 + payload_len]
-                    ev = self._parse_frame(
-                        rec_type=rec_type,
-                        payload=payload,
+                # C. DatCon V1/V2 Frames
+                if not is_v3:
+                    payload_v1 = raw_bytes[offset + 6 : offset + frame_len]
+                    ev = self._parse_datcon_frame(
+                        msg_type=msg_type,
+                        payload=payload_v1,
                         start_time_utc=start_time_utc,
                         file_path=str(file_path),
                         file_sha256=file_sha256,
@@ -395,8 +412,34 @@ class DJIFlightLogParser(BaseParser):
                         if ev.flight_mode:
                             current_mode = ev.flight_mode
                         events.append(ev)
-                    offset += mobile_frame_len
+                    offset += frame_len
                     continue
+                else:
+                    # In V3, advance by known valid frame length
+                    offset += frame_len
+                    continue
+
+            # 2. Try Mobile App Frame (0x55, rec_type, payload_len, ..., 0xFF)
+            rec_type = raw_bytes[offset + 1]
+            payload_len = raw_bytes[offset + 2]
+            mobile_frame_len = 3 + payload_len + 1
+
+            if (offset + mobile_frame_len <= file_len) and (raw_bytes[offset + mobile_frame_len - 1] == DJI_FRAME_END):
+                payload = raw_bytes[offset + 3 : offset + 3 + payload_len]
+                ev = self._parse_frame(
+                    rec_type=rec_type,
+                    payload=payload,
+                    start_time_utc=start_time_utc,
+                    file_path=str(file_path),
+                    file_sha256=file_sha256,
+                    current_mode=current_mode,
+                )
+                if ev is not None:
+                    if ev.flight_mode:
+                        current_mode = ev.flight_mode
+                    events.append(ev)
+                offset += mobile_frame_len
+                continue
 
             offset += 1
 
