@@ -1599,6 +1599,231 @@ canvas.telemetry-canvas {
   }
 }
 
+/* Multi-Drone Evidence Intake & Selector UI */
+.intake-mode-switcher {
+  display: flex;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 3px;
+  margin-bottom: 10px;
+}
+.intake-mode-btn {
+  flex: 1;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.intake-mode-btn.active {
+  background: #0284c7;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+.multi-drone-slot-card {
+  background: rgba(11, 15, 25, 0.95);
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 7px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.multi-drone-slot-card:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.multi-drone-slot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.multi-drone-slot-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.multi-drone-slot-remove {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0 3px;
+}
+.multi-drone-file-btn {
+  background: #0f172a;
+  border: 1px dashed #334155;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 10px;
+  color: #94a3b8;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono);
+  transition: all 0.15s ease;
+}
+.multi-drone-file-btn:hover {
+  border-color: #38bdf8;
+  color: #f3f4f6;
+}
+.multi-drone-file-btn.selected {
+  border-color: #10b981;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+/* Floating Multi-Drone Selector Strip above Map & Analytics */
+.drone-selector-strip {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(13, 21, 39, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 8px;
+  padding: 4px 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  user-select: none;
+}
+.drone-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.drone-select-pill {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #1e293b;
+  color: #94a3b8;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.drone-select-pill:hover {
+  color: #fff;
+  border-color: #38bdf8;
+}
+.drone-select-pill.active {
+  background: rgba(2, 132, 199, 0.25);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+.drone-overlay-toggle-btn {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.drone-overlay-toggle-btn:hover {
+  background: rgba(168, 85, 247, 0.3);
+  color: #fff;
+}
+.drone-overlay-toggle-btn.active {
+  background: #7e22ce;
+  border-color: #a855f7;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.45);
+}
+
+/* Floating Multi-Drone Overlay Encounter Legend Card on Map */
+.multi-drone-overlay-card {
+  position: absolute;
+  bottom: 85px;
+  right: 14px;
+  z-index: 1000;
+  background: rgba(13, 21, 39, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.65);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #f3f4f6;
+  max-width: 320px;
+  user-select: none;
+}
+.overlay-legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 4px;
+}
+.overlay-legend-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c084fc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.overlay-drone-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 10.5px;
+}
+.overlay-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.overlay-proximity-alert {
+  margin-top: 6px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
 .mode-toggle-bar {
   display: flex;
   justify-content: space-between;
@@ -2259,9 +2484,36 @@ table.forensic-table tr:hover {
       <button class="drawer-close-btn" onclick="toggleIntakeDrawer(false)" title="Close Drawer">✕</button>
     </div>
     
-    <div class="file-box" id="filePickerBtn" onclick="selectFile()">
-      <div style="font-size: 18px; margin-bottom: 2px;">📂</div>
-      <div class="file-box-text" id="filePathLabel">Click to select seized UAV flight log or media file...</div>
+    <!-- Intake Mode Switcher -->
+    <div class="intake-mode-switcher">
+      <button class="intake-mode-btn active" id="btnModeSingle" onclick="switchIntakeMode('single')">
+        <span>🛸 Single UAV</span>
+      </button>
+      <button class="intake-mode-btn" id="btnModeMulti" onclick="switchIntakeMode('multi')">
+        <span>🛸 Multi-Drone Swarm</span>
+      </button>
+    </div>
+
+    <!-- SINGLE DRONE EVIDENCE CONTAINER -->
+    <div id="singleIntakeContainer">
+      <div class="file-box" id="filePickerBtn" onclick="selectFile()">
+        <div style="font-size: 18px; margin-bottom: 2px;">📂</div>
+        <div class="file-box-text" id="filePathLabel">Click to select seized UAV flight log or media file...</div>
+      </div>
+    </div>
+
+    <!-- MULTI-DRONE SWARM EVIDENCE CONTAINER -->
+    <div id="multiIntakeContainer" style="display: none; margin-bottom: 6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+        <span style="font-size: 10px; color: var(--cyan); font-weight: 700; text-transform: uppercase;">Drone Evidence Targets</span>
+        <span style="font-size: 9.5px; color: var(--muted); font-family:var(--font-mono);" id="multiDroneSlotCount">2 Drones</span>
+      </div>
+      <div id="multiDroneSlotsList" style="display:flex; flex-direction:column; gap:6px; max-height:190px; overflow-y:auto; padding-right:2px; margin-bottom:6px;">
+        <!-- Dynamically rendered slots -->
+      </div>
+      <button class="btn-secondary" style="width:100%; font-size:10.5px; padding:5px; border-style:dashed; border-color:var(--cyan); color:var(--cyan);" onclick="addMultiDroneSlot()">
+        ➕ Add Another Drone Evidence
+      </button>
     </div>
 
     <div class="form-group">
@@ -2274,7 +2526,7 @@ table.forensic-table tr:hover {
       <input type="text" id="examinerInput" value="Inspector Cyber Division" />
     </div>
 
-    <div class="form-group">
+    <div class="form-group" id="singleDecKeyGroup">
       <label>Decryption Key / Vendor Mask (Optional)</label>
       <input type="text" id="decryptionKeyInput" placeholder="Auto-detect / Enter key or mask" />
     </div>
@@ -2292,7 +2544,10 @@ table.forensic-table tr:hover {
     <div style="border-top: 1px solid var(--panel-border); margin-top: 6px; padding-top: 8px;">
       <div class="section-title">Sample Evidence Quick-Load</div>
       <button class="btn-secondary" style="width:100%; margin-bottom: 6px;" onclick="loadSamplePx4()">
-        Load Real PX4 ULog (27.4 MB)
+        Load Single PX4 ULog (27.4 MB)
+      </button>
+      <button class="btn-secondary" style="width:100%; margin-bottom: 6px; border-color:#f59e0b; color:#fbbf24;" onclick="loadSampleMultiDrone()">
+        Load Multi-Drone Incident (2 UAVs)
       </button>
     </div>
 
@@ -2311,6 +2566,32 @@ table.forensic-table tr:hover {
       <main class="center-view">
         <div id="map"></div>
         <iframe id="view3dIframe" style="display:none; width:100%; height:100%; border:none; background:#060911;" allow="fullscreen"></iframe>
+
+        <!-- Floating Multi-Drone Tactical Selector & Overlay Bar (Top Center) -->
+        <div class="drone-selector-strip" id="droneSelectorStrip" style="display: none;">
+          <div class="drone-pill-group" id="dronePillGroup">
+            <!-- Dynamic Drone Pills (Drone 1, Drone 2...) -->
+          </div>
+          <button class="drone-overlay-toggle-btn" id="btnDroneOverlayToggle" onclick="toggleMultiDroneOverlay()" title="Toggle Combined Tactical Multi-Drone Trajectory Overlay">
+            <span>🌐 Overlay All</span>
+          </button>
+        </div>
+
+        <!-- Floating Multi-Drone Overlay Encounter Legend Card on Map -->
+        <div class="multi-drone-overlay-card" id="multiDroneOverlayCard" style="display: none;">
+          <div class="overlay-legend-header">
+            <div class="overlay-legend-title">
+              <span>🛸 Multi-Drone Swarm Overlay</span>
+            </div>
+            <span style="font-size:9.5px; color:#34d399; font-weight:700;" id="overlayDroneCount">2 DRONES ACTIVE</span>
+          </div>
+          <div id="overlayDroneRows">
+            <!-- Drone Rows with Color Indicators -->
+          </div>
+          <div class="overlay-proximity-alert" id="overlayProximityAlert" style="display: none;">
+            <!-- Proximity encounter text -->
+          </div>
+        </div>
 
         <!-- Floating Map Base Layer Switcher & Connection Monitor (Top Left) -->
         <div class="map-view-switcher" id="mapViewSwitcher">
@@ -3556,8 +3837,19 @@ function initMap() {
 
 function updateLayerSwitcherUI(layerKey, statusText) {
   document.querySelectorAll('.view-pill-btn').forEach(btn => btn.classList.remove('active'));
-  const activeBtn = document.getElementById('viewBtn' + layerKey.charAt(0).toUpperCase() + layerKey.slice(1));
-  if (activeBtn) activeBtn.classList.add('active');
+  const btnId = 'viewBtn' + layerKey.charAt(0).toUpperCase() + layerKey.slice(1);
+  const activeBtn = document.getElementById(btnId);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+  } else {
+    // Fallback: search by onclick attribute containing layerKey
+    document.querySelectorAll('.view-pill-btn').forEach(btn => {
+      const oc = btn.getAttribute('onclick') || '';
+      if (oc.includes(`'${layerKey}'`) || oc.includes(`"${layerKey}"`)) {
+        btn.classList.add('active');
+      }
+    });
+  }
 
   const badge = document.getElementById('mapConnBadge');
   const text = document.getElementById('mapConnText');
@@ -3579,24 +3871,43 @@ function updateLayerSwitcherUI(layerKey, statusText) {
 }
 
 function switchBaseMap(layerKey, isAutoFallback = false) {
-  if (!baseLayers[layerKey] || !map) return;
-  if (currentBaseLayer && map.hasLayer(currentBaseLayer)) {
-    map.removeLayer(currentBaseLayer);
-  }
-  currentBaseLayer = baseLayers[layerKey];
-  currentBaseLayer.addTo(map);
-
-  // Keep flight markers and track on top
-  if (flightPathPolyline) flightPathPolyline.bringToFront();
-  if (takeoffMarker) takeoffMarker.bringToFront();
-  if (landingMarker) landingMarker.bringToFront();
-  if (droneMarker) droneMarker.bringToFront();
-
   const status = layerKey === 'grid' 
     ? 'TACTICAL GRID'
     : (layerKey === 'offline' ? 'OFFLINE (MBTILES)' : (navigator.onLine ? 'ONLINE' : 'OFFLINE'));
 
+  // Always update the active pill highlight immediately
   updateLayerSwitcherUI(layerKey, status);
+
+  if (!baseLayers[layerKey] || !map) return;
+  try {
+    if (currentBaseLayer && map.hasLayer(currentBaseLayer)) {
+      map.removeLayer(currentBaseLayer);
+    }
+    currentBaseLayer = baseLayers[layerKey];
+    currentBaseLayer.addTo(map);
+
+    // Safely bring flight tracks and markers to front without crashing on Marker objects
+    if (flightPathPolyline && typeof flightPathPolyline.bringToFront === 'function') {
+      flightPathPolyline.bringToFront();
+    }
+    if (takeoffMarker && typeof takeoffMarker.setZIndexOffset === 'function') {
+      takeoffMarker.setZIndexOffset(1000);
+    }
+    if (landingMarker && typeof landingMarker.setZIndexOffset === 'function') {
+      landingMarker.setZIndexOffset(1000);
+    }
+    if (droneMarker && typeof droneMarker.setZIndexOffset === 'function') {
+      droneMarker.setZIndexOffset(2000);
+    }
+    if (multiDroneOverlayLayers && Array.isArray(multiDroneOverlayLayers)) {
+      multiDroneOverlayLayers.forEach(l => {
+        if (l && typeof l.bringToFront === 'function') l.bringToFront();
+        if (l && typeof l.setZIndexOffset === 'function') l.setZIndexOffset(1000);
+      });
+    }
+  } catch(e) {
+    console.error("Error switching base map layer:", e);
+  }
 }
 
 function initMapNetworkListeners() {
@@ -4002,21 +4313,215 @@ async function selectFile() {
   }
 }
 
+/* =====================================================================
+   MULTI-DRONE SWARM INTAKE & CORRELATION STATE
+   ===================================================================== */
+let currentIntakeMode = 'single'; // 'single' or 'multi'
+let multiDroneSlots = [
+  { id: 1, label: 'Primary UAV (PX4)', filePath: '', decKey: '' },
+  { id: 2, label: 'Secondary UAV (DJI)', filePath: '', decKey: '' }
+];
+let nextSlotId = 3;
+let currentMultiDroneData = null;
+let activeDroneIndex = 0;
+let isOverlayMode = false;
+let multiDroneOverlayLayers = [];
+
+const DRONE_COLORS = [
+  '#06b6d4', // Cyan
+  '#f59e0b', // Amber
+  '#a855f7', // Purple
+  '#ec4899', // Pink
+  '#10b981', // Emerald
+  '#3b82f6', // Blue
+];
+
+function switchIntakeMode(mode) {
+  currentIntakeMode = mode;
+  const btnSingle = document.getElementById('btnModeSingle');
+  const btnMulti = document.getElementById('btnModeMulti');
+  const singleCont = document.getElementById('singleIntakeContainer');
+  const multiCont = document.getElementById('multiIntakeContainer');
+  const singleDec = document.getElementById('singleDecKeyGroup');
+
+  if (mode === 'multi') {
+    if (btnMulti) btnMulti.classList.add('active');
+    if (btnSingle) btnSingle.classList.remove('active');
+    if (singleCont) singleCont.style.display = 'none';
+    if (multiCont) multiCont.style.display = 'block';
+    if (singleDec) singleDec.style.display = 'none';
+    renderMultiDroneSlots();
+  } else {
+    if (btnSingle) btnSingle.classList.add('active');
+    if (btnMulti) btnMulti.classList.remove('active');
+    if (singleCont) singleCont.style.display = 'block';
+    if (multiCont) multiCont.style.display = 'none';
+    if (singleDec) singleDec.style.display = 'block';
+  }
+}
+
+function renderMultiDroneSlots() {
+  const list = document.getElementById('multiDroneSlotsList');
+  if (!list) return;
+  const countElem = document.getElementById('multiDroneSlotCount');
+  if (countElem) countElem.innerText = `${multiDroneSlots.length} Drones`;
+
+  list.innerHTML = multiDroneSlots.map((slot, idx) => {
+    const hasFile = !!slot.filePath;
+    const fileLabel = hasFile ? slot.filePath.split(/[\\/]/).pop() : "Click to select flight log...";
+    const canRemove = multiDroneSlots.length > 2;
+    const color = DRONE_COLORS[idx % DRONE_COLORS.length];
+    return `
+      <div class="multi-drone-slot-card" id="slotCard_${slot.id}">
+        <div class="multi-drone-slot-header">
+          <div class="multi-drone-slot-tag" style="color:${color};">
+            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${color};"></span>
+            <span>Drone #${idx + 1} Target</span>
+          </div>
+          ${canRemove ? `<button class="multi-drone-slot-remove" onclick="removeMultiDroneSlot(${slot.id})" title="Remove Drone Slot">✕</button>` : ''}
+        </div>
+        <div style="display:flex; gap:4px;">
+          <input type="text" class="input-sm" style="flex:1; font-size:10px; padding:3px 6px; background:#080c14; border:1px solid #1e293b; color:#38bdf8; border-radius:4px; font-family:var(--font-mono);" 
+                 value="${escapeHtml(slot.label)}" oninput="updateSlotLabel(${slot.id}, this.value)" placeholder="Call-sign / Label" />
+        </div>
+        <div class="multi-drone-file-btn ${hasFile ? 'selected' : ''}" onclick="selectSlotFile(${slot.id})" title="${escapeHtml(slot.filePath || '')}">
+          ${hasFile ? '📁 ' : '📂 '}${escapeHtml(fileLabel)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function addMultiDroneSlot() {
+  if (multiDroneSlots.length >= 6) {
+    showToast("Maximum 6 concurrent drones supported in swarm view.");
+    return;
+  }
+  multiDroneSlots.push({
+    id: nextSlotId++,
+    label: `Drone #${multiDroneSlots.length + 1}`,
+    filePath: '',
+    decKey: ''
+  });
+  renderMultiDroneSlots();
+}
+
+function removeMultiDroneSlot(id) {
+  if (multiDroneSlots.length <= 2) return;
+  multiDroneSlots = multiDroneSlots.filter(s => s.id !== id);
+  renderMultiDroneSlots();
+}
+
+function updateSlotLabel(id, val) {
+  const s = multiDroneSlots.find(slot => slot.id === id);
+  if (s) s.label = val;
+}
+
+async function selectSlotFile(id) {
+  let path = null;
+  try {
+    if (window.pywebview && window.pywebview.api) {
+      path = await window.pywebview.api.select_file();
+    }
+  } catch(e) {
+    console.error(e);
+  }
+  if (!path) {
+    path = prompt("Enter path to seized drone flight log:", "sample_evidence/secondary_dji_swarm.csv");
+  }
+  if (path) {
+    const s = multiDroneSlots.find(slot => slot.id === id);
+    if (s) {
+      s.filePath = path;
+      renderMultiDroneSlots();
+    }
+  }
+}
+
 function loadSamplePx4() {
+  switchIntakeMode('single');
   selectedFilePath = "sample_evidence/real_px4_flight.ulg";
   const lbl = document.getElementById('filePathLabel');
-  lbl.innerText = "sample_evidence/real_px4_flight.ulg";
-  lbl.classList.add('selected');
+  if (lbl) {
+    lbl.innerText = "sample_evidence/real_px4_flight.ulg";
+    lbl.classList.add('selected');
+  }
+  toggleIntakeDrawer(false);
+  startAnalysis();
+}
+
+function loadSampleMultiDrone() {
+  switchIntakeMode('multi');
+  multiDroneSlots = [
+    { id: 1, label: 'Primary UAV (PX4 ULog)', filePath: 'sample_evidence/real_px4_flight.ulg', decKey: '' },
+    { id: 2, label: 'Escort UAV (DJI CSV)', filePath: 'sample_evidence/secondary_dji_swarm.csv', decKey: '' }
+  ];
+  renderMultiDroneSlots();
   toggleIntakeDrawer(false);
   startAnalysis();
 }
 
 async function startAnalysis() {
+  const btn = document.getElementById('analyzeBtn');
+  const caseId = (document.getElementById('caseIdInput') && document.getElementById('caseIdInput').value) || "CASE-2026-MEITY-001";
+  const examiner = (document.getElementById('examinerInput') && document.getElementById('examinerInput').value) || "Inspector Cyber Division";
+
+  if (currentIntakeMode === 'multi') {
+    const validDrones = multiDroneSlots.filter(s => s.filePath && s.filePath.trim().length > 0);
+    if (validDrones.length < 2) {
+      alert("Please select at least 2 drone evidence flight logs for multi-drone swarm analysis.");
+      return;
+    }
+
+    btn.innerText = "⏳ INGESTING SWARM LOGS...";
+    btn.disabled = true;
+    toggleIntakeDrawer(false);
+    showToast("⏳ Correlating multi-drone flight envelopes & proximity...");
+
+    try {
+      const payloadDrones = validDrones.map((d, i) => ({
+        file_path: d.filePath,
+        label: d.label || `Drone #${i + 1}`,
+        drone_id: `DRONE-${String(i + 1).padStart(2, '0')}`,
+        decryption_key: d.decKey || null,
+      }));
+
+      let res = null;
+      if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.analyze_multi_evidence === 'function') {
+        res = await window.pywebview.api.analyze_multi_evidence(payloadDrones, caseId, examiner);
+      } else {
+        res = await callApi('analyze_multi_evidence', { drones: payloadDrones, case_id: caseId, examiner: examiner });
+      }
+
+      if (!res || res.status === "error") {
+        alert("Multi-Drone parsing error: " + (res ? res.message : "No response from API"));
+        btn.innerText = "▶ START FORENSIC ANALYSIS";
+        btn.disabled = false;
+        return;
+      }
+
+      renderMultiDroneData(res);
+      btn.innerText = "✓ SWARM INGESTED";
+      showToast(`✓ Multi-Drone analysis complete for ${caseId} (${res.drones_count} UAVs)`);
+      setTimeout(() => {
+        btn.innerText = "▶ START FORENSIC ANALYSIS";
+        btn.disabled = false;
+      }, 2000);
+
+    } catch(err) {
+      console.error(err);
+      alert("Analysis error: " + err.message);
+      btn.innerText = "▶ START FORENSIC ANALYSIS";
+      btn.disabled = false;
+    }
+    return;
+  }
+
+  // SINGLE DRONE MODE
   if (!selectedFilePath) {
     alert("Please select a drone evidence file first.");
     return;
   }
-  const btn = document.getElementById('analyzeBtn');
   btn.innerText = "⏳ INGESTING & CORRELATING...";
   btn.disabled = true;
 
@@ -4024,9 +4529,13 @@ async function startAnalysis() {
   toggleIntakeDrawer(false);
   showToast("⏳ Starting multi-parser extraction & kinematic reconstruction...");
 
+  // Hide Multi-Drone selector when single drone is analyzed
+  currentMultiDroneData = null;
+  clearMultiDroneOverlayMap();
+  const strip = document.getElementById('droneSelectorStrip');
+  if (strip) strip.style.display = 'none';
+
   try {
-    const caseId = document.getElementById('caseIdInput').value;
-    const examiner = document.getElementById('examinerInput').value;
     const decKey = document.getElementById('decryptionKeyInput').value;
 
     let res = null;
@@ -4055,6 +4564,165 @@ async function startAnalysis() {
     btn.innerText = "▶ START FORENSIC ANALYSIS";
     btn.disabled = false;
   }
+}
+
+/* =====================================================================
+   MULTI-DRONE DEDICATED SELECTOR & COMBINED OVERLAY RENDERING
+   ===================================================================== */
+
+function renderMultiDroneData(res) {
+  currentMultiDroneData = res;
+  activeDroneIndex = 0;
+  isOverlayMode = false;
+  clearMultiDroneOverlayMap();
+
+  const strip = document.getElementById('droneSelectorStrip');
+  if (strip) strip.style.display = 'flex';
+
+  updateDroneSelectorUI();
+
+  if (res.drones && res.drones.length > 0) {
+    renderFlightData(res.drones[0]);
+  }
+}
+
+function updateDroneSelectorUI() {
+  const pillGroup = document.getElementById('dronePillGroup');
+  const overlayBtn = document.getElementById('btnDroneOverlayToggle');
+  if (!pillGroup || !currentMultiDroneData) return;
+
+  if (overlayBtn) {
+    if (isOverlayMode) overlayBtn.classList.add('active');
+    else overlayBtn.classList.remove('active');
+  }
+
+  pillGroup.innerHTML = currentMultiDroneData.drones.map((d, idx) => {
+    const isActive = !isOverlayMode && activeDroneIndex === idx;
+    const color = DRONE_COLORS[idx % DRONE_COLORS.length];
+    return `
+      <button class="drone-select-pill ${isActive ? 'active' : ''}" onclick="selectActiveDrone(${idx})" title="View Dedicated Diagnostics for ${escapeHtml(d.label)}">
+        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${color};"></span>
+        <span>${escapeHtml(d.label || `Drone #${idx+1}`)}</span>
+      </button>
+    `;
+  }).join('');
+}
+
+function selectActiveDrone(idx) {
+  if (!currentMultiDroneData || !currentMultiDroneData.drones[idx]) return;
+  isOverlayMode = false;
+  activeDroneIndex = idx;
+  clearMultiDroneOverlayMap();
+  updateDroneSelectorUI();
+  renderFlightData(currentMultiDroneData.drones[idx]);
+  showToast(`Switched to dedicated view: ${currentMultiDroneData.drones[idx].label}`);
+}
+
+function toggleMultiDroneOverlay() {
+  if (!currentMultiDroneData) return;
+  isOverlayMode = !isOverlayMode;
+  updateDroneSelectorUI();
+
+  if (isOverlayMode) {
+    renderMultiDroneOverlayMap();
+    showToast("🌐 Overlaying all drone trajectories on combined tactical map");
+  } else {
+    clearMultiDroneOverlayMap();
+    renderFlightData(currentMultiDroneData.drones[activeDroneIndex]);
+    showToast(`Exited overlay mode. Viewing ${currentMultiDroneData.drones[activeDroneIndex].label}`);
+  }
+}
+
+function renderMultiDroneOverlayMap() {
+  if (!map || !currentMultiDroneData) return;
+  clearMultiDroneOverlayMap();
+  switchTab('tabMap');
+
+  const allBounds = [];
+  const overlayCard = document.getElementById('multiDroneOverlayCard');
+  const overlayRows = document.getElementById('overlayDroneRows');
+  const proxAlert = document.getElementById('overlayProximityAlert');
+
+  let rowsHtml = "";
+
+  currentMultiDroneData.drones.forEach((d, idx) => {
+    const color = DRONE_COLORS[idx % DRONE_COLORS.length];
+    const pts = d.coords || [];
+    if (pts.length === 0) return;
+
+    const latlngs = pts.map(p => [p.lat, p.lon]);
+    const poly = L.polyline(latlngs, {
+      color: color,
+      weight: 4,
+      opacity: 0.9,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+    multiDroneOverlayLayers.push(poly);
+    allBounds.push(poly.getBounds());
+
+    const firstPt = pts[0];
+    const lastPt = pts[pts.length - 1];
+
+    const startIcon = L.divIcon({
+      html: `<div style="background:${color}; width:22px; height:22px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 10px ${color}; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff;">🛫</div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+    const startMarker = L.marker([firstPt.lat, firstPt.lon], { icon: startIcon }).addTo(map);
+    startMarker.bindPopup(`<b>${escapeHtml(d.label)} - TAKEOFF</b><br>${formatCoords(firstPt.lat, firstPt.lon)}`);
+    multiDroneOverlayLayers.push(startMarker);
+
+    const endIcon = L.divIcon({
+      html: `<div style="background:#ef4444; width:22px; height:22px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 10px #ef4444; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff;">🛬</div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+    const endMarker = L.marker([lastPt.lat, lastPt.lon], { icon: endIcon }).addTo(map);
+    endMarker.bindPopup(`<b>${escapeHtml(d.label)} - TOUCHDOWN</b><br>${formatCoords(lastPt.lat, lastPt.lon)}`);
+    multiDroneOverlayLayers.push(endMarker);
+
+    rowsHtml += `
+      <div class="overlay-drone-row">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="overlay-color-dot" style="background:${color};"></span>
+          <span style="font-weight:700;">${escapeHtml(d.label)}</span>
+        </div>
+        <span style="color:var(--muted);">${pts.length} pts</span>
+      </div>
+    `;
+  });
+
+  if (overlayRows) overlayRows.innerHTML = rowsHtml;
+  if (overlayCard) {
+    const countEl = document.getElementById('overlayDroneCount');
+    if (countEl) countEl.innerText = `${currentMultiDroneData.drones.length} DRONES OVERLAY`;
+    if (currentMultiDroneData.closest_encounter && proxAlert) {
+      const enc = currentMultiDroneData.closest_encounter;
+      proxAlert.style.display = 'block';
+      proxAlert.innerHTML = `⚠️ <b>Closest Approach:</b> ${enc.dist_m} m separation between ${escapeHtml(enc.drone_a)} &amp; ${escapeHtml(enc.drone_b)} at T+${escapeHtml(String(enc.t_sec))}s`;
+    } else if (proxAlert) {
+      proxAlert.style.display = 'none';
+    }
+    overlayCard.style.display = 'block';
+  }
+
+  if (allBounds.length > 0) {
+    let masterBounds = allBounds[0];
+    for (let i = 1; i < allBounds.length; i++) {
+      masterBounds.extend(allBounds[i]);
+    }
+    map.fitBounds(masterBounds, { padding: [50, 50] });
+  }
+}
+
+function clearMultiDroneOverlayMap() {
+  if (multiDroneOverlayLayers && multiDroneOverlayLayers.length > 0 && map) {
+    multiDroneOverlayLayers.forEach(l => map.removeLayer(l));
+  }
+  multiDroneOverlayLayers = [];
+  const card = document.getElementById('multiDroneOverlayCard');
+  if (card) card.style.display = 'none';
 }
 
 function getAltitudeColor(norm) {
@@ -5903,6 +6571,13 @@ function startNewCase() {
   document.getElementById('milestoneCount').innerText = "0";
   document.getElementById('segMilestonesView').innerHTML = '<div class="empty-feed-text">Ready for new evidence intake. Select a log file to begin.</div>';
   document.getElementById('segThreatsView').innerHTML = '<div class="empty-feed-text">No active case analysis.</div>';
+
+  // Reset Multi-Drone Swarm State
+  currentMultiDroneData = null;
+  clearMultiDroneOverlayMap();
+  const strip = document.getElementById('droneSelectorStrip');
+  if (strip) strip.style.display = 'none';
+  switchIntakeMode('single');
 
   toggleIntakeDrawer(true);
   showToast(`Initialized New Case: ${newCaseId}`);

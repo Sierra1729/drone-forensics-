@@ -78,3 +78,36 @@ def test_gui_api_analyze_px4_extended_telemetry():
         assert "logged_messages" in ext
         assert "parameters_table" in ext
 
+
+def test_gui_api_analyze_multi_evidence():
+    api = DesktopForensicAPI()
+    px4_file = Path("sample_evidence/real_px4_flight.ulg")
+    dji_csv_file = Path("sample_evidence/secondary_dji_swarm.csv")
+    if px4_file.exists() and dji_csv_file.exists():
+        drones_payload = [
+            {"file_path": str(px4_file), "label": "Primary Target (PX4)", "drone_id": "DRONE-01"},
+            {"file_path": str(dji_csv_file), "label": "Escort UAV (DJI)", "drone_id": "DRONE-02"}
+        ]
+        res = api.analyze_multi_evidence(drones_payload, case_id="CASE-MULTI-TEST-001", examiner="Test Examiner")
+        assert res["status"] == "success"
+        assert res["is_multi_drone"] is True
+        assert res["drones_count"] == 2
+        assert len(res["drones"]) == 2
+
+        d1 = res["drones"][0]
+        d2 = res["drones"][1]
+        assert d1["drone_id"] == "DRONE-01"
+        assert d2["drone_id"] == "DRONE-02"
+        assert len(d1["coords"]) > 0
+        assert len(d2["coords"]) > 0
+        assert d1["sha256"] is not None
+        assert d2["sha256"] is not None
+
+        # Verify multi-drone spatial correlation & closest approach calculation
+        assert "min_separation_m" in res
+        assert res["min_separation_m"] is not None
+        assert res["min_separation_m"] > 0
+        assert "proximity_events" in res
+        assert Path(res["pdf_path"]).exists()
+
+
