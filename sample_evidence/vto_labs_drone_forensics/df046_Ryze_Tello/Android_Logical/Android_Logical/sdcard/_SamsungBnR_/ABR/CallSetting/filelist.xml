@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<filelist>
+  <name>Manifest.xml</name>
+  <name>encrypt_reject_message.csv</name>
+  <name>encrypt_quickreply_message.csv</name>
+  <name>encrypt_preference.xml</name>
+</filelist>

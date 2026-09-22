@@ -1,0 +1,3 @@
+When attempting to export flight logs and data from the controller an error message was displayed.
+May have to retry at a later time.
+6/28/2018 EC

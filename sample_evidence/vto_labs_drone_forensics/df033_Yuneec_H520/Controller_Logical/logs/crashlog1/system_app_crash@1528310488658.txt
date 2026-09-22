@@ -1,0 +1,21 @@
+Process: 
+Package: com.google.android.gms v10556070 (10.5.56 (070-152346915))
+Build: intel/anzhen4_mrd7_w_64/anzhen4_mrd7_w:4.4.4/KTU84P/eng..20171218.055524:userdebug/dev-keys
+
+java.lang.RuntimeException: NearbyDirect shut down is blocked
+	at aqek.a(:com.google.android.gms:227)
+	at aqek.c(:com.google.android.gms:204)
+	at apzf.a(:com.google.android.gms:222)
+	at ulp.d(:com.google.android.gms:328)
+	at urv.onServiceConnected(:com.google.android.gms:3096)
+	at android.app.LoadedApk$ServiceDispatcher.doConnected(LoadedApk.java:1101)
+	at android.app.LoadedApk$ServiceDispatcher$RunConnection.run(LoadedApk.java:1118)
+	at android.os.Handler.handleCallback(Handler.java:733)
+	at android.os.Handler.dispatchMessage(Handler.java:95)
+	at android.os.Looper.loop(Looper.java:149)
+	at android.app.ActivityThread.main(ActivityThread.java:5045)
+	at java.lang.reflect.Method.invokeNative(Native Method)
+	at java.lang.reflect.Method.invoke(Method.java:515)
+	at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:794)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:610)
+	at dalvik.system.NativeStart.main(Native Method)

@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Applications xmlns="http://www.samsungmobile.com/applicationlist.xsd">
+  <Applicaion AppId="com.ryzerobotics.tello.apk" Name="TELLO">
+    <Type>download</Type>
+    <VersionName>1.2.10.4</VersionName>
+    <VersionCode>12104</VersionCode>
+    <PackageName>com.ryzerobotics.tello</PackageName>
+    <Path>Internal:\_SamsungBnR_\Abackup\com.ryzerobotics.tello.apk</Path>
+    <DataPath>Internal:\_SamsungBnR_\Abackup\com.ryzerobotics.tello.apk</DataPath>
+    <Size>28956972</Size>
+    <AppDataPath>Internal:\_SamsungBnR_\Abackup\com.ryzerobotics.tello.data</AppDataPath>
+    <DataSize>892928</DataSize>
+    <AppCodeSize>42057728</AppCodeSize>
+    <AppIconPath>Internal:\_SamsungBnR_\Abackup\com.ryzerobotics.tello.icon</AppIconPath>
+    <ReceiveBootComplete>false</ReceiveBootComplete>
+    <LastTimeUsed>1529428683289</LastTimeUsed>
+    <isAllowBackup>false</isAllowBackup>
+  </Applicaion>
+</Applications>

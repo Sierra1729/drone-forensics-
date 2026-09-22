@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<SamsungBnR_Manifest>
+  <Creation_Info>
+    <xml_VER>1.0</xml_VER>
+    <date>2018-06-19 11:31:11</date>
+    <size>1248</size>
+  </Creation_Info>
+  <Device_Info>
+    <name>SM-J727P</name>
+    <platform_VER>7.0</platform_VER>
+    <build_VER>J727PVPS3ARA1</build_VER>
+  </Device_Info>
+</SamsungBnR_Manifest>

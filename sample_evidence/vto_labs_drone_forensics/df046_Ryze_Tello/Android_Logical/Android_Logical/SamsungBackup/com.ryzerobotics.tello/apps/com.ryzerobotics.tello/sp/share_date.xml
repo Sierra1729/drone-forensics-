@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <float name="attitude_angle_range" value="25.0" />
+    <string name="SnCodeTello">d62a492e997a7c88ae8845595ef674e3</string>
+    <int name="low_battery_worning" value="20" />
+    <int name="spRockerMode" value="1" />
+    <string name="fly_alttitude">10&amp;&amp;0</string>
+    <int name="fly_status" value="1" />
+    <string name="firmwareVersion">01.03.33.01</string>
+    <boolean name="is_bounce_mode" value="false" />
+    <string name="CountryCodeTello">US</string>
+    <int name="DisclaimerShowState" value="1" />
+</map>
