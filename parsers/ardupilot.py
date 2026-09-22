@@ -179,7 +179,7 @@ class ArduPilotDataFlashParser(BaseParser):
                                 new_len = fields.get("Length")
                                 new_name = fields.get("Name")
                                 new_fmt = fields.get("Format")
-                                new_lbl = fields.get("Labels")
+                                new_lbl = fields.get("Labels") or fields.get("Columns") or ""
                                 if isinstance(new_type, int) and isinstance(new_len, int):
                                     formats[new_type] = FormatDefinition(
                                         msg_type=new_type,
@@ -188,11 +188,14 @@ class ArduPilotDataFlashParser(BaseParser):
                                         fmt_str=str(new_fmt),
                                         labels_str=str(new_lbl),
                                     )
+
                             elif fmt_def.name == "GPS" and boot_utc_ref is None:
                                 # Try extracting GPS time
-                                gwk = fields.get("GWk")
-                                gms = fields.get("GMS")
+                                gwk = fields.get("GWk") or fields.get("Week")
+                                gms = fields.get("GMS") or fields.get("TimeMS")
                                 time_us = fields.get("TimeUS")
+                                if time_us is None and "TimeMS" in fields:
+                                    time_us = fields["TimeMS"] * 1000
                                 if gwk is not None and gms is not None and time_us is not None and gwk > 1000:
                                     gps_time = GPS_EPOCH + timedelta(weeks=gwk, milliseconds=gms)
                                     utc_time = gps_time - timedelta(seconds=GPS_LEAP_SECONDS)
@@ -257,6 +260,9 @@ class ArduPilotDataFlashParser(BaseParser):
         """Convert an unpacked DataFlash message to a NormalizedEvent."""
         # Determine timestamp
         time_us = fields.get("TimeUS")
+        if time_us is None and "TimeMS" in fields:
+            time_us = fields["TimeMS"] * 1000
+
         if time_us is not None and isinstance(time_us, (int, float)):
             event_ts = boot_utc_ref + timedelta(microseconds=time_us)
         else:
@@ -276,13 +282,20 @@ class ArduPilotDataFlashParser(BaseParser):
         }
 
         if fmt_name == "GPS":
-            lat = fields.get("Lat")
-            lng = fields.get("Lng")
-            alt = fields.get("Alt")
-            spd = fields.get("Spd")
-            gcrs = fields.get("GCrs")
-            nsats = fields.get("NSats")
-            hdop = fields.get("HDop")
+            lat = fields.get("Lat") or fields.get("Latitude")
+            lng = fields.get("Lng") or fields.get("Lon") or fields.get("Longitude")
+            alt = fields.get("Alt") or fields.get("Altitude")
+            spd = fields.get("Spd") or fields.get("Speed") or fields.get("GSpd")
+            gcrs = fields.get("GCrs") or fields.get("Yaw") or fields.get("Heading")
+            nsats = fields.get("NSats") or fields.get("NumSats")
+            hdop = fields.get("HDop") or fields.get("EPH")
+
+            # Filter Null-Island (0,0 pre-fix) coordinates
+            if lat is not None and lng is not None:
+                if abs(float(lat)) < 0.0001 and abs(float(lng)) < 0.0001:
+                    lat = None
+                    lng = None
+
             return NormalizedEvent(
                 event_type=EventType.GPS_FIX.value,
                 latitude=float(lat) if lat is not None else None,
@@ -307,15 +320,27 @@ class ArduPilotDataFlashParser(BaseParser):
                 **base_kwargs,
             )
 
-        elif fmt_name == "BAT":
-            volt = fields.get("Volt")
+        elif fmt_name in ("BAT", "CURR", "POWR"):
+            volt = fields.get("Volt") or fields.get("Vcc")
             curr = fields.get("Curr")
             rem_pct = fields.get("RemPct")
+            if fmt_name == "CURR" and volt is not None and volt > 100.0:
+                volt = volt / 100.0
+            if fmt_name == "CURR" and curr is not None and curr > 100.0:
+                curr = curr / 100.0
             return NormalizedEvent(
                 event_type=EventType.BATTERY_STATE.value,
                 battery_voltage_v=float(volt) if volt is not None else None,
                 battery_current_a=float(curr) if curr is not None else None,
                 battery_remaining_pct=float(rem_pct) if rem_pct is not None else None,
+                **base_kwargs,
+            )
+
+        elif fmt_name == "BARO":
+            baro_alt = fields.get("Alt")
+            return NormalizedEvent(
+                event_type=EventType.BAROMETER.value,
+                altitude_m=float(baro_alt) if baro_alt is not None else None,
                 **base_kwargs,
             )
 
@@ -341,6 +366,7 @@ class ArduPilotDataFlashParser(BaseParser):
                 event_type=event_type,
                 **base_kwargs,
             )
+
 
         elif fmt_name == "PARM":
             return NormalizedEvent(
