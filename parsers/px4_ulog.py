@@ -15,6 +15,7 @@ Forensic Capabilities:
 from __future__ import annotations
 
 import math
+import struct
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Optional
@@ -63,10 +64,17 @@ class PX4ULogParser(BaseParser):
         file_path: Path,
         file_sha256: str,
     ) -> list[NormalizedEvent]:
+        # Fast integrity check for stream truncation or abrupt crash cutoff
+        carve_info = self._raw_carve_stream(Path(file_path))
+        if carve_info and (carve_info.get("corruption_offset") is not None or len(carve_info.get("carved_datasets", {})) == 0):
+            return self._carve_corrupted_ulog(file_path, file_sha256)
+
         try:
             ulog = pyulog.ULog(str(file_path))
         except Exception:
-            return []
+            # Fallback to byte-by-byte resilient binary stream carving
+            return self._carve_corrupted_ulog(file_path, file_sha256)
+
 
         events: list[NormalizedEvent] = []
 
@@ -678,7 +686,7 @@ class PX4ULogParser(BaseParser):
         try:
             ulog = pyulog.ULog(str(file_path))
         except Exception:
-            return {}
+            return self._carve_extended_telemetry(file_path)
 
         datasets = {d.name: d.data for d in ulog.data_list}
         sys_info = ulog.msg_info_dict
@@ -890,5 +898,408 @@ class PX4ULogParser(BaseParser):
             "sensor_health_chart": health_data,
             "logged_messages": messages,
             "parameters_table": params[:300],  # Return top critical parameters
+        }
+
+    # ========================================================================
+    # Resilient Binary Stream Carving Engine (for Corrupted / Crash Logs)
+    # ========================================================================
+
+    def _carve_corrupted_ulog(
+        self,
+        file_path: Path,
+        file_sha256: str,
+    ) -> list[NormalizedEvent]:
+        """Carve and recover valid telemetry from a truncated or corrupted ULog binary stream."""
+        path = Path(file_path)
+        if not path.is_file():
+            return []
+
+        file_size = path.stat().st_size
+        events: list[NormalizedEvent] = []
+
+        carved = self._raw_carve_stream(path)
+        if not carved:
+            self.is_corrupted = True
+            self.corruption_offset = 0
+            self.salvaged_records_count = 0
+            events.append(
+                NormalizedEvent(
+                    timestamp_utc=datetime.now(timezone.utc),
+                    source_platform="px4",
+                    event_type=EventType.FORENSIC_ANOMALY.value,
+                    source_file=str(file_path),
+                    source_file_sha256=file_sha256,
+                    payload={
+                        "anomaly_type": "DATA_TRUNCATION_OR_CORRUPTION",
+                        "anomaly_indicator": "DATA_TRUNCATION_OR_CORRUPTION",
+                        "corruption_offset": 0,
+                        "corruption_offset_bytes": 0,
+                        "salvaged_records": 0,
+                        "salvaged_records_count": 0,
+                        "total_file_bytes": file_size,
+                        "forensic_assessment": "Severely corrupted or zero-length payload log file.",
+                    },
+                )
+            )
+            return events
+
+        info_dict = carved["info_dict"]
+        params_dict = carved["params_dict"]
+        logged_msgs = carved["logged_msgs"]
+        carved_datasets = carved["carved_datasets"]
+        corruption_offset = carved.get("corruption_offset")
+
+        self.is_corrupted = True
+        self.corruption_offset = corruption_offset if corruption_offset is not None else file_size
+
+
+        # 1. Establish Absolute UTC Reference Time
+        boot_utc_ref: Optional[datetime] = None
+        gps_rows = carved_datasets.get("vehicle_gps_position") or carved_datasets.get("vehicle_gps_position_0") or []
+        for r in gps_rows:
+            t_utc = r.get("time_utc_usec", 0)
+            t_boot = r.get("timestamp", 0)
+            if t_utc and t_utc > 1_500_000_000_000_000:
+                gps_epoch_utc = datetime.fromtimestamp(t_utc / 1e6, tz=timezone.utc)
+                boot_utc_ref = gps_epoch_utc - timedelta(microseconds=int(t_boot))
+                break
+
+        if boot_utc_ref is None:
+            mtime = path.stat().st_mtime
+            boot_utc_ref = datetime.fromtimestamp(mtime, tz=timezone.utc)
+
+        # Initial Hardware Identity Event
+        hw_model = str(info_dict.get("ver_hw", b"PX4 Flight Controller (Carved Recovery)")).strip("b'\"")
+        sw_ver = str(info_dict.get("ver_sw", b"PX4 Autopilot")).strip("b'\"")
+        git_hash = str(info_dict.get("ver_sw_release", info_dict.get("git_hash", b""))).strip("b'\"")
+
+        meta_event = NormalizedEvent(
+            timestamp_utc=boot_utc_ref,
+            source_platform="px4",
+            event_type=EventType.CONFIG_PARAM.value,
+            source_file=str(file_path),
+            source_file_sha256=file_sha256,
+            payload={
+                "aircraft_model": hw_model,
+                "firmware_version": sw_ver,
+                "git_commit": git_hash,
+                "total_parameters": len(params_dict),
+                "carved_recovery": True,
+            },
+        )
+        events.append(meta_event)
+
+        # 2. Carve Position Telemetry (GPS Fixes)
+        last_event_ts = boot_utc_ref
+        pos_candidates = [
+            "vehicle_global_position",
+            "vehicle_global_position_0",
+            "vehicle_gps_position",
+            "vehicle_gps_position_0",
+            "sensor_gps",
+        ]
+        chosen_pos = None
+        for c in pos_candidates:
+            if c in carved_datasets and len(carved_datasets[c]) > 0:
+                chosen_pos = carved_datasets[c]
+                break
+
+        if chosen_pos:
+            for r in chosen_pos:
+                t_us = int(r.get("timestamp", 0))
+                ev_ts = boot_utc_ref + timedelta(microseconds=t_us)
+                last_event_ts = ev_ts
+
+                lat_val = r.get("lat") or r.get("latitude_deg")
+                lon_val = r.get("lon") or r.get("longitude_deg")
+                alt_val = r.get("alt") or r.get("altitude_msl_m")
+
+                if lat_val is not None and abs(lat_val) > 1000.0:
+                    lat_val = float(lat_val) / 1e7
+                if lon_val is not None and abs(lon_val) > 1000.0:
+                    lon_val = float(lon_val) / 1e7
+                if alt_val is not None and float(alt_val) > 100000.0:
+                    alt_val = float(alt_val) / 1e3
+
+                if lat_val is None or lon_val is None:
+                    continue
+                if abs(lat_val) < 0.0001 and abs(lon_val) < 0.0001:
+                    continue
+                if abs(lat_val) > 90.0 or abs(lon_val) > 180.0:
+                    continue
+
+                spd_val = float(r.get("vel_m_s", 0.0)) if r.get("vel_m_s") is not None else 0.0
+                sat_val = int(r.get("satellites_used", 0)) if r.get("satellites_used") is not None else None
+                hdop_val = float(r.get("hdop", r.get("eph", 1.0))) if r.get("hdop") or r.get("eph") else None
+
+                events.append(
+                    NormalizedEvent(
+                        timestamp_utc=ev_ts,
+                        source_platform="px4",
+                        event_type=EventType.GPS_FIX.value,
+                        source_file=str(file_path),
+                        source_file_sha256=file_sha256,
+                        latitude=lat_val,
+                        longitude=lon_val,
+                        altitude_m=alt_val,
+                        ground_speed_mps=spd_val,
+                        satellites_visible=sat_val,
+                        hdop=hdop_val,
+                        payload={"time_us": t_us, "carved_recovery": True},
+                    )
+                )
+
+        # 3. Carve Logged Diagnostic Text Messages
+        for m in logged_msgs:
+            t_us = int(m.get("timestamp", 0))
+            ev_ts = boot_utc_ref + timedelta(microseconds=t_us)
+            txt = m.get("message", "")
+            events.append(
+                NormalizedEvent(
+                    timestamp_utc=ev_ts,
+                    source_platform="px4",
+                    event_type=EventType.RAW.value,
+                    source_file=str(file_path),
+                    source_file_sha256=file_sha256,
+                    payload={
+                        "message": txt,
+                        "log_level": m.get("log_level", 6),
+                        "time_us": t_us,
+                    },
+                )
+            )
+
+        # 4. Mandatory Forensic Anomaly Event: DATA_TRUNCATION_OR_CORRUPTION
+        corrupt_bytes_lost = max(0, file_size - (self.corruption_offset or file_size))
+        salvaged_cnt = len(events)
+        self.salvaged_records_count = salvaged_cnt
+        events.append(
+            NormalizedEvent(
+                timestamp_utc=last_event_ts,
+                source_platform="px4",
+                event_type=EventType.FORENSIC_ANOMALY.value,
+                source_file=str(file_path),
+                source_file_sha256=file_sha256,
+                payload={
+                    "anomaly_type": "DATA_TRUNCATION_OR_CORRUPTION",
+                    "anomaly_indicator": "DATA_TRUNCATION_OR_CORRUPTION",
+                    "corruption_offset": self.corruption_offset,
+                    "corruption_offset_bytes": self.corruption_offset,
+                    "salvaged_records": salvaged_cnt,
+                    "salvaged_records_count": salvaged_cnt,
+                    "total_file_bytes": file_size,
+                    "bytes_lost_or_unfinalized": corrupt_bytes_lost,
+                    "forensic_assessment": (
+                        "Flight log terminated abruptly without clean EOF sync marker. "
+                        "Common in high-velocity ground impact, sudden battery disconnection, "
+                        "or mid-air power loss. Telemetry successfully carved up to failure horizon."
+                    ),
+                },
+            )
+        )
+
+        return events
+
+
+    def _raw_carve_stream(self, path: Path) -> Optional[dict[str, Any]]:
+        """Low-level binary scanner carving ULog packets."""
+        _BASIC_TYPES = {
+            "int8_t": ("b", 1),
+            "uint8_t": ("B", 1),
+            "int16_t": ("h", 2),
+            "uint16_t": ("H", 2),
+            "int32_t": ("i", 4),
+            "uint32_t": ("I", 4),
+            "int64_t": ("q", 8),
+            "uint64_t": ("Q", 8),
+            "float": ("f", 4),
+            "double": ("d", 8),
+            "bool": ("?", 1),
+            "char": ("c", 1),
+        }
+
+        formats: dict[str, list[dict[str, Any]]] = {}
+        subscriptions: dict[int, str] = {}
+        info_dict: dict[str, Any] = {}
+        params_dict: dict[str, Any] = {}
+        logged_msgs: list[dict[str, Any]] = []
+        carved_datasets: dict[str, list[dict[str, Any]]] = {}
+        corruption_offset = None
+
+        file_size = path.stat().st_size
+        try:
+            with open(path, "rb") as f:
+                header = f.read(16)
+                if len(header) < 16 or not header.startswith(b"ULog"):
+                    return None
+
+                while True:
+                    pos = f.tell()
+                    hdr_bytes = f.read(3)
+                    if len(hdr_bytes) < 3:
+                        if pos < file_size:
+                            corruption_offset = pos
+                        break
+
+                    msg_size, msg_type_int = struct.unpack("<HB", hdr_bytes)
+                    msg_type = chr(msg_type_int)
+
+                    payload = f.read(msg_size)
+                    if len(payload) < msg_size:
+                        corruption_offset = pos
+                        break
+
+                    try:
+                        if msg_type == "F":  # Format definition
+                            fmt_text = payload.decode("utf-8", errors="replace")
+                            if ":" in fmt_text:
+                                fmt_name, fields_str = fmt_text.split(":", 1)
+                                parsed_fields = []
+                                for fdef in fields_str.split(";"):
+                                    fdef = fdef.strip()
+                                    if not fdef:
+                                        continue
+                                    parts = fdef.split()
+                                    if len(parts) >= 2:
+                                        t_part, n_part = parts[0].strip(), parts[1].strip()
+                                        arr_count = 1
+                                        if "[" in t_part and t_part.endswith("]"):
+                                            tn, cs = t_part[:-1].split("[", 1)
+                                            t_part = tn.strip()
+                                            try:
+                                                arr_count = int(cs)
+                                            except ValueError:
+                                                arr_count = 1
+                                        elif "[" in n_part and n_part.endswith("]"):
+                                            nn, cs = n_part[:-1].split("[", 1)
+                                            n_part = nn.strip()
+                                            try:
+                                                arr_count = int(cs)
+                                            except ValueError:
+                                                arr_count = 1
+
+                                        if t_part in _BASIC_TYPES:
+                                            fc, se = _BASIC_TYPES[t_part]
+                                            parsed_fields.append({
+                                                "name": n_part,
+                                                "struct_fmt": f"{arr_count}{fc}" if arr_count > 1 else fc,
+                                                "total_size": se * arr_count,
+                                                "is_array": arr_count > 1,
+                                            })
+                                        else:
+                                            parsed_fields.append({
+                                                "name": n_part,
+                                                "struct_fmt": "I",
+                                                "total_size": 4,
+                                                "is_array": False,
+                                            })
+                                formats[fmt_name] = parsed_fields
+
+                        elif msg_type == "I":  # Info
+                            if len(payload) >= 2:
+                                klen = payload[0]
+                                kname = payload[1:1 + klen].decode("utf-8", errors="replace")
+                                info_dict[kname] = payload[1 + klen:]
+
+                        elif msg_type == "P":  # Parameter
+                            if len(payload) >= 2:
+                                klen = payload[0]
+                                kname = payload[1:1 + klen].decode("utf-8", errors="replace")
+                                params_dict[kname] = payload[1 + klen:]
+
+                        elif msg_type == "A":  # Add subscription
+                            if len(payload) >= 3:
+                                multi_id, msg_id = struct.unpack("<BH", payload[:3])
+                                msg_name = payload[3:].decode("utf-8", errors="replace")
+                                subscriptions[msg_id] = msg_name
+
+                        elif msg_type == "L":  # Logged string
+                            if len(payload) >= 9:
+                                log_lvl, ts_us = struct.unpack("<BQ", payload[:9])
+                                msg_txt = payload[9:].decode("utf-8", errors="replace")
+                                logged_msgs.append({"log_level": log_lvl, "timestamp": ts_us, "message": msg_txt})
+
+                        elif msg_type == "D":  # Data
+                            if len(payload) >= 2:
+                                msg_id = struct.unpack("<H", payload[:2])[0]
+                                if msg_id in subscriptions:
+                                    msg_name = subscriptions[msg_id]
+                                    if msg_name in formats:
+                                        field_defs = formats[msg_name]
+                                        data_bytes = payload[2:]
+                                        rec = {}
+                                        offset = 0
+                                        for fd in field_defs:
+                                            sz = fd["total_size"]
+                                            if offset + sz <= len(data_bytes):
+                                                fmt = "<" + fd["struct_fmt"]
+                                                unpacked = struct.unpack(fmt, data_bytes[offset:offset + sz])
+                                                rec[fd["name"]] = list(unpacked) if fd["is_array"] else unpacked[0]
+                                                offset += sz
+                                        if msg_name not in carved_datasets:
+                                            carved_datasets[msg_name] = []
+                                        carved_datasets[msg_name].append(rec)
+                    except Exception:
+                        corruption_offset = pos
+                        break
+
+            return {
+                "formats": formats,
+                "subscriptions": subscriptions,
+                "info_dict": info_dict,
+                "params_dict": params_dict,
+                "logged_msgs": logged_msgs,
+                "carved_datasets": carved_datasets,
+                "corruption_offset": corruption_offset,
+            }
+        except Exception:
+            return None
+
+    def _carve_extended_telemetry(self, file_path: Path) -> dict[str, Any]:
+        """Carve engineering telemetry time-series when standard pyulog fails."""
+        carved = self._raw_carve_stream(file_path)
+        if not carved:
+            return {}
+
+        datasets = carved["carved_datasets"]
+        logged_msgs = carved["logged_msgs"]
+        info_dict = carved["info_dict"]
+
+        alt_data = {"times": [], "fused": [], "baro": [], "gps": [], "setpoint": []}
+        pos_list = datasets.get("vehicle_gps_position", []) or datasets.get("vehicle_global_position", [])
+        if pos_list:
+            t0 = int(pos_list[0].get("timestamp", 0))
+            for r in pos_list[::max(1, len(pos_list) // 300)]:
+                t = int(r.get("timestamp", 0))
+                alt = float(r.get("alt", 0.0))
+                if alt > 10000:
+                    alt /= 1000.0
+                alt_data["times"].append(round((t - t0) / 1e6, 2))
+                alt_data["fused"].append(round(alt, 2))
+                alt_data["gps"].append(round(alt, 2))
+
+        messages = [
+            {"time_s": round(m["timestamp"] / 1e6, 2), "level": str(m["log_level"]), "message": m["message"]}
+            for m in logged_msgs
+        ]
+
+        return {
+            "summary": {
+                "airframe": "Carved Recovery Airframe",
+                "hardware": "PX4 Flight Controller (Carved Recovery)",
+                "software_version": "v1.x (Carved)",
+                "os_version": "NuttX RTOS",
+                "vehicle_uuid": "CARVED-RECOVERY-LOG",
+                "total_parameters": len(carved["params_dict"]),
+                "total_logged_messages": len(messages),
+            },
+            "altitude_chart": alt_data,
+            "attitude_chart": {"times": [], "roll": [], "pitch": [], "yaw": []},
+            "velocity_chart": {"times": [], "vx": [], "vy": [], "vz": [], "speed": []},
+            "power_chart": {"times": [], "voltage": [], "current": [], "remaining": [], "discharged_mah": []},
+            "actuator_chart": {"times": [], "m1": [], "m2": [], "m3": [], "m4": []},
+            "sensor_health_chart": {"times": [], "sats": [], "hdop": [], "cpu_load": [], "ram_usage": []},
+            "logged_messages": messages,
+            "parameters_table": [],
         }
 

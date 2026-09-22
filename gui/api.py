@@ -31,6 +31,12 @@ from analytics.geocoding import reverse_geocode
 from export.geospatial import export_geojson, export_kml, export_html_map, export_3d_html_map
 from reports.generator import ForensicReportGenerator, ForensicCaseMetadata
 from crypto.protected_data import decrypt_artifact
+from acquisition import (
+    MavlinkExtractor,
+    AdbExtractor,
+    list_available_serial_ports,
+    list_available_adb_devices,
+)
 
 
 def clean_num(val: Any, default: float = 0.0, decimals: int = 4) -> float:
@@ -280,6 +286,76 @@ class ForensicBridgeHTTPHandler(BaseHTTPRequestHandler):
             maps = MBTilesManager.list_maps()
             self._set_cors_headers(200)
             self.wfile.write(json.dumps({"status": "ok", "maps": maps}).encode("utf-8"))
+        elif self.path.startswith("/api/get_hex"):
+            if self.api_instance:
+                import urllib.parse
+                parsed = urllib.parse.urlparse(self.path)
+                qs = urllib.parse.parse_qs(parsed.query)
+                fpath = qs.get("file_path", [""])[0]
+                ofs = int(qs.get("offset", [0])[0])
+                length = int(qs.get("length", [4096])[0])
+                res = self.api_instance.get_file_hex_chunk(file_path=fpath, offset=ofs, length=length)
+                self._set_cors_headers(200)
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            else:
+                self._set_cors_headers(500)
+                self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
+        elif self.path.startswith("/api/search_hex"):
+            if self.api_instance:
+                import urllib.parse
+                parsed = urllib.parse.urlparse(self.path)
+                qs = urllib.parse.parse_qs(parsed.query)
+                fpath = qs.get("file_path", [""])[0]
+                q = qs.get("query", [""])[0]
+                is_hex = qs.get("is_hex", ["false"])[0].lower() in ("true", "1")
+                start_ofs = int(qs.get("start_offset", [0])[0])
+                res = self.api_instance.search_file_hex(file_path=fpath, query=q, is_hex=is_hex, start_offset=start_ofs)
+                self._set_cors_headers(200)
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            else:
+                self._set_cors_headers(500)
+                self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
+        elif self.path.startswith("/api/list_serial_ports"):
+            if self.api_instance:
+                ports = self.api_instance.list_serial_ports()
+                self._set_cors_headers(200)
+                self.wfile.write(json.dumps({"status": "ok", "ports": ports}).encode("utf-8"))
+            else:
+                self._set_cors_headers(500)
+                self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
+        elif self.path.startswith("/api/list_mavlink_logs"):
+            if self.api_instance:
+                import urllib.parse
+                parsed = urllib.parse.urlparse(self.path)
+                qs = urllib.parse.parse_qs(parsed.query)
+                uri = qs.get("port", ["COM3"])[0]
+                baud = int(qs.get("baud", [115200])[0])
+                logs = self.api_instance.list_mavlink_logs(connection_uri=uri, baud=baud)
+                self._set_cors_headers(200)
+                self.wfile.write(json.dumps({"status": "ok", "logs": logs}).encode("utf-8"))
+            else:
+                self._set_cors_headers(500)
+                self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
+        elif self.path.startswith("/api/list_adb_devices"):
+            if self.api_instance:
+                devs = self.api_instance.list_adb_devices()
+                self._set_cors_headers(200)
+                self.wfile.write(json.dumps({"status": "ok", "devices": devs}).encode("utf-8"))
+            else:
+                self._set_cors_headers(500)
+                self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
+        elif self.path.startswith("/api/list_adb_files"):
+            if self.api_instance:
+                import urllib.parse
+                parsed = urllib.parse.urlparse(self.path)
+                qs = urllib.parse.parse_qs(parsed.query)
+                dev_id = qs.get("device_id", [""])[0]
+                files = self.api_instance.list_adb_remote_files(device_id=dev_id)
+                self._set_cors_headers(200)
+                self.wfile.write(json.dumps({"status": "ok", "files": files}).encode("utf-8"))
+            else:
+                self._set_cors_headers(500)
+                self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
         elif self.path.startswith("/tiles/"):
             clean_path = self.path.split("?")[0]
             m = re.match(r"^/tiles/([^/]+)/(\d+)/(\d+)/(\d+)(?:\.([a-zA-Z0-9]+))?$", clean_path)
@@ -369,6 +445,43 @@ class ForensicBridgeHTTPHandler(BaseHTTPRequestHandler):
                 examiner = payload.get("examiner", "Inspector Cyber Division")
                 if self.api_instance:
                     res = self.api_instance.analyze_multi_evidence(drones, case_id, examiner)
+                    self._set_cors_headers(200)
+                    self.wfile.write(json.dumps(res).encode("utf-8"))
+                else:
+                    self._set_cors_headers(500)
+                    self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
+            except Exception as e:
+                self._set_cors_headers(500)
+        elif self.path.startswith("/api/acquire_mavlink"):
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length).decode("utf-8")
+                payload = json.loads(body)
+                port = payload.get("port", "COM3")
+                baud = int(payload.get("baud", 115200))
+                log_id = int(payload.get("log_id", 1))
+                case_id = payload.get("case_id", "CASE-2026-MEITY-001")
+                examiner = payload.get("examiner", "Inspector Cyber Division")
+                if self.api_instance:
+                    res = self.api_instance.acquire_mavlink_log(connection_uri=port, baud=baud, log_id=log_id, case_id=case_id, examiner=examiner)
+                    self._set_cors_headers(200)
+                    self.wfile.write(json.dumps(res).encode("utf-8"))
+                else:
+                    self._set_cors_headers(500)
+                    self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
+            except Exception as e:
+                self._set_cors_headers(500)
+                self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+        elif self.path.startswith("/api/acquire_adb"):
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length).decode("utf-8")
+                payload = json.loads(body)
+                dev_id = payload.get("device_id", "")
+                case_id = payload.get("case_id", "CASE-2026-MEITY-001")
+                examiner = payload.get("examiner", "Inspector Cyber Division")
+                if self.api_instance:
+                    res = self.api_instance.acquire_adb_logs(device_id=dev_id, case_id=case_id, examiner=examiner)
                     self._set_cors_headers(200)
                     self.wfile.write(json.dumps(res).encode("utf-8"))
                 else:
@@ -1894,4 +2007,275 @@ class DesktopForensicAPI:
             return False
         except Exception:
             return False
+
+    # ========================================================================
+    # Hardware Acquisition (MAVLink Serial / USB & Android ADB)
+    # ========================================================================
+
+    def list_serial_ports(self) -> list[dict[str, str]]:
+        """List available physical or virtual serial COM ports."""
+        return list_available_serial_ports()
+
+    def list_mavlink_logs(self, connection_uri: str = "COM3", baud: int = 115200) -> list[dict[str, Any]]:
+        """Query connected flight controller for onboard flight log catalog."""
+        extractor = MavlinkExtractor(connection_uri=connection_uri, baud=baud)
+        logs = extractor.list_logs()
+        extractor.close()
+        return [l.to_dict() for l in logs]
+
+    def acquire_mavlink_log(
+        self,
+        connection_uri: str = "COM3",
+        baud: int = 115200,
+        log_id: int = 1,
+        case_id: str = "CASE-2026-MEITY-001",
+        examiner: str = "Inspector Cyber Division",
+    ) -> dict[str, Any]:
+        """Logically extract binary flight log from flight controller and record in chain of custody."""
+        case_slug = "".join(c for c in case_id if c.isalnum() or c in ("-", "_")).strip() or "CASE-001"
+        case_out = self.output_dir / case_slug
+        case_out.mkdir(parents=True, exist_ok=True)
+        ledger_path = case_out / "chain_of_custody.jsonl"
+        ledger = ChainOfCustodyLedger(ledger_path)
+
+        extractor = MavlinkExtractor(connection_uri=connection_uri, baud=baud)
+        res = extractor.extract_log(
+            log_id=log_id,
+            output_directory=case_out,
+            custody_ledger=ledger,
+            operator_id=examiner,
+        )
+        extractor.close()
+        return res.to_dict()
+
+    def list_adb_devices(self) -> list[dict[str, Any]]:
+        """Scan connected Android devices / smart controllers via ADB."""
+        devs = list_available_adb_devices()
+        return [d.to_dict() for d in devs]
+
+    def list_adb_remote_files(self, device_id: str) -> list[dict[str, Any]]:
+        """Scan standard UAV companion app paths on the target Android device."""
+        extractor = AdbExtractor()
+        return extractor.list_remote_files(device_id)
+
+    def acquire_adb_logs(
+        self,
+        device_id: str,
+        case_id: str = "CASE-2026-MEITY-001",
+        examiner: str = "Inspector Cyber Division",
+    ) -> dict[str, Any]:
+        """Pull all companion app flight records from Android device into case directory."""
+        case_slug = "".join(c for c in case_id if c.isalnum() or c in ("-", "_")).strip() or "CASE-001"
+        case_out = self.output_dir / case_slug
+        case_out.mkdir(parents=True, exist_ok=True)
+        ledger_path = case_out / "chain_of_custody.jsonl"
+        ledger = ChainOfCustodyLedger(ledger_path)
+
+        extractor = AdbExtractor()
+        res = extractor.extract_logs(
+            device_id=device_id,
+            output_directory=case_out,
+            custody_ledger=ledger,
+            operator_id=examiner,
+        )
+        return res.to_dict()
+
+    # ========================================================================
+    # Raw Hex / Binary Forensics Streaming & Pattern Search
+    # ========================================================================
+
+    def get_file_hex_chunk(
+        self,
+        file_path: str,
+        offset: int = 0,
+        length: int = 4096,
+    ) -> dict[str, Any]:
+        """Stream a 3-column hex chunk (offset, hex byte pairs, ASCII representation)."""
+        try:
+            if not file_path:
+                return {"status": "error", "message": "No evidence file specified."}
+
+            p = Path(file_path).resolve()
+            if not p.is_file():
+                p = (self.workspace_root / file_path).resolve()
+                if not p.is_file():
+                    return {"status": "error", "message": f"File not found: {file_path}"}
+
+            file_size = p.stat().st_size
+            offset = max(0, min(offset, file_size))
+            length = max(16, min(length, 65536))  # 16B to 64KB per chunk
+
+            with open(p, "rb") as f:
+                f.seek(offset)
+                raw = f.read(length)
+
+            # Detect magic signature
+            magic_annotation = None
+            if offset == 0 and len(raw) >= 4:
+                if raw.startswith(b"ULogFile") or raw.startswith(b"ULog") or raw.startswith(b"\x55\x4C\x6F\x67"):
+                    magic_annotation = "ULog (PX4 Autopilot Binary Log)"
+                elif raw.startswith(b"\xa3\x95"):
+                    magic_annotation = "ArduPilot DataFlash Binary Log"
+                elif raw.startswith(b"BUILD") or raw.startswith(b"DJI_LOG_ENC") or raw.startswith(b"\x55\x55"):
+                    magic_annotation = "DJI Onboard Flight Log (.DAT)"
+                elif raw.startswith(b"\xff\xd8\xff"):
+                    magic_annotation = "JPEG Image (EXIF Geospatial Metadata)"
+                elif b"ftyp" in raw[:16]:
+                    magic_annotation = "MP4 / MOV Video Container (Embedded Telemetry)"
+                elif raw.startswith(b"PK\x03\x04"):
+                    magic_annotation = "ZIP Archive Container (PK\x03\x04)"
+                elif raw.startswith(b"\xfe") or raw.startswith(b"\xfd"):
+                    magic_annotation = "MAVLink Packet Stream (0xFE / 0xFD)"
+
+            rows = []
+            for i in range(0, len(raw), 16):
+                sub = raw[i:i + 16]
+                row_offset = offset + i
+                hex_bytes = [f"{b:02X}" for b in sub]
+                # Format hex_bytes string with double space in middle for 8-byte group separation
+                if len(hex_bytes) > 8:
+                    hex_str = " ".join(hex_bytes[:8]) + "  " + " ".join(hex_bytes[8:])
+                else:
+                    hex_str = " ".join(hex_bytes)
+                ascii_chars = "".join(chr(b) if 32 <= b <= 126 else "." for b in sub)
+                rows.append({
+                    "offset_hex": f"{row_offset:08X}",
+                    "offset_hex_prefixed": f"0x{row_offset:08X}",
+                    "offset_dec": row_offset,
+                    "hex_bytes": hex_str,
+                    "hex_bytes_list": hex_bytes,
+                    "hex_str": hex_str,
+                    "ascii": ascii_chars,
+                    "length": len(sub),
+                })
+
+            magic_info = {"description": magic_annotation} if magic_annotation else None
+
+            return {
+                "status": "OK",
+                "offset": offset,
+                "file_path": str(p),
+                "file_name": p.name,
+                "file_size": file_size,
+                "total_size": file_size,
+                "chunk_offset": offset,
+                "chunk_length": len(raw),
+                "has_more": (offset + len(raw)) < file_size,
+                "rows": rows,
+                "magic_annotation": magic_annotation,
+                "magic_info": magic_info,
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+    def search_file_hex(
+        self,
+        file_path: str,
+        query: str,
+        is_hex: bool = False,
+        start_offset: int = 0,
+    ) -> dict[str, Any]:
+        """Search binary file for text or hex pattern and return matching offsets."""
+        try:
+            if not file_path:
+                return {"status": "error", "message": "No file specified"}
+
+            p = Path(file_path).resolve()
+            if not p.is_file():
+                p = (self.workspace_root / file_path).resolve()
+                if not p.is_file():
+                    return {"status": "error", "message": f"File not found: {file_path}"}
+
+            file_size = p.stat().st_size
+            if not query:
+                return {"status": "error", "message": "Query pattern is empty"}
+
+            if is_hex:
+                clean_hex = "".join(c for c in query if c in "0123456789abcdefABCDEF")
+                if len(clean_hex) % 2 != 0:
+                    clean_hex = clean_hex[:-1]
+                pattern = bytes.fromhex(clean_hex)
+            else:
+                pattern = query.encode("utf-8")
+
+            if not pattern:
+                return {"status": "error", "message": "Invalid search pattern"}
+
+            matches = []
+            chunk_size = 1024 * 1024  # 1 MB scan window
+            with open(p, "rb") as f:
+                f.seek(max(0, start_offset))
+                curr_offset = max(0, start_offset)
+                overlap = len(pattern) - 1
+
+                while True:
+                    chunk = f.read(chunk_size)
+                    if not chunk:
+                        break
+
+                    idx = 0
+                    while True:
+                        found = chunk.find(pattern, idx)
+                        if found == -1:
+                            break
+                        match_ofs = curr_offset + found
+                        matches.append({
+                            "offset": match_ofs,
+                            "offset_hex": f"0x{match_ofs:08X}",
+                            "offset_dec": match_ofs,
+                        })
+                        if len(matches) >= 100:
+                            break
+                        idx = found + 1
+
+                    if len(matches) >= 100 or len(chunk) < chunk_size:
+                        break
+
+                    curr_offset += len(chunk) - overlap
+                    f.seek(curr_offset)
+
+            return {
+                "status": "OK",
+                "file_path": str(p),
+                "total_matches": len(matches),
+                "matches": matches,
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+
+# Backward compatibility and alternative class name alias
+DroneForensicsAPI = DesktopForensicAPI
+
+# Module-level convenience functions
+_default_api_instance: Optional[DesktopForensicAPI] = None
+
+def get_default_api() -> DesktopForensicAPI:
+    global _default_api_instance
+    if _default_api_instance is None:
+        _default_api_instance = DesktopForensicAPI()
+    return _default_api_instance
+
+
+def get_file_hex_chunk(file_path: str, offset: int = 0, length: int = 4096, chunk_size: int = None) -> dict[str, Any]:
+    if chunk_size is not None:
+        length = chunk_size
+    return get_default_api().get_file_hex_chunk(file_path=file_path, offset=offset, length=length)
+
+def search_file_hex(file_path: str, query: str, is_hex: bool = False, query_type: str = None, start_offset: int = 0) -> dict[str, Any]:
+    if query_type is not None:
+        is_hex = (query_type.lower() == "hex")
+    return get_default_api().search_file_hex(file_path=file_path, query=query, is_hex=is_hex, start_offset=start_offset)
+
+def list_serial_ports() -> dict[str, Any]:
+    return {"status": "OK", "ports": get_default_api().list_serial_ports()}
+
+def list_mavlink_logs(connection_uri: str = "COM3", port: str = None, baud: int = 115200, baudrate: int = None) -> dict[str, Any]:
+    uri = port or connection_uri
+    b = baudrate or baud
+    return {"status": "OK", "logs": get_default_api().list_mavlink_logs(connection_uri=uri, baud=b)}
+
+def list_adb_devices() -> dict[str, Any]:
+    return {"status": "OK", "devices": get_default_api().list_adb_devices()}
+
 

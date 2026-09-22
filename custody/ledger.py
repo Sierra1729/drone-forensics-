@@ -77,12 +77,13 @@ class LedgerEntry:
 class ChainOfCustodyLedger:
     GENESIS_HASH = "0" * 64
 
-    def __init__(self, ledger_path: Path) -> None:
-        self.ledger_path = ledger_path
+    def __init__(self, ledger_path: Union[Path, str]) -> None:
+        self.ledger_path = Path(ledger_path)
         self.ledger_path.parent.mkdir(parents=True, exist_ok=True)
         self._entries: list[LedgerEntry] = []
-        if ledger_path.exists():
+        if self.ledger_path.exists():
             self._entries = self._read_all()
+
 
     def _read_all(self) -> list[LedgerEntry]:
         entries = []

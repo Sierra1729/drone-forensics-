@@ -40,6 +40,11 @@ class BaseParser(abc.ABC):
         """Semantic version of the parser plugin for strict forensic reproducibility."""
         return "1.0.0"
 
+    def __init__(self) -> None:
+        self.is_corrupted: bool = False
+        self.corruption_offset: Optional[int] = None
+        self.salvaged_records_count: int = 0
+
     @abc.abstractmethod
     def can_parse(self, file_path: Path) -> bool:
         """Inspect file header/magic bytes to determine if this parser can handle it.

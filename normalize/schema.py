@@ -44,7 +44,10 @@ class EventType(str, Enum):
     GEOFENCE_BREACH = "geofence_breach"
     ARM_DISARM = "arm_disarm"
     MODE_CHANGE = "mode_change"
+    FORENSIC_ANOMALY = "forensic_anomaly"
+    CORRUPTED_STREAM = "corrupted_stream"
     RAW = "raw"  # escape hatch for anything not yet modeled
+
 
 
 @dataclass

@@ -2306,9 +2306,162 @@ table.forensic-table tr:hover {
     font-size: 10.5px;
   }
   .case-chip-status {
-    font-size: 8px;
-    padding: 1px 4px;
-  }
+/* TAB 6: RAW HEX / BINARY FORENSICS VIEWER */
+.hex-viewer-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #060a12;
+  overflow: hidden;
+  height: 100%;
+}
+.hex-toolbar {
+  background: #0d1526;
+  border-bottom: 1px solid #1e293d;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.hex-meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hex-file-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+.hex-meta-details {
+  font-size: 10.5px;
+  color: var(--muted);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.hex-magic-pill {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.hex-controls-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hex-nav-group, .hex-jump-group, .hex-search-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.hex-btn {
+  background: #1e293d;
+  border: 1px solid var(--panel-border);
+  color: #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.hex-btn:hover {
+  background: #27354f;
+  color: #fff;
+}
+.hex-btn.primary {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #fff;
+}
+.hex-btn.primary:hover {
+  background: #0369a1;
+}
+.hex-lbl {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.hex-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 8px 16px;
+  background: #060a12;
+}
+.hex-forensic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+.hex-forensic-table th {
+  background: #0b1120;
+  color: #94a3b8;
+  font-size: 10.5px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #1e293b;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  letter-spacing: 0.5px;
+}
+.hex-forensic-table td {
+  padding: 3px 8px;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.4);
+  line-height: 1.4;
+}
+.hex-ofs-cell {
+  color: var(--cyan);
+  font-weight: 700;
+  user-select: all;
+}
+.hex-bytes-cell {
+  color: #f1f5f9;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.hex-byte-span {
+  display: inline-block;
+  padding: 0 2px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.hex-byte-span:hover {
+  background: #0284c7;
+  color: #fff;
+}
+.hex-byte-span.match {
+  background: #f59e0b;
+  color: #000;
+  font-weight: 800;
+}
+.hex-ascii-cell {
+  color: #38bdf8;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  user-select: text;
+}
+.hex-footer {
+  background: #0a0f1d;
+  border-top: 1px solid #1e293d;
+  padding: 6px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  flex-shrink: 0;
 }
 </style>
 </head>
@@ -2329,7 +2482,7 @@ table.forensic-table tr:hover {
     <span class="case-chip-arrow">▾</span>
   </button>
 
-  <!-- Integrated 5 Forensic Navigation Tabs -->
+  <!-- Integrated 6 Forensic Navigation Tabs -->
   <nav class="header-tabs">
     <button class="tab-btn active" id="btn-tabMap" onclick="switchTab('tabMap')">
       🗺️ 1. Flight Map
@@ -2345,6 +2498,9 @@ table.forensic-table tr:hover {
     </button>
     <button class="tab-btn" id="btn-tabLogs" onclick="switchTab('tabLogs')">
       📋 5. Logs
+    </button>
+    <button class="tab-btn" id="btn-tabHex" onclick="switchTab('tabHex')">
+      🔢 6. Raw Hex
     </button>
   </nav>
 
@@ -2459,6 +2615,10 @@ table.forensic-table tr:hover {
       <span class="rail-icon">➕</span>
       <span class="rail-label">Intake</span>
     </button>
+    <button class="rail-btn" id="railBtnAcquisition" onclick="openAcquisitionModal()" title="Hardware Acquisition - MAVLink & Android ADB (📡)">
+      <span class="rail-icon">📡</span>
+      <span class="rail-label">Acquire</span>
+    </button>
     <button class="rail-btn" id="railBtnVault" onclick="openCaseVault()" title="Open Historical Case Vault (📂)">
       <span class="rail-icon">📂</span>
       <span class="rail-label">Vault</span>
@@ -2532,6 +2692,13 @@ table.forensic-table tr:hover {
     </div>
 
     <button class="btn-primary" id="analyzeBtn" onclick="startAnalysis()">▶ START FORENSIC ANALYSIS</button>
+
+    <div style="border-top: 1px solid var(--panel-border); margin-top: 6px; padding-top: 8px;">
+      <div class="section-title">Direct Hardware Extraction</div>
+      <button class="btn-secondary" style="width:100%; border-color:#0284c7; color:#38bdf8;" onclick="openAcquisitionModal()" title="Extract logs directly from flight controller or Android device">
+        📡 Hardware Extraction (MAVLink / ADB)
+      </button>
+    </div>
 
     <div style="border-top: 1px solid var(--panel-border); margin-top: 6px; padding-top: 8px;">
       <div class="section-title">Case Verification & Archive</div>
@@ -3361,6 +3528,206 @@ table.forensic-table tr:hover {
       </div>
     </div>
 
+    <!-- TAB 6: RAW HEX / BINARY FORENSICS VIEWER -->
+    <div id="tabHex" class="tab-content">
+      <div class="hex-viewer-container">
+        <!-- Top Toolbar Banner -->
+        <div class="hex-toolbar">
+          <div class="hex-meta-block">
+            <div class="hex-file-title" id="hexFileTitle">Seized Evidence Binary Stream</div>
+            <div class="hex-meta-details">
+              <span>Target: <strong id="hexFileName" style="color:var(--cyan);">--</strong></span>
+              <span>Size: <strong id="hexFileSize">--</strong></span>
+              <span>Span: <strong id="hexByteRange" style="color:#facc15;">0x00000000 - 0x00000FFF</strong></span>
+              <span class="hex-magic-pill" id="hexMagicPill" style="display:none;"></span>
+            </div>
+          </div>
+
+          <!-- Controls: Jump, Navigation, Search -->
+          <div class="hex-controls-block">
+            <!-- Chunk Scrubber Navigation -->
+            <div class="hex-nav-group">
+              <button class="hex-btn" onclick="startHexChunk()" title="Jump to Start (0x00000000)">⏮ Start</button>
+              <button class="hex-btn" onclick="prevHexChunk()" title="Previous 4KB Chunk">◀ Prev 4KB</button>
+              <button class="hex-btn" onclick="nextHexChunk()" title="Next 4KB Chunk">▶ Next 4KB</button>
+              <button class="hex-btn" onclick="endHexChunk()" title="Jump to End of File">⏭ End</button>
+            </div>
+
+            <!-- Jump to Offset -->
+            <div class="hex-jump-group">
+              <span class="hex-lbl">Offset:</span>
+              <input type="text" id="hexOffsetInput" value="0x00000000" placeholder="0x00000000" style="width:105px; font-size:11px; padding:4px 7px;" onkeydown="if(event.key==='Enter') jumpToOffset()" />
+              <button class="hex-btn" onclick="jumpToOffset()">Jump</button>
+            </div>
+
+            <!-- Pattern Search -->
+            <div class="hex-search-group">
+              <input type="text" id="hexSearchInput" placeholder="Search text or hex..." style="width:140px; font-size:11px; padding:4px 7px;" onkeydown="if(event.key==='Enter') searchHexPattern()" />
+              <label style="display:flex; align-items:center; gap:3px; font-size:10px; color:var(--muted); cursor:pointer;">
+                <input type="checkbox" id="hexSearchIsHex" /> Hex
+              </label>
+              <button class="hex-btn primary" onclick="searchHexPattern()">🔍 Find</button>
+              <span id="hexSearchCount" style="font-size:10.5px; color:#38bdf8; font-family:var(--font-mono);"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-Column Forensic Hex Inspector Grid -->
+        <div class="hex-table-wrapper" id="hexTableWrapper">
+          <table class="hex-forensic-table" id="hexTable">
+            <thead>
+              <tr>
+                <th style="width: 120px; text-align: left;">Offset (Hex)</th>
+                <th style="text-align: left;">00 01 02 03 04 05 06 07 &nbsp; 08 09 0A 0B 0C 0D 0E 0F</th>
+                <th style="width: 220px; text-align: left;">Decoded ASCII</th>
+              </tr>
+            </thead>
+            <tbody id="hexTableBody">
+              <tr>
+                <td colspan="3" style="text-align:center; color:var(--muted); padding:40px;">
+                  No binary file loaded. Select or acquire a UAV flight log to inspect raw byte bitstream.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Hex Status Footer -->
+        <div class="hex-footer">
+          <div id="hexHoverInfo" style="font-family:var(--font-mono); font-size:11px; color:#cbd5e1;">
+            Hover over byte values to inspect exact decimal offsets and ASCII characters.
+          </div>
+          <div style="font-size:10px; color:var(--muted);">
+            Compliant with NIST SP 800-86 Bitstream Cross-Verification Standards
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =====================================================================
+     HARDWARE ACQUISITION MODAL (#acquisitionModal)
+     ===================================================================== -->
+<div class="forensic-modal-overlay" id="acquisitionModal" onclick="onModalOverlayClick(event, 'acquisitionModal')">
+  <div class="forensic-modal-dialog" style="width: 920px;">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-title">
+          <span>📡 Hardware Acquisition & Direct Physical Extraction</span>
+          <span class="audit-status-badge ok">ISO/IEC 27037:2012 COMPLIANT</span>
+        </div>
+        <div class="modal-subtitle">
+          Logical extraction from UAV Flight Controllers (MAVLink Serial) and Android Ground Stations (ADB)
+        </div>
+      </div>
+      <button class="modal-close-btn" onclick="closeAcquisitionModal()" title="Close Acquisition">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Mode Switcher (MAVLink vs ADB) -->
+      <div class="intake-mode-switcher" style="margin-bottom: 12px;">
+        <button class="intake-mode-btn active" id="btnAcqMavlink" onclick="switchAcqMode('mavlink')">
+          <span>🚁 MAVLink Flight Controller (Serial/USB)</span>
+        </button>
+        <button class="intake-mode-btn" id="btnAcqAdb" onclick="switchAcqMode('adb')">
+          <span>📱 Android Device / Smart Controller (ADB)</span>
+        </button>
+      </div>
+
+      <!-- MAVLink Extraction Panel -->
+      <div id="panelAcqMavlink">
+        <div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:12px;">
+          <div class="form-group" style="flex:2;">
+            <label>Serial USB Port / Connection URI</label>
+            <div style="display:flex; gap:6px;">
+              <select id="acqSerialPortSelect" style="flex:1;">
+                <option value="COM3">COM3 - Pixhawk / PX4 USB Serial</option>
+                <option value="COM4">COM4 - ArduPilot Cube Orange</option>
+                <option value="COM1">COM1 - Standard Communications Port</option>
+              </select>
+              <button class="btn-secondary" onclick="scanSerialPorts()" title="Rescan COM Ports">🔄 Scan</button>
+            </div>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Baud Rate</label>
+            <select id="acqBaudSelect">
+              <option value="115200">115200 (Default)</option>
+              <option value="57600">57600 (Telemetry)</option>
+              <option value="921600">921600 (High-Speed USB)</option>
+            </select>
+          </div>
+          <button class="btn-primary" style="height:36px;" onclick="queryMavlinkLogs()">🔍 Connect & List Logs</button>
+        </div>
+
+        <div class="table-scroll" style="max-height: 250px; margin-bottom: 10px;">
+          <table class="forensic-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Log ID</th>
+                <th style="width: 140px;">Recorded Date (UTC)</th>
+                <th style="width: 100px;">Size</th>
+                <th>Suggested File Target</th>
+                <th style="text-align: right; width: 110px;">Acquisition</th>
+              </tr>
+            </thead>
+            <tbody id="acqMavlinkTableBody">
+              <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:20px;">Click 'Connect & List Logs' to query flight controller onboard storage.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADB Extraction Panel -->
+      <div id="panelAcqAdb" style="display:none;">
+        <div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:12px;">
+          <div class="form-group" style="flex:2;">
+            <label>Connected Android Device / Smart Controller</label>
+            <div style="display:flex; gap:6px;">
+              <select id="acqAdbDeviceSelect" style="flex:1;">
+                <option value="DJI_RC_PRO_98213">DJI RC Pro (Enterprise) [device]</option>
+                <option value="SM_G998B_FORENSIC_01">Samsung Galaxy S21 (Pilot Companion) [device]</option>
+              </select>
+              <button class="btn-secondary" onclick="scanAdbDevices()" title="Rescan ADB Devices">🔄 Scan</button>
+            </div>
+          </div>
+          <button class="btn-primary" style="height:36px;" onclick="queryAdbFiles()">🔍 Scan App Records</button>
+        </div>
+
+        <div class="table-scroll" style="max-height: 250px; margin-bottom: 10px;">
+          <table class="forensic-table">
+            <thead>
+              <tr>
+                <th style="width: 120px;">Vendor / App</th>
+                <th>Remote Android Storage Path</th>
+                <th style="width: 90px;">Size</th>
+                <th style="width: 110px;">Type</th>
+              </tr>
+            </thead>
+            <tbody id="acqAdbTableBody">
+              <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:20px;">Click 'Scan App Records' to discover seized flight logs on Android filesystem.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button class="btn-primary" id="btnPullAdbAll" style="width:100%;" onclick="downloadAdbLogs()">
+          📥 Pull & Acquire All Detected Flight Records (Dual SHA-256 + BLAKE3)
+        </button>
+      </div>
+
+      <!-- Acquisition Log / Output Console -->
+      <div id="acqStatusConsole" style="background:#050914; border:1px solid #1e293b; border-radius:6px; padding:8px 12px; font-family:var(--font-mono); font-size:11px; color:#38bdf8; min-height:48px; max-height:90px; overflow-y:auto; line-height:1.45; margin-top:8px;">
+        Ready for physical extraction. Connect hardware via USB and select interface.
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div style="font-size:10.5px; color:var(--muted);">
+        Acquired files are hashed immediately and recorded to the append-only Merkle ledger.
+      </div>
+      <button class="btn-secondary" onclick="closeAcquisitionModal()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -4249,8 +4616,476 @@ function switchTab(tabId) {
 
   if (tabId === 'tabMap') {
     if (map) setTimeout(() => map.invalidateSize(), 50);
+  } else if (tabId === 'tabHex') {
+    loadHexChunk(hexCurrentOffset);
   } else {
     setTimeout(() => renderTabCharts(tabId), 50);
+  }
+}
+
+/* =====================================================================
+   TAB 6: RAW HEX / BINARY FORENSICS VIEWER & SEARCH
+   ===================================================================== */
+let hexCurrentOffset = 0;
+const HEX_CHUNK_SIZE = 4096;
+let hexTotalSize = 0;
+let hexSearchMatches = [];
+let hexSearchMatchIdx = -1;
+
+async function loadHexChunk(offset = 0) {
+  const filePath = selectedFilePath || (lastAnalysisResult && lastAnalysisResult.source_file) || "sample_evidence/real_px4_flight.ulg";
+  hexCurrentOffset = Math.max(0, offset);
+
+  const titleElem = document.getElementById('hexFileTitle');
+  const nameElem = document.getElementById('hexFileName');
+  const sizeElem = document.getElementById('hexFileSize');
+  const spanElem = document.getElementById('hexByteRange');
+  const magicPill = document.getElementById('hexMagicPill');
+  const ofsInput = document.getElementById('hexOffsetInput');
+
+  if (nameElem) nameElem.innerText = filePath.split(/[\\/]/).pop() || filePath;
+  if (ofsInput) ofsInput.value = `0x${hexCurrentOffset.toString(16).toUpperCase().padStart(8, '0')}`;
+
+  try {
+    let res = null;
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.get_file_hex_chunk === 'function') {
+      res = await window.pywebview.api.get_file_hex_chunk(filePath, hexCurrentOffset, HEX_CHUNK_SIZE);
+    } else {
+      res = await callApi('get_hex', { file_path: filePath, offset: hexCurrentOffset, length: HEX_CHUNK_SIZE });
+    }
+
+    if (!res || res.status === 'error') {
+      document.getElementById('hexTableBody').innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--red); padding:30px;">Error reading binary stream: ${escapeHtml(res ? res.message : 'No response from bridge')}</td></tr>`;
+      return;
+    }
+
+    hexTotalSize = res.file_size || 0;
+    if (sizeElem) sizeElem.innerText = `${(hexTotalSize / 1024).toFixed(1)} KB (${hexTotalSize.toLocaleString()} bytes)`;
+    const endByte = Math.min(hexTotalSize, hexCurrentOffset + (res.chunk_length || HEX_CHUNK_SIZE)) - 1;
+    if (spanElem) {
+      spanElem.innerText = `0x${hexCurrentOffset.toString(16).toUpperCase().padStart(8, '0')} - 0x${Math.max(0, endByte).toString(16).toUpperCase().padStart(8, '0')}`;
+    }
+
+    if (magicPill) {
+      if (res.magic_annotation) {
+        magicPill.style.display = 'inline-block';
+        magicPill.innerText = `✨ ${res.magic_annotation}`;
+      } else {
+        magicPill.style.display = 'none';
+      }
+    }
+
+    renderHexTable(res.rows || []);
+
+  } catch(e) {
+    console.error("Hex load error:", e);
+    document.getElementById('hexTableBody').innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--red); padding:30px;">Failed to stream hex: ${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
+function renderHexTable(rows) {
+  const tbody = document.getElementById('hexTableBody');
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted); padding:30px;">Empty binary segment or EOF reached.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const byteSpans = r.hex_bytes.map((b, byteIdx) => {
+      const decOfs = r.offset_dec + byteIdx;
+      const ascChar = (byteIdx < r.ascii.length) ? r.ascii[byteIdx] : '.';
+      const isMatch = hexSearchMatches.some(m => m.offset_dec === decOfs);
+      return `<span class="hex-byte-span ${isMatch ? 'match' : ''}" onmouseover="onHexByteHover(${decOfs}, '${b}', '${escapeHtml(ascChar)}')" onclick="onHexByteClick(${decOfs}, '${b}')">${b}</span>`;
+    }).join(' ');
+
+    return `
+      <tr>
+        <td class="hex-ofs-cell">${r.offset_hex}</td>
+        <td class="hex-bytes-cell">${byteSpans}</td>
+        <td class="hex-ascii-cell">${escapeHtml(r.ascii)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function onHexByteHover(decOfs, hexVal, ascChar) {
+  const hoverEl = document.getElementById('hexHoverInfo');
+  if (hoverEl) {
+    hoverEl.innerHTML = `Offset: <strong style="color:var(--cyan);">0x${decOfs.toString(16).toUpperCase().padStart(8, '0')}</strong> (${decOfs} dec) &nbsp;|&nbsp; Hex: <strong style="color:#facc15;">0x${hexVal}</strong> &nbsp;|&nbsp; ASCII: <strong style="color:#34d399;">'${ascChar}'</strong>`;
+  }
+}
+
+function onHexByteClick(decOfs, hexVal) {
+  const hexOfsStr = `0x${decOfs.toString(16).toUpperCase().padStart(8, '0')}`;
+  showToast(`Selected byte at ${hexOfsStr} (Value: 0x${hexVal})`);
+}
+
+function startHexChunk() {
+  loadHexChunk(0);
+}
+
+function prevHexChunk() {
+  loadHexChunk(Math.max(0, hexCurrentOffset - HEX_CHUNK_SIZE));
+}
+
+function nextHexChunk() {
+  if (hexTotalSize > 0 && hexCurrentOffset + HEX_CHUNK_SIZE >= hexTotalSize) {
+    showToast("Already at end of file.");
+    return;
+  }
+  loadHexChunk(hexCurrentOffset + HEX_CHUNK_SIZE);
+}
+
+function endHexChunk() {
+  if (hexTotalSize <= 0) return;
+  const lastChunk = Math.floor(Math.max(0, hexTotalSize - 1) / HEX_CHUNK_SIZE) * HEX_CHUNK_SIZE;
+  loadHexChunk(lastChunk);
+}
+
+function jumpToOffset() {
+  const input = document.getElementById('hexOffsetInput').value.trim();
+  let target = 0;
+  if (input.toLowerCase().startsWith('0x')) {
+    target = parseInt(input, 16);
+  } else {
+    target = parseInt(input, 10);
+  }
+  if (isNaN(target) || target < 0) {
+    alert("Please enter a valid hexadecimal offset (e.g. 0x00001000) or decimal offset.");
+    return;
+  }
+  const chunkStart = Math.floor(target / HEX_CHUNK_SIZE) * HEX_CHUNK_SIZE;
+  loadHexChunk(chunkStart);
+}
+
+async function searchHexPattern() {
+  const query = (document.getElementById('hexSearchInput').value || '').trim();
+  const isHex = document.getElementById('hexSearchIsHex').checked;
+  const countEl = document.getElementById('hexSearchCount');
+  const filePath = selectedFilePath || (lastAnalysisResult && lastAnalysisResult.source_file) || "sample_evidence/real_px4_flight.ulg";
+
+  if (!query) {
+    hexSearchMatches = [];
+    if (countEl) countEl.innerText = "";
+    loadHexChunk(hexCurrentOffset);
+    return;
+  }
+
+  showToast(`Searching for ${isHex ? 'hex' : 'text'} pattern "${query}"...`);
+  try {
+    let res = null;
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.search_file_hex === 'function') {
+      res = await window.pywebview.api.search_file_hex(filePath, query, isHex, 0);
+    } else {
+      res = await callApi('search_hex', { file_path: filePath, query: query, is_hex: isHex, start_offset: 0 });
+    }
+
+    if (!res || res.status === 'error') {
+      alert("Search failed: " + (res ? res.message : "Unknown error"));
+      return;
+    }
+
+    hexSearchMatches = res.matches || [];
+    if (countEl) countEl.innerText = `${hexSearchMatches.length} match(es)`;
+
+    if (hexSearchMatches.length > 0) {
+      hexSearchMatchIdx = 0;
+      const firstMatchOfs = hexSearchMatches[0].offset_dec;
+      const targetChunk = Math.floor(firstMatchOfs / HEX_CHUNK_SIZE) * HEX_CHUNK_SIZE;
+      loadHexChunk(targetChunk);
+      showToast(`✓ Found ${hexSearchMatches.length} match(es). Jumped to ${hexSearchMatches[0].offset_hex}`);
+    } else {
+      showToast(`No matches found for "${query}"`);
+    }
+
+  } catch(e) {
+    console.error("Search error:", e);
+    alert("Search error: " + e.message);
+  }
+}
+
+/* =====================================================================
+   HARDWARE ACQUISITION: MAVLINK SERIAL & ANDROID ADB
+   ===================================================================== */
+let currentAcqMode = 'mavlink';
+
+function openAcquisitionModal() {
+  document.getElementById('acquisitionModal').classList.add('active');
+  scanSerialPorts();
+  scanAdbDevices();
+}
+
+function closeAcquisitionModal() {
+  document.getElementById('acquisitionModal').classList.remove('active');
+}
+
+function switchAcqMode(mode) {
+  currentAcqMode = mode;
+  const btnM = document.getElementById('btnAcqMavlink');
+  const btnA = document.getElementById('btnAcqAdb');
+  const pnlM = document.getElementById('panelAcqMavlink');
+  const pnlA = document.getElementById('panelAcqAdb');
+
+  if (mode === 'mavlink') {
+    btnM.classList.add('active');
+    btnA.classList.remove('active');
+    pnlM.style.display = 'block';
+    pnlA.style.display = 'none';
+  } else {
+    btnA.classList.add('active');
+    btnM.classList.remove('active');
+    pnlA.style.display = 'block';
+    pnlM.style.display = 'none';
+  }
+}
+
+async function scanSerialPorts() {
+  const select = document.getElementById('acqSerialPortSelect');
+  const consoleEl = document.getElementById('acqStatusConsole');
+  if (consoleEl) consoleEl.innerText = "Scanning host serial COM ports...";
+
+  try {
+    let ports = [];
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.list_serial_ports === 'function') {
+      ports = await window.pywebview.api.list_serial_ports();
+    } else {
+      const res = await callApi('list_serial_ports');
+      ports = res && res.ports ? res.ports : [];
+    }
+
+    if (ports && ports.length > 0) {
+      select.innerHTML = ports.map(p => `<option value="${escapeHtml(p.port)}">${escapeHtml(p.port)} - ${escapeHtml(p.description)}</option>`).join('');
+      if (consoleEl) consoleEl.innerText = `✓ Found ${ports.length} serial port(s). Ready to connect.`;
+    } else {
+      select.innerHTML = '<option value="COM3">COM3 - Auto-detect (Simulated)</option>';
+      if (consoleEl) consoleEl.innerText = "No physical COM ports detected. Fallback simulation available.";
+    }
+  } catch(e) {
+    console.error("Port scan error:", e);
+  }
+}
+
+async function queryMavlinkLogs() {
+  const port = document.getElementById('acqSerialPortSelect').value || "COM3";
+  const baud = parseInt(document.getElementById('acqBaudSelect').value || "115200");
+  const tbody = document.getElementById('acqMavlinkTableBody');
+  const consoleEl = document.getElementById('acqStatusConsole');
+
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--cyan); padding:20px;">Connecting to flight controller via MAVLink...</td></tr>';
+  if (consoleEl) consoleEl.innerText = `Connecting to ${port}@${baud} baud... Sending LOG_REQUEST_LIST...`;
+
+  try {
+    let logs = [];
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.list_mavlink_logs === 'function') {
+      logs = await window.pywebview.api.list_mavlink_logs(port, baud);
+    } else {
+      const res = await callApi('list_mavlink_logs', { port: port, baud: baud });
+      logs = res && res.logs ? res.logs : [];
+    }
+
+    if (!logs || logs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted); padding:20px;">No flight logs returned by flight controller.</td></tr>';
+      if (consoleEl) consoleEl.innerText = `Connected to ${port}@${baud}. Zero log entries recorded onboard.`;
+      return;
+    }
+
+    tbody.innerHTML = logs.map(l => {
+      const dt = l.time_utc_epoch ? new Date(l.time_utc_epoch * 1000).toISOString().replace('T', ' ').substring(0, 19) : 'N/A';
+      const sizeMb = (l.size_bytes / (1024 * 1024)).toFixed(2);
+      return `
+        <tr>
+          <td style="color:var(--cyan); font-weight:700;">#${l.log_id}</td>
+          <td style="font-size:10.5px; color:#e2e8f0;">${dt}</td>
+          <td style="color:#facc15;">${sizeMb} MB</td>
+          <td style="font-family:var(--font-mono); font-size:10.5px; color:#94a3b8;">${escapeHtml(l.filename_hint || `log_${l.log_id}.bin`)}</td>
+          <td style="text-align:right;">
+            <button class="top-action-btn pdf" style="padding:3px 8px; font-size:10px;" onclick="downloadMavlinkLog(${l.log_id})">📥 Acquire</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if (consoleEl) consoleEl.innerText = `✓ Connected to flight controller! Retrieved ${logs.length} onboard flight log(s).`;
+
+  } catch(e) {
+    console.error("MAVLink query error:", e);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--red); padding:20px;">Connection failed: ${escapeHtml(e.message)}</td></tr>`;
+    if (consoleEl) consoleEl.innerText = `Connection failed: ${e.message}`;
+  }
+}
+
+async function downloadMavlinkLog(logId) {
+  const port = document.getElementById('acqSerialPortSelect').value || "COM3";
+  const baud = parseInt(document.getElementById('acqBaudSelect').value || "115200");
+  const caseId = (document.getElementById('caseIdInput') && document.getElementById('caseIdInput').value) || "CASE-2026-MEITY-001";
+  const examiner = (document.getElementById('examinerInput') && document.getElementById('examinerInput').value) || "Inspector Cyber Division";
+  const consoleEl = document.getElementById('acqStatusConsole');
+
+  if (consoleEl) consoleEl.innerText = `Downloading Log #${logId} via MAVLink... Computing SHA-256 + BLAKE3...`;
+  showToast(`Acquiring Log #${logId} from flight controller...`);
+
+  try {
+    let res = null;
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.acquire_mavlink_log === 'function') {
+      res = await window.pywebview.api.acquire_mavlink_log(port, baud, logId, caseId, examiner);
+    } else {
+      res = await callApi('acquire_mavlink', { port: port, baud: baud, log_id: logId, case_id: caseId, examiner: examiner });
+    }
+
+    if (!res || !res.success) {
+      alert("Acquisition failed: " + (res ? res.error_message : "Unknown error"));
+      if (consoleEl) consoleEl.innerText = `Acquisition failed: ${res ? res.error_message : 'Error'}`;
+      return;
+    }
+
+    if (consoleEl) {
+      consoleEl.innerHTML = `✓ <strong>Acquisition Success!</strong> Saved to: <code>${escapeHtml(res.output_file)}</code><br>SHA-256: <code>${res.sha256}</code> | BLAKE3: <code>${res.blake3}</code> | Ledger Block #${res.custody_entry_index}`;
+    }
+
+    selectedFilePath = res.output_file;
+    const lbl = document.getElementById('filePathLabel');
+    if (lbl) {
+      lbl.innerText = res.output_file;
+      lbl.classList.add('selected');
+    }
+
+    showToast(`✓ Log #${logId} acquired & verified under ISO/IEC 27037:2012!`);
+
+    setTimeout(() => {
+      if (confirm(`Acquisition complete for Log #${logId}!\n\nSHA-256: ${res.sha256}\n\nWould you like to analyze this newly acquired evidence immediately?`)) {
+        closeAcquisitionModal();
+        startAnalysis();
+      }
+    }, 500);
+
+  } catch(e) {
+    console.error("Acquisition error:", e);
+    alert("Acquisition failed: " + e.message);
+  }
+}
+
+async function scanAdbDevices() {
+  const select = document.getElementById('acqAdbDeviceSelect');
+  const consoleEl = document.getElementById('acqStatusConsole');
+  if (consoleEl) consoleEl.innerText = "Scanning connected Android devices via ADB...";
+
+  try {
+    let devs = [];
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.list_adb_devices === 'function') {
+      devs = await window.pywebview.api.list_adb_devices();
+    } else {
+      const res = await callApi('list_adb_devices');
+      devs = res && res.devices ? res.devices : [];
+    }
+
+    if (devs && devs.length > 0) {
+      select.innerHTML = devs.map(d => `<option value="${escapeHtml(d.device_id)}">${escapeHtml(d.model)} (${escapeHtml(d.device_id)}) [${escapeHtml(d.state)}]</option>`).join('');
+      if (consoleEl) consoleEl.innerText = `✓ Found ${devs.length} Android device(s)/smart controller(s).`;
+    } else {
+      select.innerHTML = '<option value="DJI_RC_PRO_01">DJI RC Pro (Simulated)</option>';
+      if (consoleEl) consoleEl.innerText = "No physical ADB devices attached. Simulation mode enabled.";
+    }
+  } catch(e) {
+    console.error("ADB scan error:", e);
+  }
+}
+
+async function queryAdbFiles() {
+  const devId = document.getElementById('acqAdbDeviceSelect').value || "";
+  const tbody = document.getElementById('acqAdbTableBody');
+  const consoleEl = document.getElementById('acqStatusConsole');
+
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--cyan); padding:20px;">Scanning target companion directories on Android device...</td></tr>';
+  if (consoleEl) consoleEl.innerText = `Scanning /sdcard/DJI, /sdcard/Android/data, /sdcard/Autel on device ${devId}...`;
+
+  try {
+    let files = [];
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.list_adb_remote_files === 'function') {
+      files = await window.pywebview.api.list_adb_remote_files(devId);
+    } else {
+      const res = await callApi('list_adb_files', { device_id: devId });
+      files = res && res.files ? res.files : [];
+    }
+
+    if (!files || files.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:20px;">No drone companion flight records located in standard directories.</td></tr>';
+      if (consoleEl) consoleEl.innerText = `Zero drone records found on device ${devId}.`;
+      return;
+    }
+
+    tbody.innerHTML = files.map(f => {
+      const kb = (f.size_bytes / 1024).toFixed(1);
+      const encBadge = f.is_encrypted
+        ? '<span class="audit-status-badge breach" style="font-size:9px;">ENCRYPTED DAT</span>'
+        : '<span class="audit-status-badge ok" style="font-size:9px;">PLAINTEXT</span>';
+      return `
+        <tr>
+          <td style="color:var(--cyan); font-weight:700;">${escapeHtml(f.vendor)} (${escapeHtml(f.app)})</td>
+          <td style="font-family:var(--font-mono); font-size:10px; color:#e2e8f0; word-break:break-all;">${escapeHtml(f.remote_path)}</td>
+          <td style="color:#facc15;">${kb} KB</td>
+          <td>${encBadge}</td>
+        </tr>
+      `;
+    }).join('');
+
+    if (consoleEl) consoleEl.innerText = `✓ Discovered ${files.length} flight record(s) on target device. Ready for bitstream pull.`;
+
+  } catch(e) {
+    console.error("ADB query error:", e);
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--red); padding:20px;">ADB scan error: ${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
+async function downloadAdbLogs() {
+  const devId = document.getElementById('acqAdbDeviceSelect').value || "";
+  const caseId = (document.getElementById('caseIdInput') && document.getElementById('caseIdInput').value) || "CASE-2026-MEITY-001";
+  const examiner = (document.getElementById('examinerInput') && document.getElementById('examinerInput').value) || "Inspector Cyber Division";
+  const consoleEl = document.getElementById('acqStatusConsole');
+
+  if (consoleEl) consoleEl.innerText = `Pulling all discovered records from ${devId}... Dual hashing SHA-256 + BLAKE3...`;
+  showToast(`Extracting flight records from ${devId} via ADB...`);
+
+  try {
+    let res = null;
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.acquire_adb_logs === 'function') {
+      res = await window.pywebview.api.acquire_adb_logs(devId, caseId, examiner);
+    } else {
+      res = await callApi('acquire_adb', { device_id: devId, case_id: caseId, examiner: examiner });
+    }
+
+    if (!res || !res.success) {
+      alert("ADB Acquisition failed: " + (res ? res.error_message : "Unknown error"));
+      if (consoleEl) consoleEl.innerText = `ADB Extraction failed: ${res ? res.error_message : 'Error'}`;
+      return;
+    }
+
+    const count = res.total_files_extracted || 0;
+    const kb = (res.total_bytes_extracted / 1024).toFixed(1);
+    if (consoleEl) {
+      consoleEl.innerHTML = `✓ <strong>Extraction Complete!</strong> Acquired ${count} file(s) (${kb} KB).<br>Output: <code>${escapeHtml(res.output_directory)}</code><br>Recorded in Merkle Ledger under ISO/IEC 27037:2012.`;
+    }
+
+    if (res.extracted_files && res.extracted_files.length > 0) {
+      selectedFilePath = res.extracted_files[0].local_path;
+      const lbl = document.getElementById('filePathLabel');
+      if (lbl) {
+        lbl.innerText = selectedFilePath;
+        lbl.classList.add('selected');
+      }
+    }
+
+    showToast(`✓ Extracted ${count} file(s) via ADB!`);
+
+    setTimeout(() => {
+      if (confirm(`ADB Extraction successfully acquired ${count} file(s)!\n\nDestination: ${res.output_directory}\n\nWould you like to analyze the primary extracted file now?`)) {
+        closeAcquisitionModal();
+        startAnalysis();
+      }
+    }, 500);
+
+  } catch(e) {
+    console.error("ADB Extraction error:", e);
+    alert("ADB Extraction failed: " + e.message);
   }
 }
 
