@@ -4166,10 +4166,10 @@ function initMap() {
   map = L.map('map', { zoomControl: true }).setView([20.5937, 78.9629], 5);
 
   baseLayers = {
-    streets: new CachedTileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors, © CARTO | PUSHPAK Offline Engine',
+    streets: new CachedTileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors | PUSHPAK Offline Engine',
       maxZoom: 19,
-      subdomains: 'abcd'
+      subdomains: 'abc'
     }),
     offline: new MBTilesTileLayer('', {
       attribution: 'PUSHPAK Local MBTiles Cartography (Air-Gapped)',
@@ -4179,10 +4179,10 @@ function initMap() {
       attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
       maxZoom: 19
     }),
-    dark: new CachedTileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{r}.png', {
-      attribution: '© OpenStreetMap contributors, © CARTO',
+    dark: new CachedTileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors | PUSHPAK Tactical Cartography',
       maxZoom: 19,
-      subdomains: 'abcd'
+      subdomains: 'abc'
     }),
     topo: new CachedTileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap, © OpenTopoMap (CC-BY-SA)',
@@ -4344,7 +4344,7 @@ async function autoCacheFlightAreaSilently(points) {
 
     // Cache both Streets and Satellite tiles silently in background!
     const layersToCache = [
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
     ];
 

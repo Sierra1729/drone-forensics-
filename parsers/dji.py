@@ -91,7 +91,9 @@ class DJIFlightLogParser(BaseParser):
             return False
 
         name_upper = path.name.upper()
-        # 1. Standard DJI Onboard flight log filenames (e.g. FLY182.DAT, FLY001.DAT)
+        # 1. Standard DJI Onboard flight log filenames (e.g. FLY182.DAT, FLY001.DAT, adsb_log_*.dat)
+        if name_upper.endswith(".DAT"):
+            return True
         if (name_upper.startswith("FLY") and name_upper.endswith(".DAT")) or name_upper.startswith("DAT_"):
             return True
         if name_upper.endswith(".DAT") and "DJI" in name_upper:
@@ -121,7 +123,7 @@ class DJIFlightLogParser(BaseParser):
                 if name_upper.endswith(".DAT") or name_upper.endswith(".BIN"):
                     if header[0] == DJI_FRAME_SYNC:
                         return True
-                    if header.count(b"\x55") >= 3:
+                    if header.count(b"\x55") >= 1:
                         return True
 
                 return False

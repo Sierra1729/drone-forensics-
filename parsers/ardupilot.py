@@ -128,14 +128,18 @@ class ArduPilotDataFlashParser(BaseParser):
         return ["ardupilot", "px4", "pixhawk"]
 
     def can_parse(self, file_path: Path) -> bool:
-        """Inspect file header: must start with 0xA3 0x95 0x80 (HEAD1, HEAD2, FMT)."""
+        """Inspect file header: binary sync bytes (0xA3 0x95 0x80) or ASCII FMT declarations."""
         path = Path(file_path)
-        if not path.is_file():
+        if not path.is_file() or path.stat().st_size == 0:
             return False
         try:
             with open(path, "rb") as f:
-                header = f.read(3)
-                return len(header) == 3 and header[0] == HEAD1 and header[1] == HEAD2 and header[2] == FMT_MSG_TYPE
+                header = f.read(512)
+                if len(header) >= 3 and header[0] == HEAD1 and header[1] == HEAD2 and header[2] == FMT_MSG_TYPE:
+                    return True
+                if b"FMT," in header or b"PARM," in header or (path.suffix.lower() == ".log" and b"GPS," in header):
+                    return True
+                return False
         except Exception:
             return False
 
@@ -146,6 +150,10 @@ class ArduPilotDataFlashParser(BaseParser):
     ) -> list[NormalizedEvent]:
         raw_bytes = file_path.read_bytes()
         file_len = len(raw_bytes)
+
+        if not (file_len >= 3 and raw_bytes[0] == HEAD1 and raw_bytes[1] == HEAD2):
+            if b"FMT," in raw_bytes[:2048] or b"PARM," in raw_bytes[:2048]:
+                return self._parse_ascii_records(file_path, file_sha256)
 
         # 1. First pass: parse FMT definitions and establish absolute GPS time reference
         formats: dict[int, FormatDefinition] = {}
@@ -375,3 +383,98 @@ class ArduPilotDataFlashParser(BaseParser):
             )
 
         return None
+
+    def _parse_ascii_records(
+        self,
+        file_path: Path,
+        file_sha256: str,
+    ) -> list[NormalizedEvent]:
+        """Parse text-based ArduPilot DataFlash logs (.log)."""
+        formats: dict[str, list[str]] = {}
+        events: list[NormalizedEvent] = []
+        base_time = datetime.fromtimestamp(file_path.stat().st_mtime, tz=timezone.utc)
+        current_mode = "STABILIZE"
+
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                parts = [p.strip() for p in line.strip().split(",")]
+                if not parts or not parts[0]:
+                    continue
+                msg_name = parts[0]
+                if msg_name == "FMT" and len(parts) >= 6:
+                    name = parts[3]
+                    cols = parts[5:]
+                    formats[name] = cols
+                elif msg_name in formats:
+                    cols = formats[msg_name]
+                    vals = parts[1:]
+                    row = dict(zip(cols, vals))
+                    
+                    time_ms_val = float(row.get("TimeMS", 0) or 0)
+                    ev_ts = base_time + timedelta(milliseconds=time_ms_val)
+                    
+                    if msg_name == "GPS":
+                        lat_s = row.get("Lat")
+                        lon_s = row.get("Lng") or row.get("Lon")
+                        alt_s = row.get("Alt")
+                        spd_s = row.get("Spd")
+                        gcrs_s = row.get("GCrs")
+                        nsats_s = row.get("NSats")
+                        hdop_s = row.get("HDop")
+                        
+                        lat = float(lat_s) if lat_s and abs(float(lat_s)) > 0.0001 else None
+                        lon = float(lon_s) if lon_s and abs(float(lon_s)) > 0.0001 else None
+                        
+                        if lat is not None and lon is not None:
+                            events.append(
+                                NormalizedEvent(
+                                    timestamp_utc=ev_ts,
+                                    source_platform="ardupilot",
+                                    event_type=EventType.GPS_FIX.value,
+                                    source_file=str(file_path),
+                                    source_file_sha256=file_sha256,
+                                    flight_mode=current_mode,
+                                    latitude=lat,
+                                    longitude=lon,
+                                    altitude_m=float(alt_s) if alt_s else None,
+                                    ground_speed_mps=float(spd_s) if spd_s else None,
+                                    heading_deg=float(gcrs_s) if gcrs_s else None,
+                                    satellites_visible=int(nsats_s) if nsats_s else None,
+                                    hdop=float(hdop_s) if hdop_s else None,
+                                    payload=row,
+                                )
+                            )
+                    elif msg_name == "MODE":
+                        current_mode = str(row.get("Mode", "UNKNOWN"))
+                        events.append(
+                            NormalizedEvent(
+                                timestamp_utc=ev_ts,
+                                source_platform="ardupilot",
+                                event_type=EventType.MODE_CHANGE.value,
+                                source_file=str(file_path),
+                                source_file_sha256=file_sha256,
+                                flight_mode=current_mode,
+                                payload=row,
+                            )
+                        )
+                    elif msg_name in ("CURR", "POWR", "BAT"):
+                        volt_s = row.get("Volt") or row.get("Vcc")
+                        curr_s = row.get("Curr")
+                        v_val = float(volt_s) if volt_s else None
+                        c_val = float(curr_s) if curr_s else None
+                        if v_val and v_val > 100: v_val /= 100.0
+                        if c_val and c_val > 100: c_val /= 100.0
+                        events.append(
+                            NormalizedEvent(
+                                timestamp_utc=ev_ts,
+                                source_platform="ardupilot",
+                                event_type=EventType.BATTERY_STATE.value,
+                                source_file=str(file_path),
+                                source_file_sha256=file_sha256,
+                                battery_voltage_v=v_val,
+                                battery_current_a=c_val,
+                                payload=row,
+                            )
+                        )
+
+        return events
