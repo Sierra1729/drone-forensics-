@@ -710,19 +710,28 @@ class DesktopForensicAPI:
                             break
 
                     if target:
-                        f.seek(get_cluster_offset(target['cluster']))
+                        def read_fat_entry(c_num: int) -> int:
+                            fat_ent_offset = fat1_offset + (c_num * 4)
+                            f.seek(fat_ent_offset)
+                            raw = f.read(4)
+                            if len(raw) < 4:
+                                return 0x0FFFFFFF
+                            return struct.unpack('<I', raw)[0] & 0x0FFFFFFF
+
+                        curr_clus = target['cluster']
                         bytes_remaining = target['size']
                         
                         with open(out_file, "wb") as out_f:
-                            chunk_size = 4 * 1024 * 1024
-                            while bytes_remaining > 0:
-                                read_len = min(bytes_remaining, chunk_size)
-                                chunk_data = f.read(read_len)
-                                if not chunk_data:
+                            while curr_clus < 0x0FFFFFF8 and bytes_remaining > 0:
+                                f.seek(get_cluster_offset(curr_clus))
+                                read_len = min(clus_size, bytes_remaining)
+                                c_data = f.read(read_len)
+                                if not c_data:
                                     break
-                                out_f.write(chunk_data)
-                                bytes_remaining -= len(chunk_data)
-                        
+                                out_f.write(c_data)
+                                bytes_remaining -= len(c_data)
+                                curr_clus = read_fat_entry(curr_clus)
+
                         extracted = True
                         break
 
