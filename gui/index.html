@@ -2482,12 +2482,9 @@ table.forensic-table tr:hover {
     <span class="app-name">Drone Forensics</span>
   </div>
 
-  <!-- Expandable Active Case Chip -->
-  <button class="case-chip" id="currentCaseChip" onclick="toggleCaseDetails(event)" title="Click to expand active case details, geolocation, and hash digest">
-    <span style="font-size: 12px;">📁</span>
-    <span class="case-chip-id" id="chipCaseId">CASE-2026-MEITY-001</span>
-    <span class="case-chip-status" id="chipCaseStatus">VERIFIED</span>
-    <span class="case-chip-arrow">▾</span>
+  <!-- Expandable Active Case Folder Button (Minimized) -->
+  <button class="case-chip-min" id="currentCaseChip" onclick="toggleCaseDetails(event)" title="Active Case Details & Custody Digest (📁)">
+    <span style="font-size: 14px;">📁</span>
   </button>
 
   <!-- Integrated 8 Forensic Navigation Tabs -->
@@ -2518,15 +2515,9 @@ table.forensic-table tr:hover {
     </button>
   </nav>
 
-  <!-- Flight Session Selector Dropdown -->
-  <div class="session-selector-container" id="sessionSelectorContainer" style="display:flex; align-items:center; margin-left:4px;">
+  <!-- Flight Session Selector Dropdown (Hidden by default, shown ONLY if multi-sessions detected) -->
+  <div class="session-selector-container" id="sessionSelectorContainer" style="display:none; align-items:center; margin-left:4px;">
     <select id="flightSessionSelect" onchange="onFlightSessionChanged(this.value)" title="Select active FDR Flight Session" style="background:#0b1329; color:#38bdf8; border:1px solid #0284c7; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; outline:none; height:28px;">
-      <option value="all">✈️ All Sessions (5 Flights)</option>
-      <option value="fdr_000">📅 Session 1: Oct 30, 2018 (15:00:47)</option>
-      <option value="fdr_001">📅 Session 2: System Boot Log</option>
-      <option value="fdr_002">📅 Session 3: Oct 30, 2018 (15:10:17)</option>
-      <option value="fdr_003">📅 Session 4: Nov 06, 2018 (12:11:38)</option>
-      <option value="fdr_current">📅 Session 5: Active Flight Log</option>
     </select>
   </div>
 
@@ -2826,19 +2817,13 @@ table.forensic-table tr:hover {
           <!-- Card Body (Contains Session Selector & Start/End Termini) -->
           <div class="map-loc-card-body" id="mapLocCardBody">
             
-            <!-- Flight Session Selector inside Map Card -->
-            <div style="padding: 8px 10px; background: rgba(11, 19, 41, 0.9); border-bottom: 1px solid rgba(30, 41, 59, 0.8); display: flex; flex-direction: column; gap: 4px; border-radius: 6px 6px 0 0;">
+            <!-- Flight Session Selector inside Map Card (Hidden by default, shown ONLY if multi-sessions detected) -->
+            <div id="mapSessionSelectBox" style="display: none; padding: 8px 10px; background: rgba(11, 19, 41, 0.9); border-bottom: 1px solid rgba(30, 41, 59, 0.8); flex-direction: column; gap: 4px; border-radius: 6px 6px 0 0;">
               <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center;">
                 <span>✈️ SELECT FLIGHT SESSION</span>
-                <span style="font-size: 9.5px; color: #38bdf8; background: rgba(2,132,199,0.2); padding: 1px 5px; border-radius: 3px;">5 FDR LOGS</span>
+                <span style="font-size: 9.5px; color: #38bdf8; background: rgba(2,132,199,0.2); padding: 1px 5px; border-radius: 3px;" id="mapSessionBadge">FDR LOGS</span>
               </div>
               <select id="mapSessionSelect" onchange="onFlightSessionChanged(this.value)" style="background: #080c16; color: #38bdf8; border: 1px solid #0284c7; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; outline: none; width: 100%;">
-                <option value="all">✈️ All Sessions (5 Flights Combined)</option>
-                <option value="fdr_000">📅 Session 1: Oct 30, 2018 15:00 (169 MB)</option>
-                <option value="fdr_001">📅 Session 2: System Boot Log (77 MB)</option>
-                <option value="fdr_002">📅 Session 3: Oct 30, 2018 15:10 (38 MB)</option>
-                <option value="fdr_003">📅 Session 4: Nov 06, 2018 12:11 (464 MB)</option>
-                <option value="fdr_current">📅 Session 5: Active Flight Log (0.22 MB)</option>
               </select>
             </div>
             <!-- Row 1: Start / Takeoff Point -->
@@ -4914,9 +4899,158 @@ function switchTab(tabId) {
     if (map) setTimeout(() => map.invalidateSize(), 50);
   } else if (tabId === 'tabHex') {
     loadHexChunk(hexCurrentOffset);
+  } else if (tabId === 'tabMedia') {
+    renderMediaVault(lastAnalysisResult);
   } else {
     setTimeout(() => renderTabCharts(tabId), 50);
   }
+}
+
+function setupSessionSelectors(data) {
+  const containerHeader = document.getElementById('sessionSelectorContainer');
+  const boxMap = document.getElementById('mapSessionSelectBox');
+  const selHeader = document.getElementById('flightSessionSelect');
+  const selMap = document.getElementById('mapSessionSelect');
+  const badgeMap = document.getElementById('mapSessionBadge');
+
+  const ext = (data && data.extended_telemetry) || {};
+  const sessions = ext.sessions || [];
+
+  if (sessions && sessions.length > 1) {
+    let optionsHtml = '';
+    sessions.forEach(s => {
+      optionsHtml += `<option value="${s.session_id}">${escapeHtml(s.name)} (${s.size})</option>`;
+    });
+
+    if (selHeader) selHeader.innerHTML = optionsHtml;
+    if (selMap) selMap.innerHTML = optionsHtml;
+    if (badgeMap) badgeMap.innerText = `${sessions.length - 1} FDR LOGS`;
+
+    if (containerHeader) containerHeader.style.display = 'flex';
+    if (boxMap) boxMap.style.display = 'flex';
+  } else {
+    if (containerHeader) containerHeader.style.display = 'none';
+    if (boxMap) boxMap.style.display = 'none';
+  }
+}
+
+function renderMediaVault(data) {
+  const tabElem = document.getElementById('tabMedia');
+  if (!tabElem) return;
+
+  const ext = (data && data.extended_telemetry) || {};
+  const mediaList = ext.media_vault || [];
+
+  let html = `
+    <div style="display:flex; flex-direction:column; gap:14px; padding:14px; height:100%; overflow-y:auto;">
+      <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="font-size:14px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:8px;">
+            <span>🎬 Carved Media Vault & Multimedia Evidence Gallery</span>
+            <span class="audit-status-badge ok" style="font-size:10px;">${mediaList.length > 0 ? 'CARVED ASSETS' : 'EMPTY VAULT'}</span>
+          </div>
+          <div style="font-size:11px; color:#94a3b8; margin-top:4px;">
+            Direct forensic extraction from filesystem partitions & raw bitstreams inside evidence.
+          </div>
+        </div>
+        <div style="display:flex; gap:16px; align-items:center;">
+          <div style="text-align:right;">
+            <div style="font-size:10px; color:#64748b; text-transform:uppercase;">Carved Media Files</div>
+            <div style="font-size:16px; font-weight:700; color:#38bdf8;">${mediaList.length} Files</div>
+          </div>
+        </div>
+      </div>
+  `;
+
+  if (mediaList.length === 0) {
+    html += `
+      <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:50px; text-align:center; color:#94a3b8;">
+        <div style="font-size:48px; margin-bottom:12px;">📷</div>
+        <div style="font-size:15px; font-weight:700; color:#f8fafc;">No Carved Media Assets in Current Log</div>
+        <div style="font-size:11.5px; color:#64748b; margin-top:6px;">Ingest an eMMC physical disk image (.dd), SD card dump, or mobile package to parse video recordings & camera databases.</div>
+      </div>
+    `;
+  } else {
+    const videos = mediaList.filter(m => m.type === 'Video' || (m.filename && (m.filename.endsWith('.MP4') || m.filename.endsWith('.MOV'))));
+    const sysFiles = mediaList.filter(m => m.type !== 'Video' && (!m.filename || (!m.filename.endsWith('.MP4') && !m.filename.endsWith('.MOV'))));
+
+    if (videos.length > 0) {
+      html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
+      videos.forEach(v => {
+        html += `
+          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:13px; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:6px;">
+                <span>📹 ${escapeHtml(v.filename)}</span>
+                <span style="font-size:9px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:4px;">${escapeHtml(v.format || '4K UHD')}</span>
+              </div>
+              <span style="font-size:12px; font-weight:700; color:#34d399;">${escapeHtml(v.size_display || (v.size_bytes + ' bytes'))}</span>
+            </div>
+            
+            <div style="background:#080c14; border:1px solid #1e293b; border-radius:6px; height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; position:relative; overflow:hidden;">
+              <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,132,199,0.15), rgba(15,23,42,0.85));"></div>
+              <div style="position:relative; z-index:2; font-size:36px; opacity:0.8; cursor:pointer;" onclick="alert('Playing Stream: ${escapeHtml(v.path)}')">▶️</div>
+              <div style="position:relative; z-index:2; font-size:11px; color:#94a3b8; font-family:var(--font-mono);">Parrot Anafi 4K Aerial Video Recording</div>
+              <div style="position:absolute; bottom:8px; right:10px; z-index:2; font-size:10px; background:rgba(0,0,0,0.7); color:#e2e8f0; padding:2px 6px; border-radius:3px;">${escapeHtml(v.duration || 'Video')}</div>
+            </div>
+
+            <table class="forensic-table" style="font-size:10.5px;">
+              <tbody>
+                <tr><td style="width:130px; color:#94a3b8;">Path in Evidence</td><td style="font-family:var(--font-mono); color:#38bdf8;">${escapeHtml(v.path)}</td></tr>
+                <tr><td style="color:#94a3b8;">Exact File Size</td><td style="font-family:var(--font-mono); color:#f8fafc;">${v.size_bytes ? v.size_bytes.toLocaleString() : 'N/A'} bytes</td></tr>
+                <tr><td style="color:#94a3b8;">Recorded Date</td><td style="color:#e2e8f0;">${escapeHtml(v.created || 'N/A')}</td></tr>
+                <tr><td style="color:#94a3b8;">FAT32 Start Cluster</td><td style="font-family:var(--font-mono); color:#94a3b8;">Cluster #${v.cluster_start || 0}</td></tr>
+              </tbody>
+            </table>
+
+            <button class="btn-primary" style="font-size:11px; width:100%; text-align:center;" onclick="alert('Exporting ${escapeHtml(v.filename)} from eMMC partition...')">
+              ⬇️ Export Carved Video File
+            </button>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+
+    if (sysFiles.length > 0) {
+      html += `
+        <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px; margin-top:14px;">
+          <div style="font-size:12.5px; font-weight:700; color:#38bdf8; margin-bottom:10px;">
+            🗄️ System & Configuration Assets in Evidence
+          </div>
+          <table class="forensic-table" style="font-size:11px;">
+            <thead>
+              <tr>
+                <th style="width:180px;">Filename</th>
+                <th>Path in Image</th>
+                <th style="width:140px;">Type / Format</th>
+                <th style="width:120px;">Size</th>
+                <th style="width:120px;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      sysFiles.forEach(sf => {
+        html += `
+          <tr>
+            <td style="font-weight:700; color:#f8fafc;">${escapeHtml(sf.filename)}</td>
+            <td style="font-family:var(--font-mono); color:#38bdf8;">${escapeHtml(sf.path)}</td>
+            <td>${escapeHtml(sf.type || sf.format)}</td>
+            <td>${escapeHtml(sf.size_display || (sf.size_bytes + ' bytes'))}</td>
+            <td><button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="alert('Opening ${escapeHtml(sf.filename)}...')">👁️ Inspect</button></td>
+          </tr>
+        `;
+      });
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+  }
+
+  html += `</div>`;
+  tabElem.innerHTML = html;
 }
 
 function onFlightSessionChanged(sessionId) {
@@ -6471,6 +6605,10 @@ function renderFlightData(data) {
     globalExtended = data.extended_telemetry;
     renderExtendedData(globalExtended);
   }
+
+  // Setup Dynamic Session Dropdowns & Media Vault Gallery
+  setupSessionSelectors(data);
+  renderMediaVault(data);
 }
 
 function formatCoords(lat, lon) {

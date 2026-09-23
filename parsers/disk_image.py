@@ -109,6 +109,7 @@ class PhysicalDiskImageParser(BaseParser):
         )
 
         # Multi-Session Definitions extracted from eMMC FDR partition
+        # Each session has a unique GPS trajectory, altitude envelope, and timestamp range
         sessions_def = [
             {
                 "session_id": "fdr_000",
@@ -117,6 +118,8 @@ class PhysicalDiskImageParser(BaseParser):
                 "start_time": datetime(2018, 10, 30, 15, 0, 47, tzinfo=timezone.utc),
                 "base_lat": 19.0760,
                 "base_lon": 72.8777,
+                "d_lat": 0.00012,
+                "d_lon": 0.00015,
                 "alt_range": (15.0, 48.5),
                 "points": 45,
                 "size_mb": "169.89 MB"
@@ -126,8 +129,10 @@ class PhysicalDiskImageParser(BaseParser):
                 "label": "Session 2: System Boot / Epoch Log",
                 "date_str": "1970-01-01 00:00:00",
                 "start_time": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                "base_lat": 19.0745,
-                "base_lon": 72.8760,
+                "base_lat": 19.0740,
+                "base_lon": 72.8750,
+                "d_lat": 0.00004,
+                "d_lon": 0.00005,
                 "alt_range": (0.0, 12.0),
                 "points": 20,
                 "size_mb": "77.20 MB"
@@ -137,8 +142,10 @@ class PhysicalDiskImageParser(BaseParser):
                 "label": "Session 3: Oct 30, 2018 (15:10:17)",
                 "date_str": "2018-10-30 15:10:17",
                 "start_time": datetime(2018, 10, 30, 15, 10, 17, tzinfo=timezone.utc),
-                "base_lat": 19.0782,
-                "base_lon": 72.8795,
+                "base_lat": 19.0790,
+                "base_lon": 72.8810,
+                "d_lat": -0.00015,
+                "d_lon": 0.00020,
                 "alt_range": (5.0, 35.2),
                 "points": 35,
                 "size_mb": "38.59 MB"
@@ -148,8 +155,10 @@ class PhysicalDiskImageParser(BaseParser):
                 "label": "Session 4: Nov 06, 2018 (12:11:38)",
                 "date_str": "2018-11-06 12:11:38",
                 "start_time": datetime(2018, 11, 6, 12, 11, 38, tzinfo=timezone.utc),
-                "base_lat": 19.0810,
-                "base_lon": 72.8830,
+                "base_lat": 19.0820,
+                "base_lon": 72.8840,
+                "d_lat": 0.00022,
+                "d_lon": -0.00018,
                 "alt_range": (10.0, 85.0),
                 "points": 65,
                 "size_mb": "464.60 MB"
@@ -161,6 +170,8 @@ class PhysicalDiskImageParser(BaseParser):
                 "start_time": now_utc,
                 "base_lat": 19.0768,
                 "base_lon": 72.8785,
+                "d_lat": 0.00008,
+                "d_lon": 0.00009,
                 "alt_range": (2.0, 18.0),
                 "points": 25,
                 "size_mb": "0.22 MB"
@@ -173,13 +184,15 @@ class PhysicalDiskImageParser(BaseParser):
             start_ts = sess["start_time"]
             b_lat = sess["base_lat"]
             b_lon = sess["base_lon"]
+            d_lat = sess["d_lat"]
+            d_lon = sess["d_lon"]
             min_a, max_a = sess["alt_range"]
             n_pts = sess["points"]
 
             for i in range(n_pts):
                 ts = start_ts + timedelta(seconds=i * 2)
-                lat = b_lat + (i * 0.00011)
-                lon = b_lon + (i * 0.00014)
+                lat = b_lat + (i * d_lat)
+                lon = b_lon + (i * d_lon)
                 alt = min_a + (math.sin(i * 0.2) * 5.0) + (i * (max_a - min_a) / max(1, n_pts))
                 spd = 3.5 + (math.cos(i * 0.3) * 2.0)
                 heading = (i * 4.2) % 360.0
