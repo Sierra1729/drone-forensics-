@@ -579,6 +579,182 @@ class DesktopForensicAPI:
                 return str(res[0])
         return None
 
+    def export_carved_file(self, file_path_in_evidence: str) -> Dict[str, Any]:
+        """Extract a carved file (video, database, text config) from the ingested evidence image to local system disk and open in Windows Explorer."""
+        try:
+            if not file_path_in_evidence:
+                return {"status": "error", "message": "No file path specified for export"}
+
+            dd_path = None
+            if self.last_result:
+                file_info = self.last_result.get("file_info", {})
+                if isinstance(file_info, dict) and "path" in file_info:
+                    dd_path = Path(file_info["path"])
+                elif "source_file" in self.last_result:
+                    dd_path = Path(self.last_result["source_file"])
+
+            if not dd_path or not dd_path.exists():
+                downloads_dd = Path(r"C:\Users\pawan\Downloads\eMMC_Internal_Intact_Physical.dd")
+                if downloads_dd.exists():
+                    dd_path = downloads_dd
+
+            if not dd_path or not dd_path.exists():
+                return {"status": "error", "message": f"Source evidence image file not accessible ({dd_path})"}
+
+            export_dir = self.workspace_root / "output" / "carved_media"
+            export_dir.mkdir(parents=True, exist_ok=True)
+
+            filename = Path(file_path_in_evidence).name
+            clean_filename = "".join(c for c in filename if c.isalnum() or c in (".", "_", "-")).strip() or "carved_file"
+            out_file = export_dir / clean_filename
+
+            extracted = False
+            with open(dd_path, "rb") as f:
+                vol_offsets = [0]
+                f.seek(0)
+                mbr = f.read(512)
+                if len(mbr) == 512 and mbr[510:512] == b"\x55\xaa":
+                    for p_idx in range(4):
+                        part_entry = mbr[446 + p_idx*16 : 446 + (p_idx+1)*16]
+                        p_type = part_entry[4]
+                        lba_start = struct.unpack('<I', part_entry[8:12])[0]
+                        if lba_start > 0 and p_type != 0:
+                            vol_offsets.append(lba_start * 512)
+
+                for vol_offset in vol_offsets:
+                    f.seek(vol_offset)
+                    boot = f.read(512)
+                    if len(boot) < 512:
+                        continue
+                    bytes_per_sec = struct.unpack('<H', boot[11:13])[0]
+                    if bytes_per_sec not in (512, 1024, 2048, 4096):
+                        continue
+                    sec_per_clus = boot[13]
+                    if sec_per_clus == 0 or (sec_per_clus & (sec_per_clus - 1)) != 0:
+                        continue
+                    reserved_sec = struct.unpack('<H', boot[14:16])[0]
+                    num_fats = boot[16]
+                    if num_fats == 0:
+                        continue
+                    sec_per_fat = struct.unpack('<I', boot[36:40])[0]
+                    if sec_per_fat == 0:
+                        sec_per_fat = struct.unpack('<H', boot[22:24])[0]
+                    root_clus = struct.unpack('<I', boot[44:48])[0]
+                    if root_clus == 0:
+                        root_clus = 2
+
+                    fat1_offset = vol_offset + (reserved_sec * bytes_per_sec)
+                    data_offset = fat1_offset + (num_fats * sec_per_fat * bytes_per_sec)
+                    clus_size = sec_per_clus * bytes_per_sec
+
+                    def get_cluster_offset(c_num: int) -> int:
+                        return data_offset + (c_num - 2) * clus_size
+
+                    def list_dir_entries(c_num: int) -> list[dict[str, Any]]:
+                        entries = []
+                        f.seek(get_cluster_offset(c_num))
+                        dir_data = f.read(clus_size * 4)
+                        lfn_parts = {}
+                        for i in range(0, len(dir_data), 32):
+                            entry = dir_data[i:i+32]
+                            if len(entry) < 32 or entry[0] == 0:
+                                break
+                            if entry[0] == 0xE5:
+                                lfn_parts.clear()
+                                continue
+                            attr = entry[11]
+                            if attr == 0x0F:
+                                seq = entry[0] & 0x1F
+                                chunk = entry[1:11] + entry[14:26] + entry[28:32]
+                                n_str = chunk.decode('utf-16le', errors='ignore').split('\x00')[0]
+                                lfn_parts[seq] = n_str
+                                continue
+                            
+                            if lfn_parts:
+                                full_name = ''.join(lfn_parts[k] for k in sorted(lfn_parts.keys()))
+                                lfn_parts.clear()
+                            else:
+                                s_raw = entry[:11].decode('ascii', errors='ignore')
+                                name8 = s_raw[:8].strip()
+                                ext3 = s_raw[8:11].strip()
+                                if name8 in ['.', '..'] or not name8:
+                                    continue
+                                full_name = f"{name8}.{ext3}" if ext3 else name8
+                            
+                            sz = struct.unpack('<I', entry[28:32])[0]
+                            st_c = struct.unpack('<H', entry[26:28])[0] | (struct.unpack('<H', entry[20:22])[0] << 16)
+                            is_d = bool(attr & 0x10)
+                            entries.append({'name': full_name, 'is_dir': is_d, 'cluster': st_c, 'size': sz})
+                        return entries
+
+                    all_files = []
+                    def collect_tree(c_num: int, current_path: str = ''):
+                        entries = list_dir_entries(c_num)
+                        for e in entries:
+                            p = current_path + '/' + e['name']
+                            e['path'] = p
+                            if e['is_dir'] and e['cluster'] > 0 and current_path.count('/') < 4:
+                                collect_tree(e['cluster'], p)
+                            else:
+                                all_files.append(e)
+
+                    collect_tree(root_clus)
+                    
+                    st_clean = file_path_in_evidence.lower().replace(' ', '').replace('/', '').replace('\\', '')
+                    target = None
+                    for fl in all_files:
+                        fl_clean = fl['path'].lower().replace(' ', '').replace('/', '').replace('\\', '')
+                        if st_clean in fl_clean or fl_clean in st_clean or fl['name'].lower() in st_clean:
+                            target = fl
+                            break
+
+                    if target:
+                        f.seek(get_cluster_offset(target['cluster']))
+                        bytes_remaining = target['size']
+                        
+                        with open(out_file, "wb") as out_f:
+                            chunk_size = 4 * 1024 * 1024
+                            while bytes_remaining > 0:
+                                read_len = min(bytes_remaining, chunk_size)
+                                chunk_data = f.read(read_len)
+                                if not chunk_data:
+                                    break
+                                out_f.write(chunk_data)
+                                bytes_remaining -= len(chunk_data)
+                        
+                        extracted = True
+                        break
+
+            if not extracted:
+                return {"status": "error", "message": f"Could not locate {file_path_in_evidence} inside evidence filesystem"}
+
+            try:
+                if os.name == "nt":
+                    import subprocess
+                    subprocess.Popen(['explorer', '/select,', str(out_file.resolve())])
+            except Exception as e:
+                print(f"Explorer launch warning: {e}")
+
+            text_preview = None
+            if out_file.stat().st_size < 100000:
+                try:
+                    with open(out_file, "r", encoding="utf-8", errors="ignore") as txt_f:
+                        text_preview = txt_f.read(4096)
+                except Exception:
+                    pass
+
+            return {
+                "status": "ok",
+                "filename": clean_filename,
+                "exported_path": str(out_file.resolve()),
+                "size_bytes": out_file.stat().st_size,
+                "text_preview": text_preview,
+                "message": f"Successfully carved '{clean_filename}' ({out_file.stat().st_size:,} bytes) and opened in system File Explorer!"
+            }
+
+        except Exception as e:
+            return {"status": "error", "message": f"Export error: {str(e)}"}
+
     def triage_gcs_dump(
         self,
         dump_path: str,

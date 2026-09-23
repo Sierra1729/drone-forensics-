@@ -5107,7 +5107,7 @@ function renderMediaVault(data) {
             
             <div style="background:#080c14; border:1px solid #1e293b; border-radius:6px; height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; position:relative; overflow:hidden;">
               <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,132,199,0.15), rgba(15,23,42,0.85));"></div>
-              <div style="position:relative; z-index:2; font-size:36px; opacity:0.8; cursor:pointer;" onclick="alert('Playing Stream: ${escapeHtml(v.path)}')">▶️</div>
+              <div style="position:relative; z-index:2; font-size:36px; opacity:0.8; cursor:pointer;" title="Export & View Video File" onclick="exportMediaVaultFile('${escapeHtml(v.path)}')">▶️</div>
               <div style="position:relative; z-index:2; font-size:11px; color:#94a3b8; font-family:var(--font-mono);">Parrot Anafi 4K Aerial Video Recording</div>
               <div style="position:absolute; bottom:8px; right:10px; z-index:2; font-size:10px; background:rgba(0,0,0,0.7); color:#e2e8f0; padding:2px 6px; border-radius:3px;">${escapeHtml(v.duration || 'Video')}</div>
             </div>
@@ -5121,7 +5121,7 @@ function renderMediaVault(data) {
               </tbody>
             </table>
 
-            <button class="btn-primary" style="font-size:11px; width:100%; text-align:center;" onclick="alert('Exporting ${escapeHtml(v.filename)} from eMMC partition...')">
+            <button class="btn-primary" style="font-size:11px; width:100%; text-align:center;" onclick="exportMediaVaultFile('${escapeHtml(v.path)}')">
               ⬇️ Export Carved Video File
             </button>
           </div>
@@ -5155,7 +5155,7 @@ function renderMediaVault(data) {
             <td style="font-family:var(--font-mono); color:#38bdf8;">${escapeHtml(sf.path)}</td>
             <td>${escapeHtml(sf.type || sf.format)}</td>
             <td>${escapeHtml(sf.size_display || (sf.size_bytes + ' bytes'))}</td>
-            <td><button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="alert('Opening ${escapeHtml(sf.filename)}...')">👁️ Inspect</button></td>
+            <td><button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="exportMediaVaultFile('${escapeHtml(sf.path)}')">👁️ Inspect</button></td>
           </tr>
         `;
       });
@@ -5169,6 +5169,30 @@ function renderMediaVault(data) {
 
   html += `</div>`;
   tabElem.innerHTML = html;
+}
+
+async function exportMediaVaultFile(pathInEvidence) {
+  showToast("Carving & Exporting asset from image to system...", "info");
+  try {
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.export_carved_file) {
+      const res = await window.pywebview.api.export_carved_file(pathInEvidence);
+      if (res && res.status === 'ok') {
+        let msg = `File Saved To System: ${res.exported_path}\n(Opened automatically in File Explorer)`;
+        if (res.text_preview) {
+          msg += `\n\n📄 File Contents Preview:\n${res.text_preview}`;
+        }
+        alert(`✅ Carved Asset Exported Successfully!\n\n${msg}`);
+        showToast(`Carved asset saved: ${res.filename}`, "success");
+      } else {
+        alert(`⚠️ Export Error: ${res ? res.message : 'Could not export file'}`);
+      }
+    } else {
+      alert(`Carving file from evidence to system: ${pathInEvidence}`);
+    }
+  } catch (err) {
+    console.error("Export error:", err);
+    alert("Export error: " + err.message);
+  }
 }
 
 function onFlightSessionChanged(sessionId) {
