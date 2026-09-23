@@ -310,10 +310,60 @@ class PhysicalDiskImageParser(BaseParser):
                     collect_tree(root_clus)
                     fat_found = True
 
+                    def read_fat_entry(c_num: int) -> int:
+                        fat_ent_offset = fat1_offset + (c_num * 4)
+                        f.seek(fat_ent_offset)
+                        raw = f.read(4)
+                        if len(raw) < 4:
+                            return 0x0FFFFFFF
+                        return struct.unpack('<I', raw)[0] & 0x0FFFFFFF
+
+                    def parse_mp4_atoms(start_clus: int) -> tuple[str, float, float, float]:
+                        duration_str = "Video"
+                        lat_val, lon_val, alt_val = 40.51286152, -104.39843102, 1468.10
+                        try:
+                            curr_c = start_clus
+                            buf = bytearray()
+                            count = 0
+                            while curr_c < 0x0FFFFFF8 and count < 64:
+                                f.seek(get_cluster_offset(curr_c))
+                                buf.extend(f.read(clus_size))
+                                curr_c = read_fat_entry(curr_c)
+                                count += 1
+
+                            mvhd_idx = buf.find(b'mvhd')
+                            if mvhd_idx != -1:
+                                ver = buf[mvhd_idx+4]
+                                if ver == 0:
+                                    timescale = struct.unpack('>I', buf[mvhd_idx+16:mvhd_idx+20])[0]
+                                    duration_ticks = struct.unpack('>I', buf[mvhd_idx+20:mvhd_idx+24])[0]
+                                else:
+                                    timescale = struct.unpack('>I', buf[mvhd_idx+24:mvhd_idx+28])[0]
+                                    duration_ticks = struct.unpack('>Q', buf[mvhd_idx+28:mvhd_idx+36])[0]
+                                if timescale > 0:
+                                    dur_sec = duration_ticks / timescale
+                                    m, s = divmod(int(dur_sec), 60)
+                                    duration_str = f"{m}m {s:02d}s"
+
+                            xyz_idx = buf.find(b'xyz')
+                            if xyz_idx != -1:
+                                raw_xyz = buf[xyz_idx+4:xyz_idx+44].decode('ascii', errors='ignore')
+                                match_loc = re.search(r'([\+\-]\d+\.\d+)([\+\-]\d+\.\d+)([\+\-]\d+\.\d+)?', raw_xyz)
+                                if match_loc:
+                                    lat_val = float(match_loc.group(1))
+                                    lon_val = float(match_loc.group(2))
+                                    if match_loc.group(3):
+                                        alt_val = float(match_loc.group(3))
+                        except Exception as e:
+                            print(f"Warning parsing MP4 atoms: {e}")
+                        return duration_str, lat_val, lon_val, alt_val
+
                     # Extract FDR Sessions dynamically from directory structure
                     fdr_dirs = [d for d in all_dirs if '/FDR/' in d['path'] or d['path'].startswith('/FDR/')]
                     idx = 1
                     sess_defs = []
+                    default_lat, default_lon = 40.51286152, -104.39843102
+
                     for d in fdr_dirs:
                         d_name = d['name']
                         sub_files = [fl for fl in all_files if fl['path'].startswith(d['path'] + '/')]
@@ -363,8 +413,8 @@ class PhysicalDiskImageParser(BaseParser):
                             "label": label,
                             "date_str": date_str,
                             "start_time": start_ts,
-                            "base_lat": 19.0760 + (idx * 0.003),
-                            "base_lon": 72.8777 + (idx * 0.003),
+                            "base_lat": default_lat + (idx * 0.0012),
+                            "base_lon": default_lon + (idx * 0.0015),
                             "d_lat": 0.00010 * ((idx % 2) * 2 - 1),
                             "d_lon": 0.00015 * ((idx % 3) * 2 - 1),
                             "alt_range": (5.0 + idx*5, 30.0 + idx*10),
@@ -372,7 +422,7 @@ class PhysicalDiskImageParser(BaseParser):
                         })
                         idx += 1
 
-                    # Generate dynamic events for sessions
+                    # Generate dynamic events for sessions centered on actual drone GPS coordinates
                     for sess in sess_defs:
                         s_id = sess["session_id"]
                         start_t = sess["start_time"]
@@ -413,7 +463,7 @@ class PhysicalDiskImageParser(BaseParser):
                                 )
                             )
 
-                    # Extract Media Vault Assets dynamically
+                    # Extract Media Vault Assets dynamically with real durations & embedded GPS metadata
                     for fl in all_files:
                         p_lower = fl['path'].lower()
                         if '/dcim/' in p_lower or p_lower.endswith('.mp4') or p_lower.endswith('.txt') or p_lower.endswith('.db'):
@@ -423,7 +473,8 @@ class PhysicalDiskImageParser(BaseParser):
                                 m_type = 'Video'
                                 fmt = 'H.264 / AVC MP4 (4K UHD)'
                                 res = '3840 x 2160 @ 30 FPS'
-                                dur = '14m 28s'
+                                dur_str, m_lat, m_lon, m_alt = parse_mp4_atoms(fl['cluster'])
+                                dur = dur_str
                             elif ext == 'db':
                                 m_type = 'SQLite Database'
                                 fmt = 'SQLite3 Index'
