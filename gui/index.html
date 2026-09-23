@@ -2502,6 +2502,9 @@ table.forensic-table tr:hover {
     <button class="tab-btn" id="btn-tabHex" onclick="switchTab('tabHex')">
       🔢 6. Raw Hex
     </button>
+    <button class="tab-btn" id="btn-tabGcsTriage" onclick="switchTab('tabGcsTriage')">
+      📱 7. GCS Triage
+    </button>
   </nav>
 
   <!-- Header Right Actions Group -->
@@ -3604,6 +3607,107 @@ table.forensic-table tr:hover {
             Compliant with NIST SP 800-86 Bitstream Cross-Verification Standards
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: GCS & MOBILE TRIAGE AUDIT TAB -->
+    <div id="tabGcsTriage" class="tab-content">
+      <div style="display:flex; flex-direction:column; gap:14px; padding:14px; height:100%; overflow-y:auto;">
+        
+        <!-- Top Executive Summary Banner -->
+        <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-size:14px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:8px;">
+              <span>📱 GCS Mobile & Controller Forensic Triage</span>
+              <span class="audit-status-badge ok" style="font-size:10px;">ISO/IEC 27037:2012 COMPLIANT</span>
+            </div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:4px;" id="gcsTabSourcePath">
+              Target Dump: <code style="color:#e2e8f0; font-family:var(--font-mono);" id="gcsTabPathVal">No GCS dump triaged yet. Select folder or drive in hardware acquisition menu.</code>
+            </div>
+          </div>
+          <div style="display:flex; gap:16px; align-items:center;">
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#64748b; text-transform:uppercase;">Stream-Hashed Files</div>
+              <div style="font-size:16px; font-weight:700; color:#38bdf8;" id="gcsTabFilesCount">0 files</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#64748b; text-transform:uppercase;">Data Volume</div>
+              <div style="font-size:16px; font-weight:700; color:#facc15;" id="gcsTabDataVolume">0.00 MB</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#64748b; text-transform:uppercase;">Flight Logs Found</div>
+              <div style="font-size:16px; font-weight:700; color:#4ade80;" id="gcsTabLogsCount">0 logs</div>
+            </div>
+            <button class="btn-secondary" style="border-color:#0284c7; color:#38bdf8; font-size:11px;" onclick="openAcquisitionModal(); switchAcqTab('adb');">
+              📁 Triage Dump
+            </button>
+          </div>
+        </div>
+
+        <!-- Identity & Hardware Cards Grid -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+          
+          <!-- Card A: Pilot Identity -->
+          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px;">
+            <div style="font-size:12.5px; font-weight:700; color:#38bdf8; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+              <span>👤 Pilot Identity & Account Attribution</span>
+            </div>
+            <table class="forensic-table" style="font-size:11px;">
+              <tbody>
+                <tr><td style="width:140px; color:#94a3b8;">Pilot Name / Operator ID</td><td style="font-weight:700; color:#f8fafc;" id="gcsPilotName">--</td></tr>
+                <tr><td style="color:#94a3b8;">Account Email</td><td style="font-family:var(--font-mono); color:#38bdf8;" id="gcsPilotEmail">--</td></tr>
+                <tr><td style="color:#94a3b8;">Phone Number</td><td style="font-family:var(--font-mono); color:#e2e8f0;" id="gcsPilotPhone">--</td></tr>
+                <tr><td style="color:#94a3b8;">Companion App Package</td><td style="font-family:var(--font-mono); color:#facc15;" id="gcsAppPackage">--</td></tr>
+                <tr><td style="color:#94a3b8;">Operator UID</td><td style="font-family:var(--font-mono); color:#94a3b8;" id="gcsPilotUid">--</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Card B: GCS Hardware Attribution -->
+          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px;">
+            <div style="font-size:12.5px; font-weight:700; color:#38bdf8; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+              <span>📱 GCS Controller Hardware Attribution</span>
+            </div>
+            <table class="forensic-table" style="font-size:11px;">
+              <tbody>
+                <tr><td style="width:140px; color:#94a3b8;">Controller Device Model</td><td style="font-weight:700; color:#f8fafc;" id="gcsDeviceModel">--</td></tr>
+                <tr><td style="color:#94a3b8;">Controller Serial Number</td><td style="font-family:var(--font-mono); color:#4ade80;" id="gcsControllerSn">--</td></tr>
+                <tr><td style="color:#94a3b8;">Paired Drone Serial Number</td><td style="font-family:var(--font-mono); color:#facc15;" id="gcsPairedDroneSn">--</td></tr>
+                <tr><td style="color:#94a3b8;">Android / OS Version</td><td style="color:#e2e8f0;" id="gcsOsVersion">--</td></tr>
+                <tr><td style="color:#94a3b8;">MAC Address / Radio ID</td><td style="font-family:var(--font-mono); color:#94a3b8;" id="gcsMacAddress">--</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Discovered Flight Logs Table Card -->
+        <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-size:12.5px; font-weight:700; color:#38bdf8;">
+              📂 Discovered Flight Records in Extracted Dump
+            </div>
+            <div style="font-size:10.5px; color:#94a3b8;">
+              Click any log to load as active exhibit for 3D trajectory & anomaly analysis
+            </div>
+          </div>
+          <div class="table-scroll" style="max-height: 250px;">
+            <table class="forensic-table" style="font-size:11px;">
+              <thead>
+                <tr>
+                  <th style="width:40px;">#</th>
+                  <th style="width:180px;">Filename</th>
+                  <th>Full Path in Extracted Evidence</th>
+                  <th style="width:140px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="gcsDiscoveredLogsTableBody">
+                <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No GCS dump triaged yet. Select dump folder or drive in Hardware Acquisition menu.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -5199,12 +5303,13 @@ async function runOfflineGcsTriageUi() {
     if (consoleEl) consoleEl.innerHTML = summaryHtml;
     showToast(`✓ Offline GCS Triage finished! Hashed ${filesHashed} files (${recCount} flight logs).`);
 
+    // Populate Tab 7: GCS & Mobile Triage Audit Tab
+    updateGcsTriageTab(res, targetPath);
+
     setTimeout(() => {
-      if (confirm(`Offline GCS Triage completed successfully!\n\nFiles Hashed: ${filesHashed} (${mbHashed} MB)\nFlight Logs Found: ${recCount} file(s)\nPilot ID: ${pilotId.pilot_name || pilotId.account_email || 'Detected'}\n\nPrimary Log Selected:\n${recordsList[0] || 'None'}\n\nWould you like to close hardware acquisition and start forensic analysis?`)) {
+      if (confirm(`Offline GCS Triage completed successfully!\n\nFiles Hashed: ${filesHashed} (${mbHashed} MB)\nFlight Logs Found: ${recCount} file(s)\nPilot ID: ${pilotId.pilot_name || pilotId.account_email || 'Detected'}\n\nPrimary Log Selected:\n${recordsList[0] || 'None'}\n\nClick OK to open the new 📱 7. GCS Triage Tab & view findings.`)) {
         closeAcquisitionModal();
-        if (recordsList.length > 0) {
-          startAnalysis();
-        }
+        switchTab('tabGcsTriage');
       }
     }, 500);
 
@@ -5212,6 +5317,89 @@ async function runOfflineGcsTriageUi() {
     console.error("Offline GCS Triage error:", e);
     alert("Offline GCS Triage error: " + e.message);
   }
+}
+
+function updateGcsTriageTab(res, targetPath) {
+  if (!res) return;
+  const filesHashed = res.total_files_hashed || 0;
+  const mbHashed = ((res.total_bytes_hashed || 0) / (1024 * 1024)).toFixed(2);
+  const pilotId = res.pilot_identity || {};
+  const hwMeta = res.hardware_metadata || {};
+  const recordsList = Array.isArray(res.flight_records_found) ? res.flight_records_found : [];
+
+  // Update banner fields
+  const pathEl = document.getElementById('gcsTabPathVal');
+  if (pathEl) pathEl.innerText = targetPath || "Pre-Extracted Dump";
+
+  const countEl = document.getElementById('gcsTabFilesCount');
+  if (countEl) countEl.innerText = `${filesHashed} files`;
+
+  const volEl = document.getElementById('gcsTabDataVolume');
+  if (volEl) volEl.innerText = `${mbHashed} MB`;
+
+  const logsCountEl = document.getElementById('gcsTabLogsCount');
+  if (logsCountEl) logsCountEl.innerText = `${recordsList.length} logs`;
+
+  // Update Pilot Identity
+  const pName = document.getElementById('gcsPilotName');
+  if (pName) pName.innerText = pilotId.pilot_name || pilotId.account_name || "Detected";
+  const pEmail = document.getElementById('gcsPilotEmail');
+  if (pEmail) pEmail.innerText = pilotId.account_email || pilotId.email || "N/A";
+  const pPhone = document.getElementById('gcsPilotPhone');
+  if (pPhone) pPhone.innerText = pilotId.phone_number || pilotId.phone || "N/A";
+  const pPkg = document.getElementById('gcsAppPackage');
+  if (pPkg) pPkg.innerText = pilotId.app_package || "N/A";
+  const pUid = document.getElementById('gcsPilotUid');
+  if (pUid) pUid.innerText = pilotId.pilot_uid || "N/A";
+
+  // Update Hardware Metadata
+  const devModel = document.getElementById('gcsDeviceModel');
+  if (devModel) devModel.innerText = hwMeta.device_model || hwMeta.model || "N/A";
+  const ctrlSn = document.getElementById('gcsControllerSn');
+  if (ctrlSn) ctrlSn.innerText = hwMeta.controller_sn || hwMeta.serial_number || "N/A";
+  const droneSn = document.getElementById('gcsPairedDroneSn');
+  if (droneSn) droneSn.innerText = hwMeta.paired_drone_sn || hwMeta.drone_sn || "N/A";
+  const osVer = document.getElementById('gcsOsVersion');
+  if (osVer) osVer.innerText = hwMeta.android_version || hwMeta.os_version || "N/A";
+  const macAddr = document.getElementById('gcsMacAddress');
+  if (macAddr) macAddr.innerText = hwMeta.mac_address || hwMeta.mac || "N/A";
+
+  // Render Discovered Flight Records Table
+  const tbody = document.getElementById('gcsDiscoveredLogsTableBody');
+  if (tbody) {
+    if (recordsList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No flight log files discovered in dump.</td></tr>`;
+    } else {
+      tbody.innerHTML = recordsList.map((recPath, idx) => {
+        const fn = recPath.split(/[\\/]/).pop();
+        const escPath = escapeHtml(recPath);
+        return `
+          <tr>
+            <td><strong>#${idx + 1}</strong></td>
+            <td style="font-weight:700; color:#38bdf8;">${escapeHtml(fn)}</td>
+            <td style="font-family:var(--font-mono); font-size:10px; color:#94a3b8; word-break:break-all;">${escPath}</td>
+            <td>
+              <button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#0284c7; color:#e0f2fe;" onclick="selectGcsDiscoveredLog('${escPath.replace(/'/g, "\\'")}')">
+                ▶ Analyze Log
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+}
+
+function selectGcsDiscoveredLog(filePath) {
+  selectedFilePath = filePath;
+  const lbl = document.getElementById('filePathLabel');
+  if (lbl) {
+    lbl.innerText = selectedFilePath;
+    lbl.classList.add('selected');
+  }
+  showToast(`✓ Selected log for analysis: ${filePath.split(/[\\/]/).pop()}`);
+  closeAcquisitionModal();
+  startAnalysis();
 }
 
 // Sidebar Segment Switching (Milestones vs Threats)
