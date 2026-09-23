@@ -91,12 +91,19 @@ class DJIFlightLogParser(BaseParser):
             return False
 
         name_upper = path.name.upper()
-        # 1. Standard DJI Onboard flight log filenames (e.g. FLY182.DAT, FLY001.DAT, adsb_log_*.dat)
+        parent_upper = path.parent.name.upper()
+        # 1. Standard DJI Onboard flight log filenames & DJI App Cache/Record logs
         if name_upper.endswith(".DAT"):
             return True
         if (name_upper.startswith("FLY") and name_upper.endswith(".DAT")) or name_upper.startswith("DAT_"):
             return True
         if name_upper.endswith(".DAT") and "DJI" in name_upper:
+            return True
+        if name_upper.startswith("LOG-") or name_upper.startswith("LOG_") or (name_upper.startswith("LOG") and name_upper.endswith(".LOG")):
+            return True
+        dji_apps = ("DJI.GO.V4", "DJI.FLY", "DJI.PILOT", "DJI.GO.V5", "COM.DJI")
+        is_dji_app_dir = any(app in parent_upper for app in dji_apps)
+        if "DJIFLIGHTRECORD" in name_upper or (("DJI" in name_upper or is_dji_app_dir) and (name_upper.endswith(".TXT") or name_upper.endswith(".LOG"))):
             return True
 
         try:
