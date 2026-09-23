@@ -2694,9 +2694,12 @@ table.forensic-table tr:hover {
     <button class="btn-primary" id="analyzeBtn" onclick="startAnalysis()">▶ START FORENSIC ANALYSIS</button>
 
     <div style="border-top: 1px solid var(--panel-border); margin-top: 6px; padding-top: 8px;">
-      <div class="section-title">Direct Hardware Extraction</div>
-      <button class="btn-secondary" style="width:100%; border-color:#0284c7; color:#38bdf8;" onclick="openAcquisitionModal()" title="Extract logs directly from flight controller or Android device">
+      <div class="section-title">Direct Hardware & GCS Triage</div>
+      <button class="btn-secondary" style="width:100%; border-color:#0284c7; color:#38bdf8; margin-bottom: 6px;" onclick="openAcquisitionModal(); switchAcqTab('adb');" title="Extract logs directly from flight controller or Android device">
         📡 Hardware Extraction (MAVLink / ADB)
+      </button>
+      <button class="btn-secondary" style="width:100%; border-color:#0284c7; color:#e0f2fe; background: rgba(2, 132, 199, 0.15);" onclick="openAcquisitionModal(); switchAcqTab('adb');" title="Select pre-extracted mobile GCS dump folder or drive (Android, iOS, E:\)">
+        📁 Pre-Extracted GCS Dump Triage (E:\, Android/iOS)
       </button>
     </div>
 
@@ -3711,9 +3714,25 @@ table.forensic-table tr:hover {
           </table>
         </div>
 
-        <button class="btn-primary" id="btnPullAdbAll" style="width:100%;" onclick="downloadAdbLogs()">
+        <button class="btn-primary" id="btnPullAdbAll" style="width:100%; margin-bottom: 10px;" onclick="downloadAdbLogs()">
           📥 Pull & Acquire All Detected Flight Records (Dual SHA-256 + BLAKE3)
         </button>
+
+        <!-- Offline Pre-Extracted GCS Dump / Drive Triage (ISO/IEC 27037 Compliant) -->
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 10px 12px; margin-top: 10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:11.5px; font-weight:700; color:#38bdf8;">📁 Pre-Extracted GCS Dump / Drive Triage (Android / iOS / E:\)</span>
+            <span class="audit-status-badge ok" style="font-size:9px;">OFFLINE TRIAGE</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+            <input type="text" id="offlineGcsPathInput" placeholder="Enter or select path (e.g. E:\ or C:\Users\pawan\Desktop\mobile_android_logical)" style="flex:1; background:#080c14; border:1px solid #1e293b; color:#e2e8f0; padding:6px 10px; border-radius:4px; font-size:11px;" value="C:\Users\pawan\Desktop\mobile_android_logical" />
+            <button class="btn-secondary" onclick="browseOfflineGcsFolder()" title="Select Pre-Extracted Dump Folder or Drive">📁 Select Folder</button>
+            <button class="btn-secondary" onclick="browseOfflineGcsZip()" title="Select Pre-Extracted ZIP Archive">📦 Select .ZIP</button>
+          </div>
+          <button class="btn-primary" style="width:100%; border-color:#0284c7; background:linear-gradient(135deg, #0284c7, #0369a1);" onclick="runOfflineGcsTriageUi()">
+            🚀 Triage & Analyze Pre-Extracted GCS Dump (Dual SHA-256 + Pilot ID)
+          </button>
+        </div>
       </div>
 
       <!-- Acquisition Log / Output Console -->
@@ -5086,6 +5105,99 @@ async function downloadAdbLogs() {
   } catch(e) {
     console.error("ADB Extraction error:", e);
     alert("ADB Extraction failed: " + e.message);
+  }
+}
+
+async function browseOfflineGcsFolder() {
+  const inputEl = document.getElementById('offlineGcsPathInput');
+  try {
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.select_folder === 'function') {
+      const folder = await window.pywebview.api.select_folder();
+      if (folder) {
+        inputEl.value = folder;
+      }
+    } else {
+      const folder = prompt("Enter path to pre-extracted GCS dump folder or drive (e.g. E:\\ or C:\\Users\\pawan\\Desktop\\mobile_android_logical):", inputEl.value || "E:\\");
+      if (folder) inputEl.value = folder;
+    }
+  } catch(e) {
+    console.error("Folder select error:", e);
+  }
+}
+
+async function browseOfflineGcsZip() {
+  const inputEl = document.getElementById('offlineGcsPathInput');
+  try {
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.select_file === 'function') {
+      const file = await window.pywebview.api.select_file();
+      if (file) {
+        inputEl.value = file;
+      }
+    } else {
+      const file = prompt("Enter path to pre-extracted GCS dump .ZIP archive:", inputEl.value || "");
+      if (file) inputEl.value = file;
+    }
+  } catch(e) {
+    console.error("File select error:", e);
+  }
+}
+
+async function runOfflineGcsTriageUi() {
+  const targetPath = (document.getElementById('offlineGcsPathInput') ? document.getElementById('offlineGcsPathInput').value : "").trim();
+  const caseId = (document.getElementById('caseIdInput') && document.getElementById('caseIdInput').value) || "CASE-2026-GCS-001";
+  const examiner = (document.getElementById('examinerInput') && document.getElementById('examinerInput').value) || "Inspector Cyber Division";
+  const consoleEl = document.getElementById('acqStatusConsole');
+
+  if (!targetPath) {
+    alert("Please enter or select a valid dump folder/drive path or .zip file.");
+    return;
+  }
+
+  if (consoleEl) consoleEl.innerText = `Ingesting & stream-hashing pre-extracted GCS dump at "${targetPath}" under ISO/IEC 27037...`;
+  showToast(`Ingesting & hashing pre-extracted GCS dump...`);
+
+  try {
+    let res = null;
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.triage_gcs_dump === 'function') {
+      res = await window.pywebview.api.triage_gcs_dump(targetPath, caseId, examiner);
+    } else {
+      res = await callApi('triage_gcs_dump', { target_path: targetPath, case_id: caseId, examiner: examiner });
+    }
+
+    if (!res || res.status === "error" || !res.success) {
+      const errMsg = (res && (res.error_message || res.message)) ? (res.error_message || res.message) : "Unknown error during offline triage";
+      alert("Offline GCS Triage failed: " + errMsg);
+      if (consoleEl) consoleEl.innerText = `❌ Offline GCS Triage error: ${errMsg}`;
+      return;
+    }
+
+    const filesHashed = res.total_files_hashed || 0;
+    const mbHashed = ((res.total_bytes_hashed || 0) / (1024 * 1024)).toFixed(2);
+    const pilotId = res.pilot_identity || {};
+    const hwMeta = res.hardware_metadata || {};
+    const recCount = res.flight_records_found || 0;
+
+    let summaryHtml = `✓ <strong>Offline Triage Complete!</strong> Stream-hashed ${filesHashed} file(s) (${mbHashed} MB) into Merkle Ledger.<br>`;
+    summaryHtml += `• Flight Records Discovered: <strong>${recCount}</strong><br>`;
+    if (pilotId.pilot_name || pilotId.account_email || pilotId.app_package) {
+      summaryHtml += `• Pilot Identity: <strong>${escapeHtml(pilotId.pilot_name || pilotId.account_email || 'Detected')}</strong> (${escapeHtml(pilotId.app_package || '')})<br>`;
+    }
+    if (hwMeta.model || hwMeta.android_version) {
+      summaryHtml += `• Device Metadata: <strong>${escapeHtml(hwMeta.model || '')} (Android ${escapeHtml(hwMeta.android_version || '')})</strong> S/N: ${escapeHtml(hwMeta.serial_number || 'N/A')}`;
+    }
+
+    if (consoleEl) consoleEl.innerHTML = summaryHtml;
+    showToast(`✓ Offline GCS Triage finished! Hashed ${filesHashed} files (${recCount} flight logs).`);
+
+    setTimeout(() => {
+      if (confirm(`Offline GCS Triage completed successfully!\n\nFiles Hashed: ${filesHashed} (${mbHashed} MB)\nFlight Logs Found: ${recCount}\nPilot ID: ${pilotId.pilot_name || pilotId.account_email || 'Detected'}\n\nWould you like to close hardware acquisition and view findings?`)) {
+        closeAcquisitionModal();
+      }
+    }, 500);
+
+  } catch(e) {
+    console.error("Offline GCS Triage error:", e);
+    alert("Offline GCS Triage error: " + e.message);
   }
 }
 

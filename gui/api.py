@@ -490,6 +490,24 @@ class ForensicBridgeHTTPHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._set_cors_headers(500)
                 self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+        elif self.path.startswith("/api/triage_gcs_dump"):
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length).decode("utf-8")
+                payload = json.loads(body)
+                dump_path = payload.get("target_path") or payload.get("dump_path", "")
+                case_id = payload.get("case_id", "CASE-2026-MEITY-001")
+                examiner = payload.get("examiner", "Inspector Cyber Division")
+                if self.api_instance:
+                    res = self.api_instance.triage_gcs_dump(dump_path=dump_path, case_id=case_id, examiner=examiner)
+                    self._set_cors_headers(200)
+                    self.wfile.write(json.dumps(res).encode("utf-8"))
+                else:
+                    self._set_cors_headers(500)
+                    self.wfile.write(b'{"status":"error","message":"API instance not ready"}')
+            except Exception as e:
+                self._set_cors_headers(500)
+                self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
         else:
             self._set_cors_headers(404)
             self.wfile.write(b'{"status":"error","message":"Not found"}')
