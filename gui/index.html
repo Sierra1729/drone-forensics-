@@ -2815,8 +2815,24 @@ table.forensic-table tr:hover {
             </div>
           </div>
 
-          <!-- Card Body (Contains Start & End Termini) -->
+          <!-- Card Body (Contains Session Selector & Start/End Termini) -->
           <div class="map-loc-card-body" id="mapLocCardBody">
+            
+            <!-- Flight Session Selector inside Map Card -->
+            <div style="padding: 8px 10px; background: rgba(11, 19, 41, 0.9); border-bottom: 1px solid rgba(30, 41, 59, 0.8); display: flex; flex-direction: column; gap: 4px; border-radius: 6px 6px 0 0;">
+              <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center;">
+                <span>✈️ SELECT FLIGHT SESSION</span>
+                <span style="font-size: 9.5px; color: #38bdf8; background: rgba(2,132,199,0.2); padding: 1px 5px; border-radius: 3px;">5 FDR LOGS</span>
+              </div>
+              <select id="mapSessionSelect" onchange="onFlightSessionChanged(this.value)" style="background: #080c16; color: #38bdf8; border: 1px solid #0284c7; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; outline: none; width: 100%;">
+                <option value="all">✈️ All Sessions (5 Flights Combined)</option>
+                <option value="fdr_000">📅 Session 1: Oct 30, 2018 15:00 (169 MB)</option>
+                <option value="fdr_001">📅 Session 2: System Boot Log (77 MB)</option>
+                <option value="fdr_002">📅 Session 3: Oct 30, 2018 15:10 (38 MB)</option>
+                <option value="fdr_003">📅 Session 4: Nov 06, 2018 12:11 (464 MB)</option>
+                <option value="fdr_current">📅 Session 5: Active Flight Log (0.22 MB)</option>
+              </select>
+            </div>
             <!-- Row 1: Start / Takeoff Point -->
             <div class="map-loc-endpoint-row takeoff" onclick="focusTakeoffLocation()" title="Click to zoom to Takeoff Site (🛫)">
               <div class="map-loc-icon takeoff">🛫</div>
@@ -4898,6 +4914,12 @@ function switchTab(tabId) {
 function onFlightSessionChanged(sessionId) {
   console.log("Switching active FDR flight session to:", sessionId);
   
+  // Sync both dropdown elements
+  const selHeader = document.getElementById('flightSessionSelect');
+  const selMap = document.getElementById('mapSessionSelect');
+  if (selHeader && selHeader.value !== sessionId) selHeader.value = sessionId;
+  if (selMap && selMap.value !== sessionId) selMap.value = sessionId;
+
   if (typeof allEventsStore !== 'undefined' && allEventsStore && allEventsStore.length > 0) {
     let filteredEvents = allEventsStore;
     if (sessionId !== 'all') {
