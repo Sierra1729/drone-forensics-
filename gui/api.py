@@ -558,7 +558,9 @@ class DesktopForensicAPI:
         if len(webview.windows) > 0:
             window = webview.windows[0]
             file_types = (
-                "All Supported Drone Evidence (*.ulg;*.ugl;*.bin;*.txt;*.dat;*.json;*.tlog;*.csv;*.bbl;*.bfl;*.log;*.pud;*.param;*.kmz;*.gpx;*.jpg;*.jpeg;*.dng;*.srt;*.zip)",
+                "All Supported Drone Evidence (*.ulg;*.ugl;*.bin;*.txt;*.dat;*.json;*.tlog;*.csv;*.bbl;*.bfl;*.log;*.pud;*.param;*.kmz;*.gpx;*.jpg;*.jpeg;*.dng;*.srt;*.zip;*.dd;*.img;*.raw;*.e01)",
+                "Physical Disk Images (*.dd;*.img;*.raw;*.e01)",
+                "Flight Controller Logs (*.ulg;*.bin;*.dat;*.csv;*.bfl;*.bbl;*.json;*.tlog;*.pud)",
                 "All Files (*.*)"
             )
             dialog_type = getattr(getattr(webview, "FileDialog", None), "OPEN", webview.OPEN_DIALOG)
