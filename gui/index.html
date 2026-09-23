@@ -3731,7 +3731,7 @@ table.forensic-table tr:hover {
             </table>
           </div>
         </div>
-
+      </div>
     </div>
 
     <!-- TAB 8: MEDIA VAULT & CARVED MEDIA GALLERY TAB -->
@@ -5062,31 +5062,17 @@ function onFlightSessionChanged(sessionId) {
   if (selHeader && selHeader.value !== sessionId) selHeader.value = sessionId;
   if (selMap && selMap.value !== sessionId) selMap.value = sessionId;
 
-  if (typeof allEventsStore !== 'undefined' && allEventsStore && allEventsStore.length > 0) {
-    let filteredEvents = allEventsStore;
+  if (lastAnalysisResult && lastAnalysisResult.coords && lastAnalysisResult.coords.length > 0) {
+    let filteredCoords = lastAnalysisResult.coords;
     if (sessionId !== 'all') {
-      filteredEvents = allEventsStore.filter(ev => {
-        const payload = ev.payload || {};
-        return payload.session_id === sessionId;
-      });
+      filteredCoords = lastAnalysisResult.coords.filter(c => c.session_id === sessionId);
     }
-    if (typeof updateMapTrack === 'function') {
-      updateMapTrack(filteredEvents);
+    if (!filteredCoords || filteredCoords.length === 0) {
+      filteredCoords = lastAnalysisResult.coords;
     }
-  }
 
-  const sessNames = {
-    'all': 'All 5 Flight Sessions',
-    'fdr_000': 'Session 1: Oct 30 (15:00)',
-    'fdr_001': 'Session 2: System Boot',
-    'fdr_002': 'Session 3: Oct 30 (15:10)',
-    'fdr_003': 'Session 4: Nov 06 (12:11)',
-    'fdr_current': 'Session 5: Active Log'
-  };
-  
-  const chipStatus = document.getElementById('chipCaseStatus');
-  if (chipStatus) {
-    chipStatus.innerText = sessNames[sessionId] || 'FDR SESSION';
+    const currentData = { ...lastAnalysisResult, coords: filteredCoords };
+    renderFlightData(currentData);
   }
 }
 

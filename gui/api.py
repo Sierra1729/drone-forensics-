@@ -791,6 +791,7 @@ class DesktopForensicAPI:
                         "sats": sats_c,
                         "t_sec": t_sec,
                         "ts": g.timestamp_utc.strftime("%H:%M:%S UTC"),
+                        "session_id": g.payload.get("session_id", "all") if isinstance(g.payload, dict) else "all",
                     })
 
             # Ensure kinematic ground speed, pitch & roll fallback
