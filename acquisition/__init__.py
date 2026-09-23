@@ -27,6 +27,12 @@ from acquisition.adb_extractor import (
     AdbDeviceInfo,
     AdbAcquisitionResult,
     list_available_adb_devices,
+    triage_offline_dump,
+    GcsPilotIdentity,
+    GcsHardwareMetadata,
+    GcsOfflineTriageResult,
+    parse_shared_prefs_xml,
+    parse_sqlite_db_artifacts,
 )
 
 __all__ = [
@@ -40,5 +46,12 @@ __all__ = [
     "AdbDeviceInfo",
     "AdbAcquisitionResult",
     "list_available_adb_devices",
+    "triage_offline_dump",
+    "GcsPilotIdentity",
+    "GcsHardwareMetadata",
+    "GcsOfflineTriageResult",
+    "parse_shared_prefs_xml",
+    "parse_sqlite_db_artifacts",
 ]
+
 

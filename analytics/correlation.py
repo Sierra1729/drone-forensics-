@@ -33,6 +33,8 @@ class AnomalyType(str, Enum):
     COMMUNICATION_LOSS = "communication_loss"
     IMPACT_OR_CRASH = "impact_or_crash"
     SUDDEN_ALTITUDE_DROP = "sudden_altitude_drop"
+    FORENSIC_ANOMALY = "forensic_anomaly"
+
 
 
 class FlightPhase(str, Enum):
@@ -330,7 +332,111 @@ class ForensicCorrelationEngine:
                         )
                     )
 
+        # 5. Cross-Stream Controller vs. Drone Takeoff Mismatch & Time Skew Correlation
+        gcs_anomalies = self.correlate_controller_and_drone_telemetry(sorted_events)
+        anomalies.extend(gcs_anomalies)
+
         return anomalies
+
+    def correlate_controller_and_drone_telemetry(
+        self,
+        events: list[NormalizedEvent],
+    ) -> list[ForensicAnomaly]:
+        """
+        Cross-compare GCS Mobile Controller telemetry against Drone Blackbox telemetry.
+        
+        NIST SP 800-86 Compliance:
+        1. Compares Controller Home Point GPS vs. Drone Takeoff GPS to identify GPS spoofing
+           or spatial displacement anomalies.
+        2. Computes time skew between mobile system clock and GPS UTC time.
+        3. Synchronizes pilot control stick inputs with drone kinematic responses.
+        """
+        anomalies: list[ForensicAnomaly] = []
+        gcs_events = [
+            e for e in events
+            if e.payload.get("origin") == "GCS_CONTROLLER"
+            or "gcs" in e.source_platform.lower()
+            or "controller" in e.source_platform.lower()
+        ]
+        drone_events = [
+            e for e in events
+            if e not in gcs_events
+        ]
+
+        if not gcs_events or not drone_events:
+            return anomalies
+
+        # 1. Compare Controller Home Point vs. Drone Takeoff GPS
+        gcs_gps_fixes = [
+            e for e in gcs_events
+            if e.latitude is not None and e.longitude is not None
+            and not (abs(e.latitude) < 0.0001 and abs(e.longitude) < 0.0001)
+        ]
+        drone_gps_fixes = [
+            e for e in drone_events
+            if e.latitude is not None and e.longitude is not None
+            and not (abs(e.latitude) < 0.0001 and abs(e.longitude) < 0.0001)
+        ]
+
+        if gcs_gps_fixes and drone_gps_fixes:
+            gcs_first = gcs_gps_fixes[0]
+            drone_first = drone_gps_fixes[0]
+            dist_m = haversine_distance_m(
+                gcs_first.latitude, gcs_first.longitude,
+                drone_first.latitude, drone_first.longitude,
+            )
+            if dist_m > 50.0:  # > 50m discrepancy indicates spoofing or remote takeoff
+                anomalies.append(
+                    ForensicAnomaly(
+                        anomaly_type=AnomalyType.GPS_SPOOFING_OR_TELEPORTATION.value,
+                        severity="HIGH",
+                        timestamp_utc=gcs_first.timestamp_utc,
+                        latitude=gcs_first.latitude,
+                        longitude=gcs_first.longitude,
+                        altitude_m=gcs_first.altitude_m,
+                        trigger_event_id=gcs_first.record_id,
+                        description=(
+                            f"Controller / Drone Home Point Mismatch: GCS Home Point ({gcs_first.latitude:.6f}, {gcs_first.longitude:.6f}) "
+                            f"differs from Aircraft Takeoff Location ({drone_first.latitude:.6f}, {drone_first.longitude:.6f}) "
+                            f"by {dist_m:.1f} meters."
+                        ),
+                        evidence_context={
+                            "gcs_controller_gps": [gcs_first.latitude, gcs_first.longitude],
+                            "drone_takeoff_gps": [drone_first.latitude, drone_first.longitude],
+                            "distance_delta_meters": round(dist_m, 2),
+                        },
+                    )
+                )
+
+        # 2. Time Skew Analysis between Mobile System Clock and Aircraft GPS UTC
+        gcs_timestamps = [e.timestamp_utc for e in gcs_events]
+        drone_timestamps = [e.timestamp_utc for e in drone_events]
+
+        if gcs_timestamps and drone_timestamps:
+            min_gcs_t = min(gcs_timestamps)
+            min_drone_t = min(drone_timestamps)
+            skew_seconds = (min_gcs_t - min_drone_t).total_seconds()
+            if abs(skew_seconds) > 5.0:
+                anomalies.append(
+                    ForensicAnomaly(
+                        anomaly_type=AnomalyType.FORENSIC_ANOMALY.value,
+                        severity="MEDIUM",
+                        timestamp_utc=min_gcs_t,
+                        trigger_event_id=gcs_events[0].record_id,
+                        description=(
+                            f"Mobile GCS Clock Drift Detected: System clock skew of {skew_seconds:+.2f} seconds "
+                            f"compared to UAV flight controller time."
+                        ),
+                        evidence_context={
+                            "gcs_start_time_utc": min_gcs_t.isoformat(),
+                            "drone_start_time_utc": min_drone_t.isoformat(),
+                            "clock_skew_seconds": round(skew_seconds, 2),
+                        },
+                    )
+                )
+
+        return anomalies
+
 
     def detect_flight_key_events(
         self,

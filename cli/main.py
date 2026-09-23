@@ -17,6 +17,7 @@ from rich.panel import Panel
 from rich.table import Table as RichTable
 
 import parsers  # Ensures all parser plugins are registered
+from acquisition.adb_extractor import triage_offline_dump
 from analytics.correlation import ForensicCorrelationEngine, NoFlyZone
 from custody.ledger import ChainOfCustodyLedger, hash_file
 from export.geospatial import export_geojson, export_html_map, export_kml
@@ -142,6 +143,12 @@ def ingest_command(
     nfz_file: Optional[Path] = typer.Option(
         None, "--nfz-file", help="Path to JSON file containing statutory No-Fly Zones."
     ),
+    controller_dir: Optional[Path] = typer.Option(
+        None,
+        "--controller-dir",
+        "-c",
+        help="Path to pre-extracted ADB ground control station (GCS) dump directory or ZIP file.",
+    ),
 ) -> None:
     """One-click automated UAV evidence ingestion, analysis, and courtroom reporting pipeline."""
     target_dir = Path(output_dir).resolve()
@@ -173,6 +180,21 @@ def ingest_command(
     console.print(f"[green][OK][/green] Cryptographic Digest (BLAKE3):  [dim]{blake3_hex}[/dim]")
     console.print(f"[green][OK][/green] Tamper-evident ledger updated:   [dim]{ledger_path.name}[/dim]")
 
+    # 1b. GCS Controller Ingestion if specified
+    gcs_events = []
+    if controller_dir is not None and Path(controller_dir).exists():
+        with console.status(f"[bold green]Scanning & hashing GCS controller dump from {controller_dir}..."):
+            triage_res = triage_offline_dump(
+                dump_path=controller_dir,
+                output_directory=target_dir,
+                custody_ledger=ledger,
+                operator_id=examiner,
+            )
+            gcs_events = triage_res.extracted_events
+            console.print(f"[green][OK][/green] Ingested GCS Controller Dump: Hashed [bold]{triage_res.total_files_hashed}[/bold] files ({triage_res.total_bytes_hashed:,} bytes)")
+            console.print(f"[green][OK][/green] Pilot Identity:           [cyan]{triage_res.pilot_identity.email or triage_res.pilot_identity.pilot_uid}[/cyan]")
+            console.print(f"[green][OK][/green] Controller Hardware SN:   [cyan]{triage_res.hardware_metadata.controller_sn}[/cyan]")
+
     # 2. Dynamic Parser Selection & Extraction
     parser = get_parser_for_file(evidence_file)
     if parser is None:
@@ -184,7 +206,11 @@ def ingest_command(
     with console.status(f"[bold green]Parsing binary telemetry using {parser.parser_name}..."):
         events = parser.parse(evidence_file, custody_ledger=ledger, actor=examiner)
 
+    if gcs_events:
+        events.extend(gcs_events)
+
     console.print(f"[green][OK][/green] Extracted [bold]{len(events):,}[/bold] normalized telemetry events")
+
 
     # 3. Persist Normalized Event Store
     events_jsonl_path = target_dir / "events.jsonl"
