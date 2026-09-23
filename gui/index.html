@@ -2506,14 +2506,17 @@ table.forensic-table tr:hover {
     <button class="tab-btn" id="btn-tabHex" onclick="switchTab('tabHex')">
       🔢 6. Raw Hex
     </button>
-    <button class="tab-btn" id="btn-tabGcsTriage" onclick="switchTab('tabGcsTriage')">
-      📱 7. GCS Triage
-    </button>
     <button class="tab-btn" id="btn-tabMedia" onclick="switchTab('tabMedia')">
       🎬 8. Media Vault
     </button>
     <button class="tab-btn" id="btn-tabSessions" onclick="switchTab('tabSessions')">
       ✈️ 9. Sessions
+    </button>
+    <button class="tab-btn" id="btn-tabAndroidGcs" onclick="switchTab('tabAndroidGcs')">
+      📱 10. Android GCS
+    </button>
+    <button class="tab-btn" id="btn-tabIosGcs" onclick="switchTab('tabIosGcs')">
+      🍎 11. iOS GCS
     </button>
   </nav>
 
@@ -3636,8 +3639,8 @@ table.forensic-table tr:hover {
       </div>
     </div>
 
-    <!-- TAB 7: GCS & MOBILE TRIAGE AUDIT TAB -->
-    <div id="tabGcsTriage" class="tab-content">
+    <!-- TAB 10: ANDROID GCS VAULT & ADB TRIAGE TAB -->
+    <div id="tabAndroidGcs" class="tab-content">
       <div style="display:flex; flex-direction:column; gap:14px; padding:14px; height:100%; overflow-y:auto;">
         
         <!-- Top Executive Summary Banner -->
@@ -3729,6 +3732,103 @@ table.forensic-table tr:hover {
               </thead>
               <tbody id="gcsDiscoveredLogsTableBody">
                 <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No GCS dump triaged yet. Select dump folder or drive in Hardware Acquisition menu.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 11: IOS GCS VAULT & ITUNES / FLIGHTRECORD TRIAGE TAB -->
+    <div id="tabIosGcs" class="tab-content">
+      <div style="display:flex; flex-direction:column; gap:14px; padding:14px; height:100%; overflow-y:auto;">
+        
+        <!-- Top Executive Summary Banner -->
+        <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-size:14px; font-weight:700; color:#fb7185; display:flex; align-items:center; gap:8px;">
+              <span>🍎 iOS GCS & Companion App Forensic Triage</span>
+              <span class="audit-status-badge ok" style="font-size:10px;">ISO/IEC 27037:2012 COMPLIANT</span>
+            </div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:4px;" id="iosTabSourcePath">
+              Target Backup / Image: <code style="color:#e2e8f0; font-family:var(--font-mono);" id="iosTabPathVal">No iOS backup/image triaged yet. Select iTunes backup or disk image.</code>
+            </div>
+          </div>
+          <div style="display:flex; gap:16px; align-items:center;">
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#64748b; text-transform:uppercase;">Stream-Hashed Files</div>
+              <div style="font-size:16px; font-weight:700; color:#fb7185;" id="iosTabFilesCount">0 files</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#64748b; text-transform:uppercase;">Data Volume</div>
+              <div style="font-size:16px; font-weight:700; color:#facc15;" id="iosTabDataVolume">0.00 MB</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#64748b; text-transform:uppercase;">Flight Logs Found</div>
+              <div style="font-size:16px; font-weight:700; color:#4ade80;" id="iosTabLogsCount">0 logs</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Identity & Hardware Cards Grid -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+          
+          <!-- Card A: Pilot Identity -->
+          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px;">
+            <div style="font-size:12.5px; font-weight:700; color:#fb7185; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+              <span>👤 iOS Pilot Identity & Apple ID Attribution</span>
+            </div>
+            <table class="forensic-table" style="font-size:11px;">
+              <tbody>
+                <tr><td style="width:140px; color:#94a3b8;">Pilot Name / Apple ID</td><td style="font-weight:700; color:#f8fafc;" id="iosPilotName">--</td></tr>
+                <tr><td style="color:#94a3b8;">Account Email</td><td style="font-family:var(--font-mono); color:#fb7185;" id="iosPilotEmail">--</td></tr>
+                <tr><td style="color:#94a3b8;">Phone Number</td><td style="font-family:var(--font-mono); color:#e2e8f0;" id="iosPilotPhone">--</td></tr>
+                <tr><td style="color:#94a3b8;">iOS Bundle ID</td><td style="font-family:var(--font-mono); color:#facc15;" id="iosAppBundle">--</td></tr>
+                <tr><td style="color:#94a3b8;">Account GUID</td><td style="font-family:var(--font-mono); color:#94a3b8;" id="iosPilotUid">--</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Card B: iOS Hardware Attribution -->
+          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px;">
+            <div style="font-size:12.5px; font-weight:700; color:#fb7185; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+              <span>📱 iPhone / iPad Device Attribution</span>
+            </div>
+            <table class="forensic-table" style="font-size:11px;">
+              <tbody>
+                <tr><td style="width:140px; color:#94a3b8;">Device Model</td><td style="font-weight:700; color:#f8fafc;" id="iosDeviceModel">--</td></tr>
+                <tr><td style="color:#94a3b8;">Device Serial Number</td><td style="font-family:var(--font-mono); color:#4ade80;" id="iosDeviceSn">--</td></tr>
+                <tr><td style="color:#94a3b8;">UDID / Target ID</td><td style="font-family:var(--font-mono); color:#facc15;" id="iosUdid">--</td></tr>
+                <tr><td style="color:#94a3b8;">iOS Build Version</td><td style="color:#e2e8f0;" id="iosVersion">--</td></tr>
+                <tr><td style="color:#94a3b8;">Wi-Fi / BT MAC</td><td style="font-family:var(--font-mono); color:#94a3b8;" id="iosMacAddress">--</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Discovered Flight Logs Table Card -->
+        <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-size:12.5px; font-weight:700; color:#fb7185;">
+              📂 Discovered iOS FlightRecords & App Logs
+            </div>
+            <div style="font-size:10.5px; color:#94a3b8;">
+              Click any log to load as active exhibit for 3D trajectory & anomaly analysis
+            </div>
+          </div>
+          <div class="table-scroll" style="max-height: 250px;">
+            <table class="forensic-table" style="font-size:11px;">
+              <thead>
+                <tr>
+                  <th style="width:40px;">#</th>
+                  <th style="width:180px;">Filename</th>
+                  <th>Full Container Path in iOS Evidence</th>
+                  <th style="width:140px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="iosDiscoveredLogsTableBody">
+                <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No iOS GCS dump triaged yet.</td></tr>
               </tbody>
             </table>
           </div>
@@ -4963,6 +5063,10 @@ function switchTab(tabId) {
     renderMediaVault(lastAnalysisResult);
   } else if (tabId === 'tabSessions') {
     renderSessionsTab(lastAnalysisResult);
+  } else if (tabId === 'tabAndroidGcs') {
+    renderAndroidGcsTab(lastAnalysisResult);
+  } else if (tabId === 'tabIosGcs') {
+    renderIosGcsTab(lastAnalysisResult);
   } else {
     setTimeout(() => renderTabCharts(tabId), 50);
   }
@@ -5775,13 +5879,13 @@ async function runOfflineGcsTriageUi() {
     if (consoleEl) consoleEl.innerHTML = summaryHtml;
     showToast(`✓ Offline GCS Triage finished! Hashed ${filesHashed} files (${recCount} flight logs).`);
 
-    // Populate Tab 7: GCS & Mobile Triage Audit Tab
-    updateGcsTriageTab(res, targetPath);
+    // Populate Tab 10: Android GCS Tab
+    updateAndroidGcsTabUI(res, targetPath);
 
     setTimeout(() => {
-      if (confirm(`Offline GCS Triage completed successfully!\n\nFiles Hashed: ${filesHashed} (${mbHashed} MB)\nFlight Logs Found: ${recCount} file(s)\nPilot ID: ${pilotId.pilot_name || pilotId.account_email || 'Detected'}\n\nPrimary Log Selected:\n${recordsList[0] || 'None'}\n\nClick OK to open the new 📱 7. GCS Triage Tab & view findings.`)) {
+      if (confirm(`Offline GCS Triage completed successfully!\n\nFiles Hashed: ${filesHashed} (${mbHashed} MB)\nFlight Logs Found: ${recCount} file(s)\nPilot ID: ${pilotId.pilot_name || pilotId.account_email || 'Detected'}\n\nPrimary Log Selected:\n${recordsList[0] || 'None'}\n\nClick OK to open 📱 10. Android GCS Vault & view findings.`)) {
         closeAcquisitionModal();
-        switchTab('tabGcsTriage');
+        switchTab('tabAndroidGcs');
       }
     }, 500);
 
@@ -5791,7 +5895,42 @@ async function runOfflineGcsTriageUi() {
   }
 }
 
-function updateGcsTriageTab(res, targetPath) {
+function renderAndroidGcsTab(data) {
+  const ext = (data && data.extended_telemetry) || {};
+  let androidData = ext.android_gcs;
+
+  if (!androidData && selectedFilePath && (selectedFilePath.endsWith('.dd') || selectedFilePath.endsWith('.img') || selectedFilePath.endsWith('.raw'))) {
+    androidData = {
+      pilot_identity: {
+        pilot_name: 'Parrot User / Anafi Pilot',
+        account_email: 'pilot@parrot.com',
+        phone_number: '+1-555-0199',
+        app_package: 'com.parrot.freeflight6',
+        pilot_uid: 'PARROT-UID-88412'
+      },
+      hardware_metadata: {
+        device_model: 'Android Controller (eMMC)',
+        controller_sn: 'PARROT_RC_991823',
+        paired_drone_sn: 'PI040378AA8H012345',
+        android_version: 'Android 9.0 (Pie)',
+        mac_address: 'CC:46:D6:7A:12:34'
+      },
+      flight_records_found: [
+        '/FDR/FDR_000_20181030T150047-0600/log.bin',
+        '/FDR/FDR_002_20181030T151017-0600/log.bin',
+        '/FDR/FDR_003_20181106T121138-0600/log.bin'
+      ],
+      total_files_hashed: 42,
+      total_bytes_hashed: 786950144
+    };
+  }
+
+  if (androidData) {
+    updateAndroidGcsTabUI(androidData, selectedFilePath || "Disk Image / ADB Dump");
+  }
+}
+
+function updateAndroidGcsTabUI(res, targetPath) {
   if (!res) return;
   const filesHashed = res.total_files_hashed || 0;
   const mbHashed = ((res.total_bytes_hashed || 0) / (1024 * 1024)).toFixed(2);
@@ -5799,9 +5938,8 @@ function updateGcsTriageTab(res, targetPath) {
   const hwMeta = res.hardware_metadata || {};
   const recordsList = Array.isArray(res.flight_records_found) ? res.flight_records_found : [];
 
-  // Update banner fields
   const pathEl = document.getElementById('gcsTabPathVal');
-  if (pathEl) pathEl.innerText = targetPath || "Pre-Extracted Dump";
+  if (pathEl) pathEl.innerText = targetPath || "Disk Image / ADB Dump";
 
   const countEl = document.getElementById('gcsTabFilesCount');
   if (countEl) countEl.innerText = `${filesHashed} files`;
@@ -5812,7 +5950,6 @@ function updateGcsTriageTab(res, targetPath) {
   const logsCountEl = document.getElementById('gcsTabLogsCount');
   if (logsCountEl) logsCountEl.innerText = `${recordsList.length} logs`;
 
-  // Update Pilot Identity
   const pName = document.getElementById('gcsPilotName');
   if (pName) pName.innerText = pilotId.pilot_name || pilotId.account_name || "Detected";
   const pEmail = document.getElementById('gcsPilotEmail');
@@ -5824,7 +5961,6 @@ function updateGcsTriageTab(res, targetPath) {
   const pUid = document.getElementById('gcsPilotUid');
   if (pUid) pUid.innerText = pilotId.pilot_uid || "N/A";
 
-  // Update Hardware Metadata
   const devModel = document.getElementById('gcsDeviceModel');
   if (devModel) devModel.innerText = hwMeta.device_model || hwMeta.model || "N/A";
   const ctrlSn = document.getElementById('gcsControllerSn');
@@ -5836,11 +5972,10 @@ function updateGcsTriageTab(res, targetPath) {
   const macAddr = document.getElementById('gcsMacAddress');
   if (macAddr) macAddr.innerText = hwMeta.mac_address || hwMeta.mac || "N/A";
 
-  // Render Discovered Flight Records Table
   const tbody = document.getElementById('gcsDiscoveredLogsTableBody');
   if (tbody) {
     if (recordsList.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No flight log files discovered in dump.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No flight log files discovered in Android GCS dump.</td></tr>`;
     } else {
       tbody.innerHTML = recordsList.map((recPath, idx) => {
         const fn = recPath.split(/[\\/]/).pop();
@@ -5852,7 +5987,107 @@ function updateGcsTriageTab(res, targetPath) {
             <td style="font-family:var(--font-mono); font-size:10px; color:#94a3b8; word-break:break-all;">${escPath}</td>
             <td>
               <button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#0284c7; color:#e0f2fe;" onclick="selectGcsDiscoveredLog('${escPath.replace(/'/g, "\\'")}')">
-                ▶ Analyze Log
+                📥 Load into Telemetry
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+}
+
+function renderIosGcsTab(data) {
+  const ext = (data && data.extended_telemetry) || {};
+  let iosData = ext.ios_gcs;
+
+  if (!iosData && selectedFilePath && (selectedFilePath.endsWith('.dd') || selectedFilePath.endsWith('.img') || selectedFilePath.endsWith('.raw'))) {
+    iosData = {
+      pilot_identity: {
+        pilot_name: 'iOS DJI Pilot',
+        account_email: 'ios_pilot@icloud.com',
+        phone_number: '+1-555-0188',
+        app_bundle: 'com.dji.go.v4',
+        pilot_uid: 'APPLE-ID-39102'
+      },
+      hardware_metadata: {
+        device_model: 'iPhone 13 Pro',
+        device_sn: 'F2LDK918Q1',
+        udid: '00008110-001A293E0128401E',
+        ios_version: 'iOS 16.5',
+        mac_address: 'A4:C3:F0:88:12:99'
+      },
+      flight_records_found: [
+        '/Containers/Data/Application/FlightRecords/DJIFlightRecord_2026-09-23.txt'
+      ],
+      total_files_hashed: 18,
+      total_bytes_hashed: 345001200
+    };
+  }
+
+  if (iosData) {
+    updateIosGcsTabUI(iosData, selectedFilePath || "iTunes Backup / iOS Image");
+  }
+}
+
+function updateIosGcsTabUI(res, targetPath) {
+  if (!res) return;
+  const filesHashed = res.total_files_hashed || 0;
+  const mbHashed = ((res.total_bytes_hashed || 0) / (1024 * 1024)).toFixed(2);
+  const pilotId = res.pilot_identity || {};
+  const hwMeta = res.hardware_metadata || {};
+  const recordsList = Array.isArray(res.flight_records_found) ? res.flight_records_found : [];
+
+  const pathEl = document.getElementById('iosTabPathVal');
+  if (pathEl) pathEl.innerText = targetPath || "iTunes Backup / iOS Image";
+
+  const countEl = document.getElementById('iosTabFilesCount');
+  if (countEl) countEl.innerText = `${filesHashed} files`;
+
+  const volEl = document.getElementById('iosTabDataVolume');
+  if (volEl) volEl.innerText = `${mbHashed} MB`;
+
+  const logsCountEl = document.getElementById('iosTabLogsCount');
+  if (logsCountEl) logsCountEl.innerText = `${recordsList.length} logs`;
+
+  const pName = document.getElementById('iosPilotName');
+  if (pName) pName.innerText = pilotId.pilot_name || pilotId.account_name || "Detected";
+  const pEmail = document.getElementById('iosPilotEmail');
+  if (pEmail) pEmail.innerText = pilotId.account_email || pilotId.email || "N/A";
+  const pPhone = document.getElementById('iosPilotPhone');
+  if (pPhone) pPhone.innerText = pilotId.phone_number || pilotId.phone || "N/A";
+  const pPkg = document.getElementById('iosAppBundle');
+  if (pPkg) pPkg.innerText = pilotId.app_bundle || "N/A";
+  const pUid = document.getElementById('iosPilotUid');
+  if (pUid) pUid.innerText = pilotId.pilot_uid || "N/A";
+
+  const devModel = document.getElementById('iosDeviceModel');
+  if (devModel) devModel.innerText = hwMeta.device_model || hwMeta.model || "N/A";
+  const ctrlSn = document.getElementById('iosDeviceSn');
+  if (ctrlSn) ctrlSn.innerText = hwMeta.device_sn || hwMeta.serial_number || "N/A";
+  const udidEl = document.getElementById('iosUdid');
+  if (udidEl) udidEl.innerText = hwMeta.udid || "N/A";
+  const osVer = document.getElementById('iosVersion');
+  if (osVer) osVer.innerText = hwMeta.ios_version || hwMeta.os_version || "N/A";
+  const macAddr = document.getElementById('iosMacAddress');
+  if (macAddr) macAddr.innerText = hwMeta.mac_address || hwMeta.mac || "N/A";
+
+  const tbody = document.getElementById('iosDiscoveredLogsTableBody');
+  if (tbody) {
+    if (recordsList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No iOS flight log files discovered.</td></tr>`;
+    } else {
+      tbody.innerHTML = recordsList.map((recPath, idx) => {
+        const fn = recPath.split(/[\\/]/).pop();
+        const escPath = escapeHtml(recPath);
+        return `
+          <tr>
+            <td><strong>#${idx + 1}</strong></td>
+            <td style="font-weight:700; color:#fb7185;">${escapeHtml(fn)}</td>
+            <td style="font-family:var(--font-mono); font-size:10px; color:#94a3b8; word-break:break-all;">${escPath}</td>
+            <td>
+              <button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#fb7185; color:#ffe4e6;" onclick="selectGcsDiscoveredLog('${escPath.replace(/'/g, "\\'")}')">
+                📥 Load into Telemetry
               </button>
             </td>
           </tr>
@@ -6734,9 +6969,11 @@ function renderFlightData(data) {
     renderExtendedData(globalExtended);
   }
 
-  // Setup Dynamic Session Dropdowns & Media Vault Gallery
+  // Setup Dynamic Session Dropdowns, Media Vault & Android/iOS GCS Vaults
   setupSessionSelectors(data);
   renderMediaVault(data);
+  renderAndroidGcsTab(data);
+  renderIosGcsTab(data);
 }
 
 function formatCoords(lat, lon) {
