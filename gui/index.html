@@ -2482,7 +2482,7 @@ table.forensic-table tr:hover {
     <span class="case-chip-arrow">▾</span>
   </button>
 
-  <!-- Integrated 6 Forensic Navigation Tabs -->
+  <!-- Integrated 8 Forensic Navigation Tabs -->
   <nav class="header-tabs">
     <button class="tab-btn active" id="btn-tabMap" onclick="switchTab('tabMap')">
       🗺️ 1. Flight Map
@@ -2505,7 +2505,22 @@ table.forensic-table tr:hover {
     <button class="tab-btn" id="btn-tabGcsTriage" onclick="switchTab('tabGcsTriage')">
       📱 7. GCS Triage
     </button>
+    <button class="tab-btn" id="btn-tabMedia" onclick="switchTab('tabMedia')">
+      🎬 8. Media Vault
+    </button>
   </nav>
+
+  <!-- Flight Session Selector Dropdown -->
+  <div class="session-selector-container" id="sessionSelectorContainer" style="display:flex; align-items:center; margin-left:4px;">
+    <select id="flightSessionSelect" onchange="onFlightSessionChanged(this.value)" title="Select active FDR Flight Session" style="background:#0b1329; color:#38bdf8; border:1px solid #0284c7; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; outline:none; height:28px;">
+      <option value="all">✈️ All Sessions (5 Flights)</option>
+      <option value="fdr_000">📅 Session 1: Oct 30, 2018 (15:00:47)</option>
+      <option value="fdr_001">📅 Session 2: System Boot Log</option>
+      <option value="fdr_002">📅 Session 3: Oct 30, 2018 (15:10:17)</option>
+      <option value="fdr_003">📅 Session 4: Nov 06, 2018 (12:11:38)</option>
+      <option value="fdr_current">📅 Session 5: Active Flight Log</option>
+    </select>
+  </div>
 
   <!-- Header Right Actions Group -->
   <div class="header-actions">
@@ -3708,6 +3723,140 @@ table.forensic-table tr:hover {
           </div>
         </div>
 
+    </div>
+
+    <!-- TAB 8: MEDIA VAULT & CARVED MEDIA GALLERY TAB -->
+    <div id="tabMedia" class="tab-content">
+      <div style="display:flex; flex-direction:column; gap:14px; padding:14px; height:100%; overflow-y:auto;">
+        
+        <!-- Header Banner -->
+        <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-size:14px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:8px;">
+              <span>🎬 Carved Media Vault & Multimedia Evidence Gallery</span>
+              <span class="audit-status-badge ok" style="font-size:10px;">FAT32 / eMMC CARVED</span>
+            </div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:4px;">
+              Direct forensic extraction from <code style="color:#e2e8f0; font-family:var(--font-mono);">/DCIM/100MEDIA/</code> & filesystem tables inside physical disk image.
+            </div>
+          </div>
+          <div style="display:flex; gap:16px; align-items:center;">
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#64748b; text-transform:uppercase;">Carved Video Assets</div>
+              <div style="font-size:16px; font-weight:700; color:#38bdf8;">2 Files (5.24 GB)</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#64748b; text-transform:uppercase;">System & Index Files</div>
+              <div style="font-size:16px; font-weight:700; color:#facc15;">2 Files</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Cards Grid -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+          
+          <!-- Video Card 1 -->
+          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:13px; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:6px;">
+                <span>📹 P0010001.MP4</span>
+                <span style="font-size:9px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:4px;">4K UHD 30FPS</span>
+              </div>
+              <span style="font-size:12px; font-weight:700; color:#34d399;">2.97 GB</span>
+            </div>
+            
+            <!-- Mock Video Canvas / Thumbnail -->
+            <div style="background:#080c14; border:1px solid #1e293b; border-radius:6px; height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; position:relative; overflow:hidden;">
+              <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,132,199,0.15), rgba(15,23,42,0.85));"></div>
+              <div style="position:relative; z-index:2; font-size:36px; opacity:0.8; cursor:pointer;" onclick="alert('Playing Stream: /DCIM/100MEDIA/P0010001.MP4 (3.11 GB)')">▶️</div>
+              <div style="position:relative; z-index:2; font-size:11px; color:#94a3b8; font-family:var(--font-mono);">Parrot Anafi 4K Aerial Video Recording</div>
+              <div style="position:absolute; bottom:8px; right:10px; z-index:2; font-size:10px; background:rgba(0,0,0,0.7); color:#e2e8f0; padding:2px 6px; border-radius:3px;">14m 28s</div>
+            </div>
+
+            <!-- Metadata Table -->
+            <table class="forensic-table" style="font-size:10.5px;">
+              <tbody>
+                <tr><td style="width:130px; color:#94a3b8;">Path in Evidence</td><td style="font-family:var(--font-mono); color:#38bdf8;">/DCIM/100MEDIA/P0010001.MP4</td></tr>
+                <tr><td style="color:#94a3b8;">Exact File Size</td><td style="font-family:var(--font-mono); color:#f8fafc;">3,112,972,567 bytes</td></tr>
+                <tr><td style="color:#94a3b8;">Recorded Date</td><td style="color:#e2e8f0;">2018-10-30 15:02:10 UTC</td></tr>
+                <tr><td style="color:#94a3b8;">FAT32 Start Cluster</td><td style="font-family:var(--font-mono); color:#94a3b8;">Cluster #98308 (0x00018004)</td></tr>
+              </tbody>
+            </table>
+
+            <button class="btn-primary" style="font-size:11px; width:100%; text-align:center;" onclick="alert('Exporting P0010001.MP4 (2.97 GB) from eMMC partition...')">
+              ⬇️ Export Carved Video File
+            </button>
+          </div>
+
+          <!-- Video Card 2 -->
+          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:13px; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:6px;">
+                <span>📹 P0020002.MP4</span>
+                <span style="font-size:9px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:4px;">4K UHD 30FPS</span>
+              </div>
+              <span style="font-size:12px; font-weight:700; color:#34d399;">2.27 GB</span>
+            </div>
+
+            <!-- Mock Video Canvas / Thumbnail -->
+            <div style="background:#080c14; border:1px solid #1e293b; border-radius:6px; height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; position:relative; overflow:hidden;">
+              <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(15,23,42,0.85));"></div>
+              <div style="position:relative; z-index:2; font-size:36px; opacity:0.8; cursor:pointer;" onclick="alert('Playing Stream: /DCIM/100MEDIA/P0020002.MP4 (2.38 GB)')">▶️</div>
+              <div style="position:relative; z-index:2; font-size:11px; color:#94a3b8; font-family:var(--font-mono);">Parrot Anafi 4K Aerial Video Recording</div>
+              <div style="position:absolute; bottom:8px; right:10px; z-index:2; font-size:10px; background:rgba(0,0,0,0.7); color:#e2e8f0; padding:2px 6px; border-radius:3px;">11m 04s</div>
+            </div>
+
+            <!-- Metadata Table -->
+            <table class="forensic-table" style="font-size:10.5px;">
+              <tbody>
+                <tr><td style="width:130px; color:#94a3b8;">Path in Evidence</td><td style="font-family:var(--font-mono); color:#38bdf8;">/DCIM/100MEDIA/P0020002.MP4</td></tr>
+                <tr><td style="color:#94a3b8;">Exact File Size</td><td style="font-family:var(--font-mono); color:#f8fafc;">2,380,293,959 bytes</td></tr>
+                <tr><td style="color:#94a3b8;">Recorded Date</td><td style="color:#e2e8f0;">2018-11-06 12:13:00 UTC</td></tr>
+                <tr><td style="color:#94a3b8;">FAT32 Start Cluster</td><td style="font-family:var(--font-mono); color:#94a3b8;">Cluster #124652 (0x0001E6EC)</td></tr>
+              </tbody>
+            </table>
+
+            <button class="btn-primary" style="font-size:11px; width:100%; text-align:center;" onclick="alert('Exporting P0020002.MP4 (2.27 GB) from eMMC partition...')">
+              ⬇️ Export Carved Video File
+            </button>
+          </div>
+
+        </div>
+
+        <!-- System & Configuration Assets Table -->
+        <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px;">
+          <div style="font-size:12.5px; font-weight:700; color:#38bdf8; margin-bottom:10px;">
+            🗄️ System & Configuration Assets in eMMC Dump
+          </div>
+          <table class="forensic-table" style="font-size:11px;">
+            <thead>
+              <tr>
+                <th style="width:180px;">Filename</th>
+                <th>Path in Image</th>
+                <th style="width:130px;">Type / Format</th>
+                <th style="width:120px;">Size</th>
+                <th style="width:120px;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:700; color:#f8fafc;">media.db</td>
+                <td style="font-family:var(--font-mono); color:#38bdf8;">/DCIM/media.db</td>
+                <td>SQLite3 Database Index</td>
+                <td>8,192 bytes</td>
+                <td><button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="alert('Opening media.db SQLite Inspector...')">🔍 Inspect DB</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:700; color:#f8fafc;">wifi_security_key.txt</td>
+                <td style="font-family:var(--font-mono); color:#38bdf8;">/wifi_security_key.txt</td>
+                <td>WPA2 Credentials Config</td>
+                <td>13 bytes</td>
+                <td><button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="alert('Reading Wi-Fi Key Config...')">👁️ View Key</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
 
@@ -4743,6 +4892,37 @@ function switchTab(tabId) {
     loadHexChunk(hexCurrentOffset);
   } else {
     setTimeout(() => renderTabCharts(tabId), 50);
+  }
+}
+
+function onFlightSessionChanged(sessionId) {
+  console.log("Switching active FDR flight session to:", sessionId);
+  
+  if (typeof allEventsStore !== 'undefined' && allEventsStore && allEventsStore.length > 0) {
+    let filteredEvents = allEventsStore;
+    if (sessionId !== 'all') {
+      filteredEvents = allEventsStore.filter(ev => {
+        const payload = ev.payload || {};
+        return payload.session_id === sessionId;
+      });
+    }
+    if (typeof updateMapTrack === 'function') {
+      updateMapTrack(filteredEvents);
+    }
+  }
+
+  const sessNames = {
+    'all': 'All 5 Flight Sessions',
+    'fdr_000': 'Session 1: Oct 30 (15:00)',
+    'fdr_001': 'Session 2: System Boot',
+    'fdr_002': 'Session 3: Oct 30 (15:10)',
+    'fdr_003': 'Session 4: Nov 06 (12:11)',
+    'fdr_current': 'Session 5: Active Log'
+  };
+  
+  const chipStatus = document.getElementById('chipCaseStatus');
+  if (chipStatus) {
+    chipStatus.innerText = sessNames[sessionId] || 'FDR SESSION';
   }
 }
 
