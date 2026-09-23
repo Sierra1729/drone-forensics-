@@ -664,10 +664,12 @@ def triage_offline_dump(
 
             # Identify flight logs
             f_lower = file_p.name.lower()
-            if any(ext in f_lower for ext in [".txt", ".csv", ".dat", ".log", ".bbl", ".aem", ".pud", ".ulg", ".tlog"]):
-                if any(tag in str(file_p).lower() for tag in ["flightrecord", "mcdatflightrecords", "flightlog", "missionlogs", "logs", "sample", "fly"]):
-                    flight_record_files.append(file_p)
-                elif f_lower.endswith(".txt") or f_lower.endswith(".csv") or f_lower.endswith(".dat"):
+            str_path_lower = str(file_p).lower()
+            is_log_ext = any(f_lower.endswith(ext) for ext in [".ulg", ".bfl", ".bbl", ".pud", ".tlog", ".csv", ".dat", ".txt", ".json", ".log"])
+            has_flight_tag = any(tag in str_path_lower for tag in ["flightrecord", "mcdatflightrecords", "flightlog", "missionlogs", "dji.pilot/log", "flight", "fly0", "fly1"])
+            
+            if is_log_ext:
+                if (has_flight_tag or get_parser_for_file(file_p) is not None) and f_lower not in ["version.txt", "deviceinfo.dat", "info.plist", "manifest.xml", "build.prop"]:
                     flight_record_files.append(file_p)
 
     # 3. GCS Artifact & Identity Extraction
