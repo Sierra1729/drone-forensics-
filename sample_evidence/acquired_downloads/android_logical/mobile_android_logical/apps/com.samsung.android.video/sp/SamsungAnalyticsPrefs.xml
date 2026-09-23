@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="deviceId">Yue7jlPzoyIgSHydN7ePfVIrljAx14Ox</string>
+    <set name="AppPrefs">
+        <string>Playback speed</string>
+        <string>Auto screen fit</string>
+        <string>Auto play next</string>
+        <string>Play audio only</string>
+    </set>
+    <int name="auidType" value="0" />
+    <set name="Play audio only">
+        <string>play_audio_only</string>
+    </set>
+    <set name="Playback speed">
+        <string>playspeed</string>
+    </set>
+    <set name="Auto play next">
+        <string>auto.play.next</string>
+    </set>
+    <set name="Auto screen fit">
+        <string>smart_fitting</string>
+    </set>
+</map>

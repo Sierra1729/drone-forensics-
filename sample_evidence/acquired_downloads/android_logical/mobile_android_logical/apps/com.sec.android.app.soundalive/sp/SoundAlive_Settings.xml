@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <int name="SA_FOTA_CHECK_ALL" value="1" />
+    <int name="SPK__SA_GLOBAL_EFFECT_CONCERT_HALL" value="0" />
+    <int name="boot_completed" value="1" />
+</map>

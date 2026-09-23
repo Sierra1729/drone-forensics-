@@ -1,0 +1,18 @@
+e: 2018-10-30 13:32:57:  db init step free size: 6534
+e: 2018-10-30 13:32:58:  db init step free size: 6532
+d: 2018-10-30 13:32:58:  not found in zip kolast
+d: 2018-10-30 13:32:58:  circle db create success 01.00.01.07 1518590973
+e: 2018-10-30 13:32:58:  db init step free size: 6527
+d: 2018-10-30 13:32:59:  mPolygonDb create success 01.00.01.05 1498831470
+e: 2018-10-30 13:32:59:  db init step free size: 6518
+d: 2018-10-30 13:33:08:  *****fetch old circle start: 1125707976 -1195122792, kalost: false(only for debug)
+d: 2018-10-30 13:33:10:  fetch old circle onSuccess
+d: 2018-10-30 13:33:10:  fetchPolygonTfrs onSuccess model ok, timestamp: 1540927988
+d: 2018-10-30 13:33:10:  fetch old circle onSuccess, save done: 6
+e: 2018-10-30 13:36:15:  db init step free size: 6142
+e: 2018-10-30 13:36:16:  db init step free size: 6142
+d: 2018-10-30 13:36:16:  circle db create success 01.00.01.09 1538227081
+e: 2018-10-30 13:36:16:  db init step free size: 6142
+d: 2018-10-30 13:36:16:  mPolygonDb create success 01.00.01.05 1498831470
+e: 2018-10-30 13:36:16:  db init step free size: 6142
+d: 2018-10-30 13:36:17:  polygon update network switch to connect ok

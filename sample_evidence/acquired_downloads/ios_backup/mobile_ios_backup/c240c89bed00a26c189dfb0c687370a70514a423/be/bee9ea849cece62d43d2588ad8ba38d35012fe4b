@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DisplayMode</key>
+	<dict>
+		<key>com.apple.BatteryCenter.BatteryWidget</key>
+		<integer>1</integer>
+		<key>com.apple.news.widget</key>
+		<integer>1</integer>
+	</dict>
+	<key>Known</key>
+	<array>
+		<string>com.apple.news.widget</string>
+		<string>com.apple.Maps.Widget</string>
+		<string>com.apple.mobilecal.widget</string>
+		<string>com.apple.tips.TipsWidgetExtension</string>
+		<string>com.apple.reminders.todaywidget</string>
+		<string>com.apple.mobileslideshow.photoswidget</string>
+		<string>com.apple.UpNextWidget.extension</string>
+		<string>com.apple.BatteryCenter.BatteryWidget</string>
+		<string>com.apple.AppPredictionWidget.extension</string>
+		<string>com.apple.Music.RecentlyPlayedTodayExtension</string>
+		<string>com.apple.weather.WeatherAppTodayWidget</string>
+	</array>
+	<key>TodayGroup</key>
+	<array>
+		<string>com.apple.UpNextWidget.extension</string>
+		<string>com.apple.AppPredictionWidget.extension</string>
+		<string>com.apple.news.widget</string>
+		<string>com.apple.weather.WeatherAppTodayWidget</string>
+		<string>com.apple.Maps.Widget</string>
+		<string>com.apple.tips.TipsWidgetExtension</string>
+		<string>com.apple.BatteryCenter.BatteryWidget</string>
+		<string>com.apple.UpNextWidget.extension</string>
+		<string>com.apple.weather.WeatherAppTodayWidget</string>
+		<string>com.apple.Maps.Widget</string>
+	</array>
+</dict>
+</plist>

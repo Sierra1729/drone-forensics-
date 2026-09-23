@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="app_instance_id">e29a6551f82ca6a96891998e38be0ed8</string>
+    <string name="gmp_app_id">1:154967642907:android:cd4c70ab9d321594</string>
+    <string name="health_monitor:value">2WC13001:Install referrer is missing timestamp</string>
+    <long name="time_active" value="1949" />
+    <boolean name="has_been_opened" value="true" />
+    <long name="first_open_time" value="1540927895312" />
+    <boolean name="deferred_analytics_collection" value="true" />
+    <long name="health_monitor:count" value="1" />
+    <long name="app_install_time" value="1540926358000" />
+    <boolean name="use_service" value="true" />
+    <long name="health_monitor:start" value="1540927896232" />
+    <long name="last_pause_time" value="1541528355826" />
+    <long name="last_upload" value="1540927895363" />
+    <boolean name="start_new_session" value="false" />
+</map>

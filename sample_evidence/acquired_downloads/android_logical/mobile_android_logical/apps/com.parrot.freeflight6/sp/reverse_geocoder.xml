@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <long name="latitude" value="4630898476036143284" />
+    <string name="address">{&quot;mAddressLines&quot;:{&quot;0&quot;:&quot;325 Interlocken Pkwy # B, Broomfield, CO 80021, USA&quot;},&quot;mAdminArea&quot;:&quot;Colorado&quot;,&quot;mCountryCode&quot;:&quot;US&quot;,&quot;mCountryName&quot;:&quot;United States&quot;,&quot;mFeatureName&quot;:&quot;# B&quot;,&quot;mHasLatitude&quot;:true,&quot;mHasLongitude&quot;:true,&quot;mLatitude&quot;:39.920249,&quot;mLocale&quot;:&quot;en_US&quot;,&quot;mLocality&quot;:&quot;Broomfield&quot;,&quot;mLongitude&quot;:-105.112899,&quot;mMaxAddressLineIndex&quot;:0,&quot;mPostalCode&quot;:&quot;80021&quot;,&quot;mSubAdminArea&quot;:&quot;Broomfield County&quot;,&quot;mSubThoroughfare&quot;:&quot;325&quot;,&quot;mThoroughfare&quot;:&quot;Interlocken Parkway&quot;}</string>
+    <long name="longitude" value="-4586325231456955702" />
+    <long name="update_time" value="1540927930657" />
+    <boolean name="dirty" value="true" />
+</map>

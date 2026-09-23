@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="last_remote_control_uid">PI040443AA8D001606</string>
+    <boolean name="is_onboarding_finished" value="true" />
+    <boolean name="is_first_launch" value="false" />
+    <string name="last_drone_uid">PI040416AA8E001989</string>
+    <boolean name="is_tou_accepted" value="true" />
+    <boolean name="user_got_hand_launch" value="true" />
+</map>

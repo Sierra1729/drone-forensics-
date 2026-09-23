@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="IN_APP_FLIGHT_PLAN_PURCHASED_KEY" value="false" />
+    <boolean name="IN_APP_FOLLOW_ME_PURCHASED_KEY" value="false" />
+</map>

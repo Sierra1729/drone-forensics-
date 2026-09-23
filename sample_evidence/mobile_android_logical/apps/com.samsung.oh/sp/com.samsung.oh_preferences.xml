@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <long name="AlbumCollector_LAST_RAN" value="1541787646207" />
+    <long name="InstalledAppsCollector_LAST_RAN" value="1541787646332" />
+    <long name="StorageSpaceCollector_LAST_RAN" value="1541787646168" />
+    <long name="BrowserHistoryCollector_LAST_GOOD_RUN" value="1541787646036" />
+    <long name="SearchCollector_LAST_GOOD_RUN" value="1541787646010" />
+    <long name="ImageCollector_LAST_RAN" value="1541787645946" />
+    <long name="SearchCollector_LAST_RAN" value="1541787646016" />
+    <long name="VideoCollector_LAST_RAN" value="1541787646005" />
+    <long name="BrowserHistoryCollector_LAST_RAN" value="1541787646039" />
+    <long name="ArtistCollector_LAST_RAN" value="1541787646099" />
+    <long name="GenreCollector_LAST_RAN" value="1541787646132" />
+    <long name="RunningAppsCollector_LAST_RAN" value="1541787646028" />
+</map>

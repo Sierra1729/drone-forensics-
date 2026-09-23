@@ -76,3 +76,8 @@ cases/.geocache.json
 
 # Temporary binary test files
 *.bin
+
+# Large binary dumps (>100MB GitHub limit)
+*.obb
+mtdblock*
+*.DAT

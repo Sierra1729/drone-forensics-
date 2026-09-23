@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>00000000-0000-0000-0000-000000000000:0</key>
+	<dict>
+		<key>restrictedBool</key>
+		<dict>
+			<key>allowClassroomLockDevice</key>
+			<dict>
+				<key>ask</key>
+				<false/>
+				<key>value</key>
+				<true/>
+			</dict>
+			<key>allowClassroomOpenApp</key>
+			<dict>
+				<key>ask</key>
+				<false/>
+				<key>value</key>
+				<true/>
+			</dict>
+			<key>allowClassroomScreenObservation</key>
+			<dict>
+				<key>ask</key>
+				<false/>
+				<key>value</key>
+				<true/>
+			</dict>
+			<key>forceUnpromptedRemoteScreenObservation</key>
+			<dict>
+				<key>ask</key>
+				<false/>
+				<key>value</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+</dict>
+</plist>

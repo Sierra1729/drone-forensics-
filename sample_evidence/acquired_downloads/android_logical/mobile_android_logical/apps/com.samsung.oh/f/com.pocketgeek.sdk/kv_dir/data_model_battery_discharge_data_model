@@ -1,0 +1,1 @@
+{"type":"battery_discharge_data_model","empty_level":0.0,"full_level":1.0,"long_term_rate":-0.05,"name":"battery_discharge_data_model","prediction_model":{"type":"linear_regression","intercept":0.0,"weights":[0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]}}

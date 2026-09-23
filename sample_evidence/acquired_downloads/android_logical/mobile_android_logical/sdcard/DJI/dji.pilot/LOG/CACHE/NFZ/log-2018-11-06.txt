@@ -1,0 +1,6 @@
+e: 2018-11-06 11:28:26:  db init step free size: 6151
+e: 2018-11-06 11:28:26:  db init step free size: 6151
+d: 2018-11-06 11:28:27:  circle db create success 01.00.01.09 1538227081
+e: 2018-11-06 11:28:27:  db init step free size: 6151
+d: 2018-11-06 11:28:27:  mPolygonDb create success 01.00.01.05 1498831470
+e: 2018-11-06 11:28:27:  db init step free size: 6151

@@ -1,0 +1,12 @@
+2018-10-30 01:32:59:823 E: init not ru ac=null
+2018-10-30 01:32:59:828 E: init success
+2018-10-30 01:33:04:803 E: first get p loc
+2018-10-30 01:33:04:877 E: -------start load city list--------
+2018-10-30 01:33:34:872 E: city list load finish
+2018-10-30 01:33:37:179 E: build kdtree finish count=138456
+2018-10-30 01:33:37:834 E: find near city=US, index=99
+2018-10-30 01:33:43:238 E: on p loc change dis=1.1297362E7
+2018-10-30 01:34:52:778 E: on p loc change dis=17.548643112182617
+2018-10-30 01:36:17:349 E: init not ru ac=null
+2018-10-30 01:36:17:354 E: init success
+2018-10-30 01:36:19:785 E: get ac from net failure errorNo=0

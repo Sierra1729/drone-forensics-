@@ -1,0 +1,1 @@
+{"type":"app_data_usage_alert_data_model","re_notify_delay_minutes":1440,"name":"app_data_usage_alert_data_model","prediction_model":{"type":"linear_classification","intercept":-5.24288E8,"weights":[1.0],"class_labels":["positive","negative"]}}

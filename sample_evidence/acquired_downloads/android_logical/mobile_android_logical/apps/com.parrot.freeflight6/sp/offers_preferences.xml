@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <set name="product_ids">
+        <string>0914</string>
+    </set>
+    <set name="offers">
+        <string>{&quot;button&quot;:&quot;discover&quot;,&quot;description&quot;:&quot;Discover the new features of the updated version.&quot;,&quot;expiration&quot;:&quot;2018-11-25T12:45:00+01:00&quot;,&quot;id&quot;:&quot;29097&quot;,&quot;image&quot;:&quot;https://www.parrot.com/files/s3fs-public/ff6_inspi_01_1024x768_0.jpg&quot;,&quot;link&quot;:&quot;https://www.parrot.com/us/support/products/anafi/release-notes&quot;,&quot;title&quot;:&quot;Major update FreeFlight 6 v6.2&quot;,&quot;type&quot;:&quot;news&quot;}</string>
+        <string>{&quot;button&quot;:&quot;discover&quot;,&quot;description&quot;:&quot;Share your feedback on ANAFI&quot;,&quot;expiration&quot;:&quot;2018-11-15T14:45:00+01:00&quot;,&quot;id&quot;:&quot;34338&quot;,&quot;image&quot;:&quot;https://www.parrot.com/files/s3fs-public/parrot_anafi_lifestyle_handlings_03_unfold_copie_50_1.jpg&quot;,&quot;link&quot;:&quot;https://www.parrot.com/uk/drones/anafi#reviews&quot;,&quot;title&quot;:&quot;Your opinion is important!&quot;,&quot;type&quot;:&quot;news&quot;}</string>
+        <string>{&quot;button&quot;:&quot;discover&quot;,&quot;description&quot;:&quot;Adobe Creative Cloud Photography Plan or Adobe Premiere Pro CC&quot;,&quot;expiration&quot;:&quot;2018-12-31T14:00:00+01:00&quot;,&quot;id&quot;:&quot;35724&quot;,&quot;image&quot;:&quot;https://www.parrot.com/files/s3fs-public/kv_push-app_adobe_anafi_lightroom_1024x768_3.jpg&quot;,&quot;link&quot;:&quot;https://www.parrot.com/uk/creativity-elevated-adobe?utm_source\u003dadobe\u0026utm_medium\u003dcross-sell-freeflight6\u0026utm_campaign\u003dadobe-partnership\u0026xtor\u003dCS2-21-[cross-sell-freeflight6]-[adobe-partnership]&quot;,&quot;title&quot;:&quot;2-month membership to Adobe&quot;,&quot;type&quot;:&quot;promo&quot;}</string>
+    </set>
+</map>

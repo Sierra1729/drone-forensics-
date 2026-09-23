@@ -1,0 +1,29 @@
+e: 13:32:59  network connect_ok
+e: 13:32:59  fetching from server, remote version not exist
+e: 13:32:59  appVersion = 01.00.01.05
+e: 13:32:59  network connect_ok
+e: 13:33:00  get old Model.status 0 local version: 01.00.01.07 server version: 01.00.01.09
+e: 13:33:00  noticeToUpgrade null fake event
+e: 13:33:00  notice force update false
+e: 13:33:43  get old Model.status 0 local version: 01.00.01.07 server version: 01.00.01.09
+e: 13:33:43  noticeToUpgrade null fake event
+e: 13:33:43  notice force update false
+e: 13:34:58  get old Model.status 0 local version: 01.00.01.07 server version: 01.00.01.09
+e: 13:34:58  noticeToUpgrade null fake event
+e: 13:34:58  isDataUpgradeActivityRunning true
+e: 13:34:58  download rModel 不需要更新
+e: 13:34:58  msg up download start!!
+e: 13:34:58  download aModel 不需要更新
+e: 13:34:58  notice force update false
+e: 13:35:03  download app circle 验签通过
+e: 13:35:04  本地圆形数据库更新是否成功 = true
+e: 13:36:17  network connect_ok
+e: 13:36:17  fetching from server, remote version not exist
+e: 13:36:17  appVersion = 01.00.01.05
+e: 13:36:17  network connect_ok
+e: 13:36:17  network connect_ok
+e: 13:36:17  fetching from server, remote version not exist
+e: 13:36:17  network connect_ok
+e: 13:36:17  get old Model.status 1 local version: 01.00.01.09 server version: 
+e: 13:36:17  notice force update false
+e: 13:36:17  get old Model.status 1 local version: 01.00.01.09 server version: 

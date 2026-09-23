@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>DAAccountPersistentUUID</key>
+		<string>92B86E20-FB6B-4B96-B9CE-527568B1D382</string>
+		<key>DAAgentClass</key>
+		<string>CalDAVAgent</string>
+		<key>Identifier</key>
+		<string>92B86E20-FB6B-4B96-B9CE-527568B1D382</string>
+	</dict>
+	<dict>
+		<key>DAAccountPersistentUUID</key>
+		<string>EC912AF7-4A19-4EC5-A4FE-6E395E56F0EB</string>
+		<key>DAAgentClass</key>
+		<string>BookmarkDAVAgent</string>
+		<key>Identifier</key>
+		<string>EC912AF7-4A19-4EC5-A4FE-6E395E56F0EB</string>
+	</dict>
+	<dict>
+		<key>DAAccountPersistentUUID</key>
+		<string>C357D70A-C5EB-4D6E-8E13-BABA81AA640F</string>
+		<key>DAAgentClass</key>
+		<string>CardDAVAgent</string>
+		<key>Identifier</key>
+		<string>C357D70A-C5EB-4D6E-8E13-BABA81AA640F</string>
+	</dict>
+	<dict>
+		<key>DAAccountPersistentUUID</key>
+		<string>C6493246-F56C-4FBD-8EB4-59CCBC073404</string>
+		<key>DAAgentClass</key>
+		<string>SubCalAgent</string>
+		<key>Identifier</key>
+		<string>C6493246-F56C-4FBD-8EB4-59CCBC073404</string>
+	</dict>
+</array>
+</plist>

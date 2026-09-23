@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <int name="app_version" value="50202203" />
+    <int name="obb_version" value="50201201" />
+    <string name="firmware_version_evinrude">1.4.1</string>
+    <string name="firmware_version_bebop2">4.4.2</string>
+    <string name="firmware_version_sc2">1.0.7</string>
+    <string name="firmware_version_bebop">4.0.5</string>
+</map>

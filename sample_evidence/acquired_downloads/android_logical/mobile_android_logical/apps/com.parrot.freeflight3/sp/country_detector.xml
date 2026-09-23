@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <long name="UPDATE_TIME_KEY" value="1540927950130" />
+    <long name="LAST_LONGITUDE_KEY" value="-4586274956212129244" />
+    <long name="LAST_LATITUDE_KEY" value="4630815082741105776" />
+    <string name="COUNTRY_CODE_KEY">US</string>
+    <boolean name="GEOCODE_NEEDED_KEY" value="false" />
+</map>

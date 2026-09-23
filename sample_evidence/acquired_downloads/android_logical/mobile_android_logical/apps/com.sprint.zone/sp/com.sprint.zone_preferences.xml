@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="verified_reseller" value="false" />
+    <boolean name="verified_mvno" value="true" />
+    <string name="funnyPref2Cached">35574309267213</string>
+    <string name="funnyPref6Cached">0000004371</string>
+    <string name="funnyPref4Cached">35574309267213</string>
+    <string name="latestVersionPath">http://spyder.sprintlabs.com/sprint_zone/MVNO/CarrierData/Unknown/zone-Unknown.json</string>
+    <string name="funnyPref1Cached">89011202002453404371@hcm.sprintpcs.com</string>
+    <boolean name="samsung_sota" value="true" />
+</map>

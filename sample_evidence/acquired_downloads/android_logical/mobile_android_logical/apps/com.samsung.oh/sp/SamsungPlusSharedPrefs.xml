@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <long name="pref_stub_alarm_setup_time" value="1540924271765" />
+    <string name="oepHttpHeaders">kmonaaafhdhcaabbgkgbhggbcohfhegjgmcoeigbhdgiengbhaafahnkmbmdbgganbadaaacegaaakgmgpgbgeeggbgdhegphcejaaajhegihcgfhdgigpgmgehihadpeaaaaaaaaaaaadhhaiaaaaaaaeaaaaaaadheaaaoepeffacnedgmgjgfgohecnebhahaheaaakepeicnebgogehcgpgjgeheaaaiepeffacnffffejeeheaacedhgcgggegbdcgcgbcngedadhdccndedddegdcngbdedidbcndhdidhdggcdcggdhdhdbdcdeheaabcepeffacnedgmgjgfgohecnfggfhchdgjgpgoheaabehahcgpgehmdbdacodcdbcodccodahmdcdhdbdadahi</string>
+    <set name="pref_key_notif_alerts">
+        <string>ROOTED</string>
+    </set>
+    <int name="pref_stub_notif_index" value="0" />
+    <long name="SCHEDULER_SYNC_INTERVAL" value="21600000" />
+    <boolean name="wasPGAlertReceived" value="true" />
+    <int name="pref_key_notif_count" value="2" />
+    <boolean name="wasGenieDismissed" value="false" />
+</map>

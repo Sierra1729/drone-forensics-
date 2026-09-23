@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="blacklist">[]</string>
+    <long name="remote_query_time" value="1540927897060" />
+    <int name="version" value="1" />
+    <string name="firmwares">[{&quot;md5&quot;:&quot;f008b6beebfb0476f0769bc6b1047f62&quot;,&quot;flags&quot;:[],&quot;product&quot;:&quot;0918&quot;,&quot;remote_url&quot;:&quot;https://firmware.parrot.com/Drones/0918/1.0.8/ALL/mpp3_update.tar.gz&quot;,&quot;size&quot;:32715197,&quot;version&quot;:&quot;1.0.8&quot;},{&quot;md5&quot;:&quot;07fadcdc40a54e7f5a11c8146d66def4&quot;,&quot;flags&quot;:[],&quot;required_version&quot;:&quot;0.8.4-beta4&quot;,&quot;product&quot;:&quot;0914&quot;,&quot;remote_url&quot;:&quot;https://firmware.parrot.com/Drones/0914/1.0.1/ALL/anafi_update.tar.gz&quot;,&quot;size&quot;:54892020,&quot;version&quot;:&quot;1.0.1&quot;}]</string>
+</map>

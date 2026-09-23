@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <set name="known_version_names">
+        <string>5.2</string>
+    </set>
+</map>
