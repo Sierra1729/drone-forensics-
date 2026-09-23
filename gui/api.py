@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import math
 import os
+import struct
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
