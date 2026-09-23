@@ -182,22 +182,30 @@ header {
 .header-tabs {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.header-tabs::-webkit-scrollbar {
+  display: none;
 }
 .tab-btn {
   background: transparent;
   border: 1px solid transparent;
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 4px 7px;
+  border-radius: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
   transition: all 0.2s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .tab-btn:hover {
   background: #1e293b;
@@ -2637,8 +2645,8 @@ table.forensic-table tr:hover {
       <span class="rail-icon">📡</span>
       <span class="rail-label">Acquire</span>
     </button>
-    <button class="rail-btn" id="railBtnVault" onclick="openCaseVault()" title="Open Historical Case Vault (📂)">
-      <span class="rail-icon">📂</span>
+    <button class="rail-btn" id="railBtnVault" onclick="switchTab('tabMedia')" title="Open Carved Media Vault & Asset Gallery (🎬)">
+      <span class="rail-icon">🎬</span>
       <span class="rail-label">Vault</span>
     </button>
     <button class="rail-btn" id="railBtnHud" onclick="toggleTelemetryDrawer()" title="Toggle Telemetry HUD & Cockpit Display (🎯)">
