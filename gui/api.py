@@ -1026,44 +1026,71 @@ class DesktopForensicAPI:
                 if not file_path_str:
                     continue
                 path = Path(file_path_str).resolve()
-                if not path.is_file():
+                if not path.exists():
                     continue
 
-                label = drone_input.get("label") or f"Drone #{idx + 1}"
-                drone_id = drone_input.get("drone_id") or f"DRONE-{idx + 1:02d}"
+                label = drone_input.get("label") or f"Evidence Exhibit #{idx + 1}"
+                drone_id = drone_input.get("drone_id") or f"EXHIBIT-{idx + 1:02d}"
                 decryption_key = drone_input.get("decryption_key")
 
-                file_size = path.stat().st_size
-                sha256_hex, blake3_hex = hash_file(path)
+                events = []
+                parser_name = "unknown"
+                crypto_report_dict = None
 
-                # Record acquisition in ledger
-                ledger.record(
-                    actor=examiner,
-                    action="ACQUIRE",
-                    target_path=str(path),
-                    notes=f"Seized UAV evidence [{drone_id} - {label}] ingested via Multi-Drone Ingestion",
-                    hash_target=True,
-                )
+                if path.is_dir():
+                    # Pre-extracted directory dump triage (Android / iOS GCS dump)
+                    from acquisition.adb_extractor import triage_offline_dump
+                    triage_res = triage_offline_dump(
+                        dump_path=path,
+                        output_directory=case_out,
+                        custody_ledger=ledger,
+                        operator_id=examiner,
+                    )
+                    events = list(triage_res.extracted_events)
+                    if not events and triage_res.flight_records_found:
+                        for rec in triage_res.flight_records_found:
+                            rec_path = Path(rec)
+                            p = get_parser_for_file(rec_path)
+                            if p:
+                                events.extend(p.parse(rec_path, custody_ledger=ledger, actor=examiner))
+                    file_size = triage_res.total_bytes_hashed
+                    sha256_hex = "DIR_STREAM_HASHED"
+                    blake3_hex = "DIR_STREAM_HASHED"
+                    parser_name = "gcs_triage_extractor"
+                else:
+                    file_size = path.stat().st_size
+                    sha256_hex, blake3_hex = hash_file(path)
 
-                # Protected data handling
-                crypto_report = decrypt_artifact(
-                    file_path=path,
-                    output_dir=case_out,
-                    user_key=decryption_key,
-                    ledger=ledger,
-                    investigator_id=examiner,
-                )
-                target_parse_path = path
-                if crypto_report.is_protected and crypto_report.decrypted and crypto_report.decrypted_file:
-                    target_parse_path = Path(crypto_report.decrypted_file)
+                    # Record acquisition in ledger
+                    ledger.record(
+                        actor=examiner,
+                        action="ACQUIRE",
+                        target_path=str(path),
+                        notes=f"Seized UAV evidence [{drone_id} - {label}] ingested via Multi-Source Ingestion",
+                        hash_target=True,
+                    )
 
-                # Detect parser
-                parser = get_parser_for_file(target_parse_path) or get_parser_for_file(path)
-                if not parser:
-                    continue
+                    # Protected data handling
+                    crypto_report = decrypt_artifact(
+                        file_path=path,
+                        output_dir=case_out,
+                        user_key=decryption_key,
+                        ledger=ledger,
+                        investigator_id=examiner,
+                    )
+                    crypto_report_dict = crypto_report.to_dict()
+                    target_parse_path = path
+                    if crypto_report.is_protected and crypto_report.decrypted and crypto_report.decrypted_file:
+                        target_parse_path = Path(crypto_report.decrypted_file)
 
-                # Parse
-                events = parser.parse(target_parse_path, custody_ledger=ledger, actor=examiner)
+                    # Detect parser
+                    parser = get_parser_for_file(target_parse_path) or get_parser_for_file(path)
+                    if not parser:
+                        continue
+                    parser_name = getattr(parser, "parser_name", parser.__class__.__name__)
+
+                    # Parse
+                    events = parser.parse(target_parse_path, custody_ledger=ledger, actor=examiner)
                 all_events_combined.extend(events)
 
                 # Save per-drone events
@@ -1176,7 +1203,7 @@ class DesktopForensicAPI:
                             "summary": {
                                 "hardware": f"{label} Platform",
                                 "airframe": "Multirotor",
-                                "software_version": parser.parser_name,
+                                "software_version": parser_name,
                                 "os_version": "Autopilot System",
                                 "vehicle_uuid": drone_id,
                                 "total_logged_messages": len(events),
@@ -1229,7 +1256,7 @@ class DesktopForensicAPI:
                                 {"param": "FILE_NAME", "value": path.name, "default": "N/A"},
                                 {"param": "DRONE_ID", "value": drone_id, "default": "N/A"},
                                 {"param": "DRONE_LABEL", "value": label, "default": "N/A"},
-                                {"param": "PARSER_PLUGIN", "value": parser.parser_name, "default": "N/A"},
+                                {"param": "PARSER_PLUGIN", "value": parser_name, "default": "N/A"},
                             ],
                         }
 
@@ -1257,8 +1284,8 @@ class DesktopForensicAPI:
                     "file_size_formatted": f"{file_size:,} bytes",
                     "sha256": sha256_hex,
                     "blake3": blake3_hex,
-                    "parser_name": parser.parser_name,
-                    "aircraft_model": f"{label} ({parser.parser_name})",
+                    "parser_name": parser_name,
+                    "aircraft_model": f"{label} ({parser_name})",
                     "serial_number": drone_id,
                     "total_events": len(events),
                     "total_gps_points": len(coords_seq),
@@ -1268,9 +1295,9 @@ class DesktopForensicAPI:
                     "anomalies_count": len(threat_list),
                     "threats": threat_list,
                     "key_events": [k.to_dict() for k in key_events],
-                    "is_protected": crypto_report.is_protected,
-                    "encryption_type": crypto_report.encryption_type,
-                    "crypto_notes": crypto_report.notes,
+                    "is_protected": crypto_report_dict.get("is_protected", False) if crypto_report_dict else False,
+                    "encryption_type": crypto_report_dict.get("encryption_type", "NONE") if crypto_report_dict else "NONE",
+                    "crypto_notes": crypto_report_dict.get("notes", "Plaintext") if crypto_report_dict else "Plaintext",
                     "launch_location": launch_location,
                     "recovery_location": recovery_location,
                     "coords": coords_seq,
