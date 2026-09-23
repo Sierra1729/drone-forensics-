@@ -20,6 +20,7 @@ import parsers.dji_csv               # auto-registers DJICSVFlightLogParser (Csv
 import parsers.autel                 # auto-registers AutelFlightLogParser
 import parsers.yuneec                # auto-registers YuneecFlightLogParser
 import parsers.media_extractor        # auto-registers DroneMediaExtractorParser
+import parsers.disk_image             # auto-registers PhysicalDiskImageParser
 
 __all__ = [
     "BaseParser",

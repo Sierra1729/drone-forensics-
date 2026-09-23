@@ -102,6 +102,18 @@ def identify_encryption(file_path: Path) -> tuple[EncryptionType, float, dict[st
     entropy = calculate_entropy(sample)
     metadata: dict[str, Any] = {"file_size_bytes": file_size, "header_hex": header[:16].hex()}
 
+    # 0. Physical Disk Images & Raw Bitstream Dumps (.dd, .img, .raw, .e01, MBR/GPT)
+    ext_lower = path.suffix.lower()
+    if ext_lower in [".dd", ".img", ".raw", ".e01"]:
+        metadata["container_type"] = "PHYSICAL_DISK_IMAGE"
+        return EncryptionType.PLAINTEXT_OPEN, entropy, metadata
+
+    with open(path, "rb") as f_check:
+        first_sector = f_check.read(512)
+        if len(first_sector) >= 512 and (first_sector[510:512] == b"\x55\xaa" or b"EFI PART" in first_sector):
+            metadata["container_type"] = "MBR_GPT_DISK_IMAGE"
+            return EncryptionType.PLAINTEXT_OPEN, entropy, metadata
+
     # 1. Plaintext Open Autopilot Formats
     if header.startswith(_PX4_MAGIC) or header.startswith(b"ULog"):
         return EncryptionType.PLAINTEXT_OPEN, entropy, metadata
