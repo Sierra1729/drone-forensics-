@@ -5175,10 +5175,20 @@ async function runOfflineGcsTriageUi() {
     const mbHashed = ((res.total_bytes_hashed || 0) / (1024 * 1024)).toFixed(2);
     const pilotId = res.pilot_identity || {};
     const hwMeta = res.hardware_metadata || {};
-    const recCount = res.flight_records_found || 0;
+    const recordsList = Array.isArray(res.flight_records_found) ? res.flight_records_found : [];
+    const recCount = recordsList.length;
+
+    if (recordsList.length > 0) {
+      selectedFilePath = recordsList[0];
+      const lbl = document.getElementById('filePathLabel');
+      if (lbl) {
+        lbl.innerText = selectedFilePath;
+        lbl.classList.add('selected');
+      }
+    }
 
     let summaryHtml = `✓ <strong>Offline Triage Complete!</strong> Stream-hashed ${filesHashed} file(s) (${mbHashed} MB) into Merkle Ledger.<br>`;
-    summaryHtml += `• Flight Records Discovered: <strong>${recCount}</strong><br>`;
+    summaryHtml += `• Flight Records Discovered: <strong>${recCount} file(s)</strong><br>`;
     if (pilotId.pilot_name || pilotId.account_email || pilotId.app_package) {
       summaryHtml += `• Pilot Identity: <strong>${escapeHtml(pilotId.pilot_name || pilotId.account_email || 'Detected')}</strong> (${escapeHtml(pilotId.app_package || '')})<br>`;
     }
@@ -5190,8 +5200,11 @@ async function runOfflineGcsTriageUi() {
     showToast(`✓ Offline GCS Triage finished! Hashed ${filesHashed} files (${recCount} flight logs).`);
 
     setTimeout(() => {
-      if (confirm(`Offline GCS Triage completed successfully!\n\nFiles Hashed: ${filesHashed} (${mbHashed} MB)\nFlight Logs Found: ${recCount}\nPilot ID: ${pilotId.pilot_name || pilotId.account_email || 'Detected'}\n\nWould you like to close hardware acquisition and view findings?`)) {
+      if (confirm(`Offline GCS Triage completed successfully!\n\nFiles Hashed: ${filesHashed} (${mbHashed} MB)\nFlight Logs Found: ${recCount} file(s)\nPilot ID: ${pilotId.pilot_name || pilotId.account_email || 'Detected'}\n\nPrimary Log Selected:\n${recordsList[0] || 'None'}\n\nWould you like to close hardware acquisition and start forensic analysis?`)) {
         closeAcquisitionModal();
+        if (recordsList.length > 0) {
+          startAnalysis();
+        }
       }
     }, 500);
 
