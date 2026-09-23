@@ -540,7 +540,7 @@ class DesktopForensicAPI:
         if len(webview.windows) > 0:
             window = webview.windows[0]
             file_types = (
-                "All Supported Drone Evidence (*.ulg;*.ugl;*.bin;*.txt;*.dat;*.json;*.tlog;*.csv;*.bbl;*.bfl;*.log;*.pud;*.param;*.kmz;*.gpx;*.jpg;*.jpeg;*.dng;*.srt)",
+                "All Supported Drone Evidence (*.ulg;*.ugl;*.bin;*.txt;*.dat;*.json;*.tlog;*.csv;*.bbl;*.bfl;*.log;*.pud;*.param;*.kmz;*.gpx;*.jpg;*.jpeg;*.dng;*.srt;*.zip)",
                 "All Files (*.*)"
             )
             dialog_type = getattr(getattr(webview, "FileDialog", None), "OPEN", webview.OPEN_DIALOG)
@@ -548,6 +548,51 @@ class DesktopForensicAPI:
             if res and len(res) > 0:
                 return str(res[0])
         return None
+
+    def select_folder(self) -> Optional[str]:
+        """Open native OS directory picker dialog to select GCS extraction folder or drive (e.g. E:\\)."""
+        if len(webview.windows) > 0:
+            window = webview.windows[0]
+            dialog_type = getattr(getattr(webview, "FileDialog", None), "FOLDER", webview.FOLDER_DIALOG)
+            res = window.create_file_dialog(dialog_type, allow_multiple=False)
+            if res and len(res) > 0:
+                return str(res[0])
+        return None
+
+    def triage_gcs_dump(
+        self,
+        dump_path: str,
+        case_id: str = "CASE-GCS-001",
+        examiner: str = "Forensic Examiner",
+    ) -> Dict[str, Any]:
+        """Triage pre-extracted GCS ADB dump folder or ZIP file directly from Desktop UI."""
+        try:
+            from acquisition.adb_extractor import triage_offline_dump
+            case_slug = "".join(c for c in case_id if c.isalnum() or c in ("-", "_")).strip() or "CASE-GCS-001"
+            case_out = self.output_dir / case_slug
+            case_out.mkdir(parents=True, exist_ok=True)
+            ledger_path = case_out / "chain_of_custody.jsonl"
+            ledger = ChainOfCustodyLedger(ledger_path)
+
+            res = triage_offline_dump(
+                dump_path=dump_path,
+                output_directory=case_out,
+                custody_ledger=ledger,
+                operator_id=examiner,
+            )
+            return {
+                "status": "ok",
+                "success": res.success,
+                "total_files_hashed": res.total_files_hashed,
+                "total_bytes_hashed": res.total_bytes_hashed,
+                "pilot_identity": res.pilot_identity.to_dict(),
+                "hardware_metadata": res.hardware_metadata.to_dict(),
+                "flight_records_found": res.flight_records_found,
+                "events_count": len(res.extracted_events),
+                "error_message": res.error_message,
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
 
     def list_parsers(self) -> List[str]:
         """Return names of all 9 registered parser plugins."""
