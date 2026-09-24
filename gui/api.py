@@ -2588,7 +2588,7 @@ class DesktopForensicAPI:
 
             header_banner = [
                 "=" * 80,
-                f"FORENSIC DECRYPTED APP LOG: {p.name}",
+                f"FORENSIC APP LOG REPORT: {p.name}",
                 f"Source Path : {str(p)}",
                 f"Category    : {category} ({category_desc})",
                 f"Log Date    : {log_date}",
@@ -2598,62 +2598,60 @@ class DesktopForensicAPI:
             ]
 
             decoded_lines = []
-            for idx, line in enumerate(lines[:500]):
-                s_line = line.strip()
-                if not s_line:
-                    continue
 
-                line_num = idx + 1
-                parsed_msg = None
+            # Check if file contains readable plaintext lines
+            is_plaintext_file = p.suffix.lower() == ".txt" or any("2018-" in l or "2026-" in l or "app_version" in l or "city=" in l or "init" in l for l in lines[:10])
 
-                if len(s_line) >= 8 and len(s_line) % 4 == 0 and all(c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=" for c in s_line):
-                    try:
-                        b_data = base64.b64decode(s_line)
-                        try:
-                            z_dec = zlib.decompress(b_data)
-                            z_str = z_dec.decode("utf-8", errors="ignore").strip()
-                            if z_str and len(z_str) >= 4:
-                                parsed_msg = z_str
-                        except Exception:
-                            pass
+            if is_plaintext_file:
+                decoded_lines.append("--- UNENCRYPTED PLAINTEXT LOG STREAM ---")
+                for idx, line in enumerate(lines[:500]):
+                    s_line = line.strip()
+                    if s_line:
+                        decoded_lines.append(f"[{idx+1:03d}] {s_line}")
+            else:
+                decoded_lines.append("--- BASE64 ENCRYPTED SDK DIAGNOSTIC PAYLOAD STREAM ---")
+                for idx, line in enumerate(lines[:30]):
+                    s_line = line.strip()
+                    if not s_line:
+                        continue
+                    line_num = idx + 1
+                    decoded_lines.append(f"[{line_num:03d}] [RAW BASE64 AES ENCRYPTED] {s_line}")
 
-                        if not parsed_msg:
-                            try:
-                                u_str = b_data.decode("utf-8")
-                                if u_str.isprintable() and len(u_str) >= 4:
-                                    parsed_msg = u_str
-                            except Exception:
-                                pass
+                if len(lines) > 30:
+                    decoded_lines.append(f"... [{len(lines) - 30} additional encrypted log lines truncated] ...")
 
-                        if not parsed_msg:
-                            for k in (b"dji", b"dji_log", b"dji_sdk_log", b"DJI", b"\x05\x0c\x12\x1a", b"\xaa", b"\x55"):
-                                xor_b = bytes([b ^ k[i % len(k)] for i, b in enumerate(b_data)])
-                                x_candidate = xor_b.decode("utf-8", errors="ignore").strip()
-                                if any(w in x_candidate.lower() for w in ["log", "dji", "app", "version", "sdk", "init", "device", "state", "connect", "time", "date", "2018", "2026"]):
-                                    parsed_msg = x_candidate
-                                    break
-                    except Exception:
-                        pass
+                # Scan evidence parent directories for sister unencrypted plaintext .txt logs from the same session
+                sister_txt_logs = []
+                search_roots = [p.parent.parent.parent, p.parent.parent.parent.parent, Path.home() / "Desktop" / "mobile_android_logical"]
+                for root in search_roots:
+                    if root.exists():
+                        for txt_file in root.rglob(f"*{log_date}*.txt"):
+                            if txt_file.is_file():
+                                try:
+                                    txt_content = txt_file.read_text(errors="ignore").strip()
+                                    if txt_content:
+                                        rel_p = txt_file.name
+                                        try:
+                                            rel_p = str(txt_file.relative_to(root))
+                                        except Exception:
+                                            pass
+                                        sister_txt_logs.append((rel_p, txt_content))
+                                except Exception:
+                                    pass
+                        if sister_txt_logs:
+                            break
 
-                if not parsed_msg:
-                    time_sec = (line_num * 12) % 3600
-                    h = 15 + (time_sec // 3600)
-                    m = (time_sec % 3600) // 60
-                    s = time_sec % 60
-                    time_str = f"{log_date} {h:02d}:{m:02d}:{s:02d} UTC"
-
-                    if category == "GEOFENCE_AIRSPACE_CHECK":
-                        parsed_msg = f"[{time_str}] [GEOFENCE] FlySafe NFZ Database Query: Coordinate Region US_CO (Airspace Cleared / Flight Authorized)"
-                    elif category == "ACTIVE_CONTROLLER_LINK":
-                        parsed_msg = f"[{time_str}] [RC_STREAM] Controller Radio Handshake Active (S/N: DJI_RC_PRO_98213 | Signal 100%)"
-                    elif category == "APP_LIFECYCLE_UI":
-                        parsed_msg = f"[{time_str}] [APP_STATE] Pilot Main Interface Active (Foreground Focus | Battery 98%)"
-                    elif category == "FLIGHT_CONTROLLER_OSD":
-                        parsed_msg = f"[{time_str}] [AVIATOR_OSD] Stick Calibration Check Complete (HUD Overlay Sync OK)"
-                    else:
-                        parsed_msg = f"[{time_str}] [SDK_RUNTIME] DJI GO 4 Diagnostic Subsystem Event (Process ID: 8842)"
-
-                decoded_lines.append(f"[{line_num:03d}] {parsed_msg}")
+                if sister_txt_logs:
+                    decoded_lines.append("")
+                    decoded_lines.append("=" * 80)
+                    decoded_lines.append("ASSOCIATED UNENCRYPTED PLAINTEXT APP LOGS & SYSTEM EVENTS")
+                    decoded_lines.append("=" * 80)
+                    for rel_p, content in sister_txt_logs:
+                        decoded_lines.append(f"\n📂 Log Source: {rel_p}")
+                        decoded_lines.append("-" * 60)
+                        for l_idx, l in enumerate(content.splitlines()[:50]):
+                            if l.strip():
+                                decoded_lines.append(f"  [{l_idx+1:02d}] {l.strip()}")
 
             full_report = "\n".join(header_banner + decoded_lines)
             return {
