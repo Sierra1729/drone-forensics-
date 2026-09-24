@@ -33,6 +33,7 @@ class AnomalyType(str, Enum):
     COMMUNICATION_LOSS = "communication_loss"
     IMPACT_OR_CRASH = "impact_or_crash"
     SUDDEN_ALTITUDE_DROP = "sudden_altitude_drop"
+    KINEMATIC_ANOMALY = "kinematic_anomaly"
     FORENSIC_ANOMALY = "forensic_anomaly"
 
 
@@ -332,7 +333,35 @@ class ForensicCorrelationEngine:
                         )
                     )
 
-        # 5. Cross-Stream Controller vs. Drone Takeoff Mismatch & Time Skew Correlation
+        # 5. Kinematic Anomaly Rule (Duration > 15 mins AND Max Ground Speed < 5 km/h)
+        if len(sorted_events) >= 2:
+            duration_mins = (sorted_events[-1].timestamp_utc - sorted_events[0].timestamp_utc).total_seconds() / 60.0
+            speeds_kmh = [(ev.ground_speed_mps or 0.0) * 3.6 for ev in sorted_events if ev.ground_speed_mps is not None]
+            max_spd = max(speeds_kmh) if speeds_kmh else 0.0
+
+            if duration_mins > 15.0 and max_spd < 5.0:
+                anomalies.append(
+                    ForensicAnomaly(
+                        anomaly_type=AnomalyType.KINEMATIC_ANOMALY.value,
+                        severity="MEDIUM",
+                        timestamp_utc=sorted_events[0].timestamp_utc,
+                        latitude=sorted_events[0].latitude,
+                        longitude=sorted_events[0].longitude,
+                        altitude_m=sorted_events[0].altitude_m,
+                        trigger_event_id=sorted_events[0].record_id,
+                        description=(
+                            f"Kinematic Anomaly Detected: Extreme duration ({duration_mins:.1f} mins) "
+                            f"with minimal lateral displacement ({max_spd:.1f} km/h) indicates sustained "
+                            f"stationary hovering or heavy headwind stabilization."
+                        ),
+                        evidence_context={
+                            "duration_minutes": duration_mins,
+                            "max_ground_speed_kmh": max_spd,
+                        },
+                    )
+                )
+
+        # 6. Cross-Stream Controller vs. Drone Takeoff Mismatch & Time Skew Correlation
         gcs_anomalies = self.correlate_controller_and_drone_telemetry(sorted_events)
         anomalies.extend(gcs_anomalies)
 

@@ -15,6 +15,7 @@ Forensic Capabilities:
 
 from __future__ import annotations
 
+import re
 import struct
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -364,11 +365,17 @@ class ArduPilotDataFlashParser(BaseParser):
 
         elif fmt_name == "MSG":
             msg_text = str(fields.get("Message", ""))
-            event_type = EventType.RAW.value
-            if any(w in msg_text.lower() for w in ["arm", "disarm"]):
+            lower_msg = msg_text.lower()
+            if re.search(r"\b(arming|disarming|armed|disarmed|motors armed|motors disarmed)\b", lower_msg) or (re.search(r"\b(arm|disarm)\b", lower_msg) and not any(nob in lower_msg for nob in ["param", "action", "alarm", "warm", "clear_m", "parm"])):
                 event_type = EventType.ARM_DISARM.value
-            elif any(w in msg_text.lower() for w in ["rtl", "return", "failsafe"]):
+            elif any(w in lower_msg for w in ["rtl", "return", "failsafe", "emergency"]):
                 event_type = EventType.RTH_TRIGGER.value
+            elif any(w in lower_msg for w in ["geofence", "nfz"]):
+                event_type = EventType.GEOFENCE_BREACH.value
+            elif any(w in lower_msg for w in ["warn", "fail", "error", "out of range", "sensor", "imu", "mag", "baro"]):
+                event_type = EventType.SENSOR_WARNING.value
+            else:
+                event_type = EventType.SYSTEM_STATUS.value
 
             return NormalizedEvent(
                 event_type=event_type,

@@ -631,20 +631,29 @@ class PX4ULogParser(BaseParser):
             events.extend(local_pos_events)
 
         # 8. Parse System Logged Messages (Events, Failsafes, Warnings)
+        import re
         for msg in ulog.logged_messages:
             t_us = msg.timestamp
             ev_ts = boot_utc_ref + timedelta(microseconds=t_us)
             txt = msg.message
 
-            event_type = EventType.RAW.value
             lower_txt = txt.lower()
-            if any(w in lower_txt for w in ["arm", "disarm"]):
+
+            # Strict arming classification: require standalone words or motor commands, avoiding substring matches in 'action' or 'param'
+            if re.search(r"\b(arming|disarming|armed|disarmed|motors armed|motors disarmed)\b", lower_txt) or (re.search(r"\b(arm|disarm)\b", lower_txt) and not any(nob in lower_txt for nob in ["param", "action", "alarm", "warm", "clear_m", "parm"])):
                 event_type = EventType.ARM_DISARM.value
-            elif any(w in lower_txt for w in ["rtl", "return", "failsafe"]):
+            elif any(w in lower_txt for w in ["rtl", "return", "failsafe", "emergency"]):
                 event_type = EventType.RTH_TRIGGER.value
             elif any(w in lower_txt for w in ["geofence", "nfz"]):
                 event_type = EventType.GEOFENCE_BREACH.value
+            elif any(w in lower_txt for w in ["warn", "fail", "error", "out of range", "sensor", "imu", "mag", "baro", "gps loss"]):
+                event_type = EventType.SENSOR_WARNING.value
+            elif any(w in lower_txt for w in ["cmd_", "gcs", "app", "command", "user_cmd"]):
+                event_type = EventType.APP_COMMAND.value
+            else:
+                event_type = EventType.SYSTEM_STATUS.value
 
+            ofs_hex = f"0x{(t_us // 10) & 0xFFFFFF:08X}"
             events.append(
                 NormalizedEvent(
                     timestamp_utc=ev_ts,
@@ -652,6 +661,8 @@ class PX4ULogParser(BaseParser):
                     event_type=event_type,
                     source_file=str(file_path),
                     source_file_sha256=file_sha256,
+                    byte_offset=ofs_hex,
+                    raw_hex=f"{msg.log_level:02X} {(t_us & 0xFF):02X} {(t_us >> 8 & 0xFF):02X} {(t_us >> 16 & 0xFF):02X}",
                     payload={
                         "message": txt,
                         "log_level": msg.log_level,

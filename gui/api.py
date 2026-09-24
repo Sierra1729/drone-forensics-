@@ -909,6 +909,48 @@ class DesktopForensicAPI:
                 except Exception:
                     case_exhibits = []
 
+            # Auto-generate distinct, non-duplicating 3D trajectory exhibits if empty
+            gps_ev_list = [e for e in events if e.event_type == EventType.GPS_FIX.value and e.latitude and e.longitude]
+            if not case_exhibits and gps_ev_list:
+                n_points = len(gps_ev_list)
+                ex_indices = [
+                    0,
+                    max(0, min(n_points - 1, n_points // 4)),
+                    max(0, min(n_points - 1, n_points // 2)),
+                    max(0, min(n_points - 1, (3 * n_points) // 4)),
+                    max(0, n_points - 1),
+                ]
+                seen_idx = set()
+                unique_indices = []
+                for idx in ex_indices:
+                    if idx not in seen_idx:
+                        seen_idx.add(idx)
+                        unique_indices.append(idx)
+
+                case_exhibits = []
+                ex_labels = [
+                    "EXHIBIT 01: Initial Takeoff & Liftoff Coordinates",
+                    "EXHIBIT 02: Airborne Climb & Altitude Transition",
+                    "EXHIBIT 03: Mid-Flight Cruise & Peak Telemetry Position",
+                    "EXHIBIT 04: Approach Corridor & Descent",
+                    "EXHIBIT 05: Final Flight Touchdown & Motor Disarm",
+                ]
+                for i, idx in enumerate(unique_indices[:4]):
+                    ev_item = gps_ev_list[idx]
+                    case_exhibits.append({
+                        "id": f"EXHIBIT 0{i+1}",
+                        "index": idx,
+                        "ts": ev_item.timestamp_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
+                        "lat": ev_item.latitude,
+                        "lon": ev_item.longitude,
+                        "alt": ev_item.altitude_m or 0.0,
+                        "spd": ev_item.ground_speed_mps or 0.0,
+                        "hdg": ev_item.heading_deg or 0.0,
+                        "pitch": ev_item.pitch_deg or 0.0,
+                        "roll": ev_item.roll_deg or 0.0,
+                        "note": ex_labels[i] if i < len(ex_labels) else f"Waypoint #{idx+1} Verification",
+                    })
+
             # 5. Courtroom PDF Report
             meta = ForensicCaseMetadata(
                 case_id=case_id,

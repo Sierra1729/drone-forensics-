@@ -44,10 +44,12 @@ class EventType(str, Enum):
     GEOFENCE_BREACH = "geofence_breach"
     ARM_DISARM = "arm_disarm"
     MODE_CHANGE = "mode_change"
+    SYSTEM_STATUS = "system_status"
+    SENSOR_WARNING = "sensor_warning"
+    APP_COMMAND = "app_command"
     FORENSIC_ANOMALY = "forensic_anomaly"
     CORRUPTED_STREAM = "corrupted_stream"
     RAW = "raw"  # escape hatch for anything not yet modeled
-
 
 
 @dataclass
@@ -75,6 +77,8 @@ class NormalizedEvent:
     battery_remaining_pct: Optional[float] = None
     flight_mode: Optional[str] = None
     session_id: Optional[str] = None
+    byte_offset: Optional[str] = None   # Hex byte offset in binary evidence (e.g. 0x00014B20)
+    raw_hex: Optional[str] = None       # Hex representation of raw binary record
     record_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     def __post_init__(self) -> None:
