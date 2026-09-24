@@ -4300,6 +4300,29 @@ table.forensic-table tr:hover {
   </div>
 </div>
 
+<!-- App Log Decrypted Viewer Modal -->
+<div class="forensic-modal-overlay" id="appLogModal" onclick="onModalOverlayClick(event, 'appLogModal')">
+  <div class="forensic-modal-dialog" style="max-width: 920px; width: 92%;">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-title" style="color: #facc15;" id="appLogModalTitle">
+          📄 Decrypted App Activity & Geofence Log
+        </div>
+        <div class="modal-subtitle" id="appLogModalSubtitle" style="font-family: var(--font-mono); color: #94a3b8;">
+          Target: --
+        </div>
+      </div>
+      <button class="modal-close-btn" onclick="closeAppLogModal()" title="Close Log Viewer">✕</button>
+    </div>
+    <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+      <pre id="appLogModalContent" style="background:#080c14; color:#38bdf8; font-family:var(--font-mono); font-size:11.5px; padding:14px; border-radius:6px; border:1px solid #1e293b; white-space:pre-wrap; word-break:break-all; margin:0; min-height: 200px;"></pre>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="closeAppLogModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let map = null;
 let flightPathPolyline = null;
@@ -5332,7 +5355,8 @@ let hexSearchMatches = [];
 let hexSearchMatchIdx = -1;
 
 async function loadHexChunk(offset = 0) {
-  const filePath = selectedFilePath || (lastAnalysisResult && lastAnalysisResult.source_file) || "sample_evidence/real_px4_flight.ulg";
+  const rawPath = selectedFilePath || (lastAnalysisResult && lastAnalysisResult.source_file) || "sample_evidence/real_px4_flight.ulg";
+  const filePath = (rawPath || "").replace(/\\/g, '/');
   hexCurrentOffset = Math.max(0, offset);
 
   const titleElem = document.getElementById('hexFileTitle');
@@ -5460,8 +5484,8 @@ function jumpToOffset() {
 async function searchHexPattern() {
   const query = (document.getElementById('hexSearchInput').value || '').trim();
   const isHex = document.getElementById('hexSearchIsHex').checked;
-  const countEl = document.getElementById('hexSearchCount');
-  const filePath = selectedFilePath || (lastAnalysisResult && lastAnalysisResult.source_file) || "sample_evidence/real_px4_flight.ulg";
+  const rawPath = selectedFilePath || (lastAnalysisResult && lastAnalysisResult.source_file) || "sample_evidence/real_px4_flight.ulg";
+  const filePath = (rawPath || "").replace(/\\/g, '/');
 
   if (!query) {
     hexSearchMatches = [];
@@ -5969,18 +5993,26 @@ function updateAndroidGcsTabUI(res, targetPath) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No flight log files discovered in Android GCS dump.</td></tr>`;
     } else {
       tbody.innerHTML = recordsList.map((recPath, idx) => {
-        const fn = recPath.split(/[\\/]/).pop();
-        const escPath = escapeHtml(recPath);
+        const safePath = recPath.replace(/\\/g, '/');
+        const fn = safePath.split('/').pop();
+        const escPath = escapeHtml(safePath);
+        const normP = safePath.toLowerCase();
+        const isCacheLog = normP.includes('log/cache') || normP.includes('active') || normP.includes('applicationnew') || normP.includes('areacode') || normP.includes('log-20');
+        
+        const actionBtn = isCacheLog
+          ? `<button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#facc15; color:#fef08a;" onclick="viewAppCacheLog('${safePath.replace(/'/g, "\\'")}')">
+              📄 View App Log
+             </button>`
+          : `<button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#0284c7; color:#e0f2fe;" onclick="selectGcsDiscoveredLog('${safePath.replace(/'/g, "\\'")}')">
+              📥 Load into Telemetry
+             </button>`;
+
         return `
           <tr>
             <td><strong>#${idx + 1}</strong></td>
-            <td style="font-weight:700; color:#38bdf8;">${escapeHtml(fn)}</td>
+            <td style="font-weight:700; color:${isCacheLog ? '#facc15' : '#38bdf8'};">${escapeHtml(fn)}</td>
             <td style="font-family:var(--font-mono); font-size:10px; color:#94a3b8; word-break:break-all;">${escPath}</td>
-            <td>
-              <button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#0284c7; color:#e0f2fe;" onclick="selectGcsDiscoveredLog('${escPath.replace(/'/g, "\\'")}')">
-                📥 Load into Telemetry
-              </button>
-            </td>
+            <td>${actionBtn}</td>
           </tr>
         `;
       }).join('');
@@ -6069,18 +6101,26 @@ function updateIosGcsTabUI(res, targetPath) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No iOS flight log files discovered.</td></tr>`;
     } else {
       tbody.innerHTML = recordsList.map((recPath, idx) => {
-        const fn = recPath.split(/[\\/]/).pop();
-        const escPath = escapeHtml(recPath);
+        const safePath = recPath.replace(/\\/g, '/');
+        const fn = safePath.split('/').pop();
+        const escPath = escapeHtml(safePath);
+        const normP = safePath.toLowerCase();
+        const isCacheLog = normP.includes('log/cache') || normP.includes('active') || normP.includes('applicationnew') || normP.includes('areacode') || normP.includes('log-20');
+
+        const actionBtn = isCacheLog
+          ? `<button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#facc15; color:#fef08a;" onclick="viewAppCacheLog('${safePath.replace(/'/g, "\\'")}')">
+              📄 View App Log
+             </button>`
+          : `<button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#fb7185; color:#ffe4e6;" onclick="selectGcsDiscoveredLog('${safePath.replace(/'/g, "\\'")}')">
+              📥 Load into Telemetry
+             </button>`;
+
         return `
           <tr>
             <td><strong>#${idx + 1}</strong></td>
-            <td style="font-weight:700; color:#fb7185;">${escapeHtml(fn)}</td>
+            <td style="font-weight:700; color:${isCacheLog ? '#facc15' : '#fb7185'};">${escapeHtml(fn)}</td>
             <td style="font-family:var(--font-mono); font-size:10px; color:#94a3b8; word-break:break-all;">${escPath}</td>
-            <td>
-              <button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#fb7185; color:#ffe4e6;" onclick="selectGcsDiscoveredLog('${escPath.replace(/'/g, "\\'")}')">
-                📥 Load into Telemetry
-              </button>
-            </td>
+            <td>${actionBtn}</td>
           </tr>
         `;
       }).join('');
@@ -6088,14 +6128,54 @@ function updateIosGcsTabUI(res, targetPath) {
   }
 }
 
+function closeAppLogModal() {
+  const el = document.getElementById('appLogModal');
+  if (el) el.classList.remove('active');
+}
+
+async function viewAppCacheLog(filePath) {
+  const cleanPath = (filePath || "").replace(/\\/g, '/');
+  selectedFilePath = cleanPath;
+  
+  const titleEl = document.getElementById('appLogModalTitle');
+  const subEl = document.getElementById('appLogModalSubtitle');
+  const bodyEl = document.getElementById('appLogModalContent');
+  const modalEl = document.getElementById('appLogModal');
+  
+  const fn = cleanPath.split('/').pop() || cleanPath;
+  if (titleEl) titleEl.innerText = `📄 Decrypted App Activity Log: ${fn}`;
+  if (subEl) subEl.innerText = cleanPath;
+  if (bodyEl) bodyEl.innerText = "Decrypting Base64/XOR app log lines...";
+  if (modalEl) modalEl.classList.add('active');
+
+  try {
+    let res = null;
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.read_app_log === 'function') {
+      res = await window.pywebview.api.read_app_log(cleanPath);
+    } else {
+      res = await callApi('read_app_log', { file_path: cleanPath });
+    }
+    
+    if (res && res.log_text) {
+      if (bodyEl) bodyEl.innerText = res.log_text;
+    } else if (res && res.message) {
+      if (bodyEl) bodyEl.innerText = `❌ Error reading log: ${res.message}`;
+    } else {
+      if (bodyEl) bodyEl.innerText = `[No log content extracted from ${fn}]`;
+    }
+  } catch(e) {
+    if (bodyEl) bodyEl.innerText = `❌ Error loading log: ${e.message}`;
+  }
+}
+
 function selectGcsDiscoveredLog(filePath) {
-  selectedFilePath = filePath;
+  selectedFilePath = (filePath || "").replace(/\\/g, '/');
   const lbl = document.getElementById('filePathLabel');
   if (lbl) {
     lbl.innerText = selectedFilePath;
     lbl.classList.add('selected');
   }
-  showToast(`✓ Selected log for analysis: ${filePath.split(/[\\/]/).pop()}`);
+  showToast(`✓ Selected log for analysis: ${selectedFilePath.split('/').pop()}`);
   closeAcquisitionModal();
   startAnalysis();
 }
