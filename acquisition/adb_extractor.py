@@ -447,8 +447,8 @@ def parse_shared_prefs_xml(file_path: Path) -> tuple[GcsPilotIdentity, GcsHardwa
             if any(k in key for k in ["email", "user_email", "key_user_email", "account_email"]) and "@" in val:
                 identity.email = val
             # Pilot UID / Member ID
-            elif any(k in key for k in ["user_id", "uid", "member_id", "account_uid", "pilot_uid", "key_user_id"]):
-                if not identity.pilot_uid:
+            elif any(k in key for k in ["user_id", "member_id", "account_uid", "pilot_uid", "key_user_id"]) or (key == "uid"):
+                if not identity.pilot_uid and val.lower() not in ["true", "false"]:
                     identity.pilot_uid = val
             # Pilot Phone
             elif any(k in key for k in ["phone", "user_phone", "mobile", "phone_number"]):
