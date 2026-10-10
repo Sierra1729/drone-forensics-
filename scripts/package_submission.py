@@ -1,16 +1,17 @@
 """
 scripts/package_submission.py
 
-Packages the entire clean codebase, documentation, verification artifacts,
-and sample evidence into a submission-ready ZIP file for Grand Challenge 3.
-Excludes git histories, cache directories, temporary test files, and logs.
-Computes and prints the SHA-256 and BLAKE3 digests of the final package.
+Packages the complete PUSHPAK Stage 1 Submission into a clean ZIP archive named:
+Security_of_Drones_TM-C22002DAA34.zip
+
+Strictly excludes large physical disk images (.dd files) to ensure total size < 1 GB.
+Computes SHA-256 and BLAKE3 digests of the final package.
 """
 
-import hashlib
+import os
 import zipfile
+import hashlib
 from pathlib import Path
-from typing import Set
 
 try:
     import blake3
@@ -18,83 +19,86 @@ try:
 except ImportError:
     HAS_BLAKE3 = False
 
+ROOT_DIR = Path(__file__).resolve().parent.parent
+ZIP_NAME = "Security_of_Drones_TM-C22002DAA34.zip"
+OUTPUT_ZIP_PATH = ROOT_DIR / ZIP_NAME
 
-EXCLUDE_DIRS: Set[str] = {
-    ".git",
-    ".pytest_cache",
-    "__pycache__",
-    ".venv",
-    "venv",
-    ".idea",
-    ".vscode",
-    "temp_test_dir",
-}
+# File extensions to strictly exclude
+EXCLUDED_EXTENSIONS = {'.dd', '.pyc', '.git', '.pytest_cache'}
+EXCLUDED_DIRS = {'.git', '__pycache__', '.pytest_cache', 'temp_test_dir', '.idea', '.vscode'}
 
-EXCLUDE_EXTENSIONS: Set[str] = {
-    ".pyc",
-    ".pyo",
-    ".log",
-}
+def build_submission_zip():
+    print(f"Building submission archive: {ZIP_NAME}")
+    
+    files_added = 0
+    total_uncompressed_bytes = 0
 
-EXCLUDE_FILES: Set[str] = {
-    "tmp_test.bin",
-}
+    with zipfile.ZipFile(OUTPUT_ZIP_PATH, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(ROOT_DIR):
+            # Prune excluded directories
+            dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
 
+            rel_root = Path(root).relative_to(ROOT_DIR)
+            
+            # Don't re-include zip packages themselves
+            for file in files:
+                file_path = Path(root) / file
+                rel_path = rel_root / file
 
-def should_include(rel_path: Path) -> bool:
-    for part in rel_path.parts:
-        if part in EXCLUDE_DIRS:
-            return False
-    if rel_path.suffix.lower() in EXCLUDE_EXTENSIONS:
-        return False
-    if rel_path.name in EXCLUDE_FILES:
-        return False
-    return True
+                # Skip self zip, previous submission zips, or .dd files
+                if file_path.suffix.lower() in EXCLUDED_EXTENSIONS:
+                    print(f"  [EXCLUDING] {rel_path} (Excluded extension)")
+                    continue
+                if file in {ZIP_NAME, "Pushpak_GC3_Drone_Forensics_Toolkit_Submission.zip", "Pushpak_Core_For_Review.zip"}:
+                    continue
+                
+                # Add file to zip
+                zipf.write(file_path, arcname=str(rel_path))
+                files_added += 1
+                total_uncompressed_bytes += file_path.stat().st_size
 
+    zip_size = OUTPUT_ZIP_PATH.stat().st_size
+    print(f"\nSuccessfully created {ZIP_NAME}")
+    print(f"  -> Total Files Included: {files_added}")
+    print(f"  -> Uncompressed Size:    {total_uncompressed_bytes / (1024*1024):.2f} MB")
+    print(f"  -> Compressed ZIP Size:   {zip_size / (1024*1024):.2f} MB")
+    
+    # Check 1 GB limit
+    if zip_size < 1024 * 1024 * 1024:
+        print("  -> Size Limit Audit:     PASS (< 1 GB limit)")
+    else:
+        print("  -> Size Limit Audit:     FAIL (Exceeds 1 GB!)")
 
-def package_repository(root_dir: Path, output_zip: Path) -> None:
-    print(f"[*] Packaging repository: {root_dir}")
-    print(f"[*] Output target: {output_zip}")
+    # Hashes
+    sha256_hash = hashlib.sha256()
+    blake3_hash = blake3.blake3() if HAS_BLAKE3 else None
 
-    included_count = 0
-    with zipfile.ZipFile(output_zip, "w", zipfile.ZIP_DEFLATED) as zf:
-        for file_path in sorted(root_dir.rglob("*")):
-            if file_path.is_file() and file_path != output_zip:
-                rel_path = file_path.relative_to(root_dir)
-                if should_include(rel_path):
-                    zf.write(file_path, arcname=str(rel_path))
-                    included_count += 1
-
-    print(f"[+] Archived {included_count} files into {output_zip.name} ({output_zip.stat().st_size:,} bytes)")
-
-    # Compute digests
-    sha256 = hashlib.sha256()
-    blake3_hasher = blake3.blake3() if HAS_BLAKE3 else None
-
-    with open(output_zip, "rb") as f:
+    with open(OUTPUT_ZIP_PATH, 'rb') as f:
         while chunk := f.read(65536):
-            sha256.update(chunk)
-            if blake3_hasher:
-                blake3_hasher.update(chunk)
+            sha256_hash.update(chunk)
+            if blake3_hash:
+                blake3_hash.update(chunk)
 
-    sha256_hex = sha256.hexdigest()
-    blake3_hex = blake3_hasher.hexdigest() if blake3_hasher else "N/A"
+    print(f"  -> SHA-256 Digest: {sha256_hash.hexdigest()}")
+    if blake3_hash:
+        print(f"  -> BLAKE3 Digest:  {blake3_hash.hexdigest()}")
 
-    manifest_path = root_dir / "SUBMISSION_MANIFEST.txt"
-    with open(manifest_path, "w", encoding="utf-8") as mf:
-        mf.write("PUSHPAK GRAND CHALLENGE 2026-27 | SUBMISSION ARCHIVE MANIFEST\n")
-        mf.write(f"Archive File: {output_zip.name}\n")
-        mf.write(f"Archive Size: {output_zip.stat().st_size:,} bytes\n")
-        mf.write(f"SHA-256 Digest: {sha256_hex}\n")
-        mf.write(f"BLAKE3 Digest:  {blake3_hex}\n")
-        mf.write(f"Total Included Files: {included_count}\n")
+    # Update SUBMISSION_MANIFEST.txt
+    manifest_path = ROOT_DIR / "SUBMISSION_MANIFEST.txt"
+    manifest_content = (
+        f"PUSHPAK GRAND CHALLENGE 2026-27 | STAGE 1 SUBMISSION MANIFEST\n"
+        f"Team ID: TM-C22002DAA34\n"
+        f"Archive File: {ZIP_NAME}\n"
+        f"Archive Size: {zip_size:,} bytes ({zip_size / (1024*1024):.2f} MB)\n"
+        f"SHA-256 Digest: {sha256_hash.hexdigest()}\n"
+    )
+    if blake3_hash:
+        manifest_content += f"BLAKE3 Digest:  {blake3_hash.hexdigest()}\n"
+    manifest_content += f"Total Included Files: {files_added}\n"
 
-    print(f"[+] Generated manifest at: {manifest_path}")
-    print(f"    SHA-256: {sha256_hex}")
-    print(f"    BLAKE3:  {blake3_hex}")
+    with open(manifest_path, 'w', encoding='utf-8') as f:
+        f.write(manifest_content)
+    print("  -> SUBMISSION_MANIFEST.txt updated.")
 
-
-if __name__ == "__main__":
-    workspace_root = Path(__file__).resolve().parent.parent
-    zip_target = workspace_root / "Pushpak_GC3_Drone_Forensics_Toolkit_Submission.zip"
-    package_repository(workspace_root, zip_target)
+if __name__ == '__main__':
+    build_submission_zip()

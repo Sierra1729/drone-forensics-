@@ -1,8 +1,8 @@
 @echo off
-title PUSHPAK Drone Forensics Workstation
+title Garud FX — Indigenous Drone Forensics Workstation
 echo ======================================================================
-echo  PUSHPAK INDIGENOUS DRONE FORENSICS WORKSTATION
-echo  Grand Challenge 2026 | IIT Bombay, VJTI & MeitY
+echo  GARUD FX — INDIGENOUS DRONE FORENSICS WORKSTATION
+echo  PUSHPAK Grand Challenge 2026 | IIT Bombay, VJTI & MeitY
 echo  Compliant with ISO/IEC 27037:2012 and Section 63 BSA 2023
 echo ======================================================================
 echo.

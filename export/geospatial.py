@@ -258,7 +258,8 @@ class GeospatialExporter:
         fmap = folium.Map(
             location=[center_lat, center_lon],
             zoom_start=15,
-            tiles="OpenStreetMap",
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+            attr='Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom | Garud FX',
         )
 
         if gps_events:
@@ -415,7 +416,7 @@ class GeospatialExporter:
             for (var key in window) {
                 if (key.startsWith("map_") && window[key] && typeof window[key].addLayer === 'function') {
                     var m = window[key];
-                    var gridLayer = new TacticalGrid({ attribution: 'PUSHPAK Offline Tactical Grid' });
+                    var gridLayer = new TacticalGrid({ attribution: 'Garud FX Offline Tactical Grid' });
                     if (!navigator.onLine) {
                         gridLayer.addTo(m);
                     }
@@ -635,7 +636,7 @@ class GeospatialExporter:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PUSHPAK 3D Aerospace Flight Trajectory Visualizer</title>
+<title>Garud FX 3D Aerospace Flight Trajectory Visualizer</title>
 <!-- Three.js + OrbitControls (Air-Gapped Multi-Tier Offline Engine) -->
 <script src="{rel_vendor}/three.min.js"></script>
 <script>
@@ -699,11 +700,12 @@ button, input, select, .h-val, .cardinal-lbl, .inst-val-sm, .log-row, .time-labe
 }}
 
 #canvas-container {{
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
+  overflow: hidden;
 }}
 /* Top Brand & Stats Bar */
 .top-bar {{
@@ -1607,7 +1609,7 @@ input[type="range"] {{
 <!-- Top Branding -->
 <div class="top-bar">
   <div class="brand-pill">
-    <span class="badge">PUSHPAK 3D</span>
+    <span class="badge">Garud FX 3D</span>
     <span class="title">Interactive 3D Aerospace Trajectory Reconstruction</span>
     <span class="case-lbl">[{case_id}]</span>
   </div>
@@ -1722,7 +1724,7 @@ input[type="range"] {{
 
 <!-- Helpful Nav Hint -->
 <div class="instructions-overlay">
-  🖱️ Left-Click + Drag: 3D Orbit Rotate | Right-Click + Drag: Pan | Scroll: Zoom | Press <strong>'M'</strong>: Mark Evidence
+  🖱️ Left-Click / 1-Finger: Pan Map | Right-Click / 2-Fingers: 3D Orbit Rotate | Scroll: Zoom | Press <strong>'M'</strong>: Mark Evidence
 </div>
 
 <!-- Bottom Playback Toolbar -->
@@ -1919,27 +1921,58 @@ async function triggerOpenCourtroomPdf() {{
 
 function initScene() {{
   const container = document.getElementById('canvas-container');
-  const w = window.innerWidth;
-  const h = window.innerHeight;
+  const w = container ? (container.clientWidth || window.innerWidth) : window.innerWidth;
+  const h = container ? (container.clientHeight || window.innerHeight) : window.innerHeight;
 
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x060911);
-  scene.fog = new THREE.FogExp2(0x060911, 0.0008);
+  scene.fog = new THREE.Fog(0x060911, 2000, 300000);
 
-  camera = new THREE.PerspectiveCamera(50, w / h, 0.5, 50000);
+  camera = new THREE.PerspectiveCamera(50, w / h, 0.5, 500000);
   camera.position.set(200, 180, 260);
 
   renderer = new THREE.WebGLRenderer({{ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: true }});
   renderer.setPixelRatio(window.devicePixelRatio || 1);
   renderer.setSize(w, h);
   renderer.shadowMap.enabled = true;
-  container.appendChild(renderer.domElement);
+  if (container) container.appendChild(renderer.domElement);
 
-  if (THREE.OrbitControls) {{
+  if (THREE.MapControls) {{
+    controls = new THREE.MapControls(camera, renderer.domElement);
+  }} else if (THREE.OrbitControls) {{
     controls = new THREE.OrbitControls(camera, renderer.domElement);
+  }}
+  if (controls) {{
+    controls.mouseButtons = {{
+      LEFT: THREE.MOUSE.PAN,
+      MIDDLE: THREE.MOUSE.DOLLY,
+      RIGHT: THREE.MOUSE.ROTATE
+    }};
+    controls.touches = {{
+      ONE: THREE.TOUCH.PAN,
+      TWO: THREE.TOUCH.DOLLY_ROTATE
+    }};
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
     controls.maxPolarAngle = Math.PI / 2 + 0.05;
+    controls.maxDistance = 400000;
+  }}
+
+  // 2-Finger Trackpad / Shift-Wheel Rotation Listener
+  if (renderer && renderer.domElement) {{
+    renderer.domElement.addEventListener('wheel', (e) => {{
+      if (e.shiftKey) {{
+        e.preventDefault();
+        const deltaX = e.deltaX || 0;
+        const deltaY = e.deltaY || 0;
+        if (controls && typeof controls.rotateLeft === 'function' && typeof controls.rotateUp === 'function') {{
+          controls.rotateLeft(deltaX * 0.005);
+          controls.rotateUp(deltaY * 0.005);
+          controls.update();
+        }}
+      }}
+    }}, {{ passive: false }});
   }}
 
   // Lighting
@@ -1977,22 +2010,105 @@ function initScene() {{
 
   window.addEventListener('keydown', handleGlobalKeydown);
   window.addEventListener('resize', onResize);
+  if (window.ResizeObserver && container) {{
+    const ro = new ResizeObserver(() => onResize());
+    ro.observe(container);
+  }}
+  setTimeout(onResize, 100);
+  setTimeout(onResize, 500);
   animate();
 }}
 
 function buildEnvironment() {{
   // Calculate spatial scale
-  let maxExtent = 500;
+  let maxExtent = 2000;
   if (flightData.length > 0) {{
     const xs = flightData.map(p => Math.abs(p.x));
     const zs = flightData.map(p => Math.abs(p.z));
-    maxExtent = Math.max(300, Math.max(...xs), Math.max(...zs)) * 1.6;
+    maxExtent = Math.max(2000, Math.max(...xs), Math.max(...zs)) * 4.0;
   }}
 
   // Grid
   const grid = new THREE.GridHelper(maxExtent * 2, 40, 0x0284c7, 0x111c30);
   grid.position.y = 0;
   scene.add(grid);
+
+  // Cartographic Ground Texture Map Plane
+  try {{
+    const mapCanvas = document.createElement('canvas');
+    mapCanvas.width = 1024;
+    mapCanvas.height = 1024;
+    const ctx = mapCanvas.getContext('2d');
+    if (ctx) {{
+      // 1. Dark Navy Cartographic Terrain Base
+      ctx.fillStyle = '#060d19';
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // 2. Geodetic Grid Lines
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= 1024; x += 64) {{
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, 1024);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, x);
+        ctx.lineTo(1024, x);
+        ctx.stroke();
+      }}
+
+      // 3. Concentric Topographic Contours
+      for (let r = 50; r <= 480; r += 40) {{
+        ctx.strokeStyle = (r % 80 === 0) ? 'rgba(14, 165, 233, 0.28)' : 'rgba(30, 58, 95, 0.22)';
+        ctx.lineWidth = (r % 80 === 0) ? 1.5 : 1;
+        ctx.beginPath();
+        ctx.arc(512, 512, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }}
+
+      // 4. Origin Takeoff / Landing Pad Highlight
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(512, 512, 22, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
+      ctx.beginPath();
+      ctx.arc(512, 512, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#00e5ff';
+      ctx.font = 'bold 13px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('LAUNCH ORIGIN (0,0)', 512, 550);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '11px monospace';
+      ctx.fillText('NORTH ▲', 512, 30);
+      ctx.fillText('AIR-GAPPED CARTOGRAPHIC TERRAIN PLANE', 512, 995);
+
+      const groundTexture = new THREE.CanvasTexture(mapCanvas);
+      groundTexture.wrapS = THREE.RepeatWrapping;
+      groundTexture.wrapT = THREE.RepeatWrapping;
+
+      const groundGeo = new THREE.PlaneGeometry(maxExtent * 2, maxExtent * 2);
+      const groundMat = new THREE.MeshStandardMaterial({{
+        map: groundTexture,
+        roughness: 0.85,
+        metalness: 0.15,
+        side: THREE.DoubleSide
+      }});
+      const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+      groundMesh.rotation.x = -Math.PI / 2;
+      groundMesh.position.y = -0.2;
+      scene.add(groundMesh);
+    }}
+  }} catch(e) {{
+    console.warn("Cartographic ground plane canvas texture initialization deferred:", e);
+  }}
 
   // Concentric Range Rings (every 100m or 250m)
   const ringStep = maxExtent > 1500 ? 500 : (maxExtent > 600 ? 250 : 100);
@@ -2494,11 +2610,14 @@ function toggleFullscreen() {{
 }}
 
 function onResize() {{
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-  renderer.setSize(w, h);
+  const container = document.getElementById('canvas-container');
+  const w = container ? (container.clientWidth || window.innerWidth) : window.innerWidth;
+  const h = container ? (container.clientHeight || window.innerHeight) : window.innerHeight;
+  if (w > 0 && h > 0 && camera && renderer) {{
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }}
 }}
 
 function animate() {{
@@ -3002,7 +3121,7 @@ function exportForensicExhibitReport() {{
 <div class="container">
   <div class="top-banner">
     <div>
-      <span class="brand-badge">PUSHPAK FORENSICS</span>
+      <span class="brand-badge">GARUD FX FORENSICS</span>
       <h1 style="font-size: 18px; margin: 8px 0 4px 0;">DIGITAL FORENSIC EVIDENCE EXHIBIT DOSSIER</h1>
       <div style="font-size: 12px; color: #94a3b8; font-family: monospace;">Case Reference: [${{caseId}}] | Statutory Admissibility: Section 63 BSA 2023 / Section 65B IEA</div>
     </div>

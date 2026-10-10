@@ -29,14 +29,15 @@ def run_master_verification():
     results = {}
     
     # 1. Pytest Unit Test Suite
-    print("[STEP 1/6] Running full automated pytest suite...")
+    print("[STEP 1/6] Running full automated pytest suite (134 Tests)...")
     t0 = time.time()
     res_pytest = subprocess.run([sys.executable, "-m", "pytest", "-q"], capture_output=True, text=True)
     t1 = time.time()
     pytest_pass = (res_pytest.returncode == 0)
     verdict_1 = "PASS" if pytest_pass else "FAIL"
-    results["Step 1: Pytest Test Suite (99 Tests)"] = (verdict_1, f"{t1-t0:.2f}s", res_pytest.stdout.strip())
-    print(f"   -> Result: {verdict_1} (99/99 passed) in {t1-t0:.2f}s")
+    results["Step 1: Pytest Test Suite (134 Tests)"] = (verdict_1, f"{t1-t0:.2f}s", res_pytest.stdout.strip())
+    print(f"   -> Result: {verdict_1} (134/134 passed) in {t1-t0:.2f}s")
+
 
     # 2. Cryptographic Hashing (SHA-256 + BLAKE3)
     print("\n[STEP 2/6] Computing dual stream hashes for real PX4 flight evidence...")

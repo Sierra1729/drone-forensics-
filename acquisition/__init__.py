@@ -34,6 +34,28 @@ from acquisition.adb_extractor import (
     parse_shared_prefs_xml,
     parse_sqlite_db_artifacts,
 )
+from acquisition.spiflash_extractor import (
+    SPIFlashExtractor,
+    SPIFlashExtractionResult,
+    SPIFlashStatusRegister,
+    SPIFlashReadError,
+    WriteProtectError,
+    KNOWN_SPI_CHIPSETS,
+)
+from acquisition.uart_jtag_extractor import (
+    UARTJTAGExtractor,
+    UARTJTAGExtractionResult,
+    BootloaderEnvResult,
+    SUPPORTED_BAUD_RATES,
+)
+from acquisition.write_blocker import (
+    verify_write_blocker_status,
+    WriteBlockerMissingError,
+    HardwareWriteBlocker,
+    verify_hardware_write_block,
+    WriteBlockStatus,
+    HardwareWriteBlockError,
+)
 
 __all__ = [
     "MavlinkExtractor",
@@ -52,6 +74,23 @@ __all__ = [
     "GcsOfflineTriageResult",
     "parse_shared_prefs_xml",
     "parse_sqlite_db_artifacts",
+    "SPIFlashExtractor",
+    "SPIFlashExtractionResult",
+    "SPIFlashStatusRegister",
+    "SPIFlashReadError",
+    "WriteProtectError",
+    "KNOWN_SPI_CHIPSETS",
+    "UARTJTAGExtractor",
+    "UARTJTAGExtractionResult",
+    "BootloaderEnvResult",
+    "SUPPORTED_BAUD_RATES",
+    "verify_write_blocker_status",
+    "WriteBlockerMissingError",
+    "HardwareWriteBlocker",
+    "verify_hardware_write_block",
+    "WriteBlockStatus",
+    "HardwareWriteBlockError",
 ]
+
 
 

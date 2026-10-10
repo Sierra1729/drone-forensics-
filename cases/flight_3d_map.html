@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PUSHPAK 3D Aerospace Flight Trajectory Visualizer</title>
+<title>Garud FX 3D Aerospace Flight Trajectory Visualizer</title>
 <!-- Three.js + OrbitControls (CDN with local air-gapped fallback) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -36,11 +36,12 @@ button, input, select, .h-val, .cardinal-lbl, .inst-val-sm, .log-row, .time-labe
 }
 
 #canvas-container {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
+  overflow: hidden;
 }
 /* Top Brand & Stats Bar */
 .top-bar {
@@ -532,7 +533,7 @@ input[type="range"] {
 <!-- Top Branding -->
 <div class="top-bar">
   <div class="brand-pill">
-    <span class="badge">PUSHPAK 3D</span>
+    <span class="badge">Garud FX 3D</span>
     <span class="title">Interactive 3D Aerospace Trajectory Reconstruction</span>
     <span class="case-lbl">[PX4-PITCH-TEST]</span>
   </div>
@@ -632,7 +633,7 @@ input[type="range"] {
 
 <!-- Helpful Nav Hint -->
 <div class="instructions-overlay">
-  🖱️ Left-Click + Drag: 3D Orbit Rotate | Right-Click + Drag: Pan | Scroll: Zoom
+  🖱️ Left-Click / 1-Finger: Pan Map | Right-Click / 2-Fingers: 3D Orbit Rotate | Scroll: Zoom
 </div>
 
 <!-- Bottom Playback Toolbar -->
@@ -670,27 +671,58 @@ let cameraMode = 'orbit';
 
 function initScene() {
   const container = document.getElementById('canvas-container');
-  const w = window.innerWidth;
-  const h = window.innerHeight;
+  const w = container ? (container.clientWidth || window.innerWidth) : window.innerWidth;
+  const h = container ? (container.clientHeight || window.innerHeight) : window.innerHeight;
 
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x060911);
-  scene.fog = new THREE.FogExp2(0x060911, 0.0008);
+  scene.fog = new THREE.Fog(0x060911, 2000, 300000);
 
-  camera = new THREE.PerspectiveCamera(50, w / h, 0.5, 50000);
+  camera = new THREE.PerspectiveCamera(50, w / h, 0.5, 500000);
   camera.position.set(200, 180, 260);
 
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(window.devicePixelRatio || 1);
   renderer.setSize(w, h);
   renderer.shadowMap.enabled = true;
-  container.appendChild(renderer.domElement);
+  if (container) container.appendChild(renderer.domElement);
 
-  if (THREE.OrbitControls) {
+  if (THREE.MapControls) {
+    controls = new THREE.MapControls(camera, renderer.domElement);
+  } else if (THREE.OrbitControls) {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
+  }
+  if (controls) {
+    controls.mouseButtons = {
+      LEFT: THREE.MOUSE.PAN,
+      MIDDLE: THREE.MOUSE.DOLLY,
+      RIGHT: THREE.MOUSE.ROTATE
+    };
+    controls.touches = {
+      ONE: THREE.TOUCH.PAN,
+      TWO: THREE.TOUCH.DOLLY_ROTATE
+    };
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
     controls.maxPolarAngle = Math.PI / 2 + 0.05;
+    controls.maxDistance = 400000;
+  }
+
+  // 2-Finger Trackpad / Shift-Wheel Rotation Listener
+  if (renderer && renderer.domElement) {
+    renderer.domElement.addEventListener('wheel', (e) => {
+      if (e.shiftKey) {
+        e.preventDefault();
+        const deltaX = e.deltaX || 0;
+        const deltaY = e.deltaY || 0;
+        if (controls && typeof controls.rotateLeft === 'function' && typeof controls.rotateUp === 'function') {
+          controls.rotateLeft(deltaX * 0.005);
+          controls.rotateUp(deltaY * 0.005);
+          controls.update();
+        }
+      }
+    }, { passive: false });
   }
 
   // Lighting
@@ -716,16 +748,22 @@ function initScene() {
   }
 
   window.addEventListener('resize', onResize);
+  if (window.ResizeObserver && container) {
+    const ro = new ResizeObserver(() => onResize());
+    ro.observe(container);
+  }
+  setTimeout(onResize, 100);
+  setTimeout(onResize, 500);
   animate();
 }
 
 function buildEnvironment() {
   // Calculate spatial scale
-  let maxExtent = 500;
+  let maxExtent = 2000;
   if (flightData.length > 0) {
     const xs = flightData.map(p => Math.abs(p.x));
     const zs = flightData.map(p => Math.abs(p.z));
-    maxExtent = Math.max(300, Math.max(...xs), Math.max(...zs)) * 1.6;
+    maxExtent = Math.max(2000, Math.max(...xs), Math.max(...zs)) * 4.0;
   }
 
   // Grid
@@ -1160,11 +1198,14 @@ function toggleFullscreen() {
 }
 
 function onResize() {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-  renderer.setSize(w, h);
+  const container = document.getElementById('canvas-container');
+  const w = container ? (container.clientWidth || window.innerWidth) : window.innerWidth;
+  const h = container ? (container.clientHeight || window.innerHeight) : window.innerHeight;
+  if (w > 0 && h > 0 && camera && renderer) {
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
 }
 
 let lastTime = performance.now();

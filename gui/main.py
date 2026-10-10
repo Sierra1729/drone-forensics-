@@ -45,7 +45,7 @@ def main():
     html_path = Path(__file__).resolve().parent / "index.html"
 
     window = webview.create_window(
-        title="PUSHPAK Drone Forensics Workstation (ISO/IEC 27037:2012)",
+        title="Garud FX — Indigenous Drone Forensics Workstation (ISO/IEC 27037:2012)",
         url=str(html_path),
         width=1340,
         height=860,

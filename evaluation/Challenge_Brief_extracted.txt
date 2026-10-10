@@ -1,8 +1,9 @@
-=== PAGE 1 ===
+--- Page 1 ---
  
 Techfest 2026-27 
  
-  
+ 
+ 
   Security of Drones 
  
 Overview: 
@@ -26,15 +27,15 @@ work with researchers, domain experts, and industry mentors to transform
 innovative ideas into functional, field-ready prototypes. 
  
 
-
-=== PAGE 2 ===
+--- Page 2 ---
  
 Grand Challenge 3, presented by VJTI at IIT Bombay Techfest 2026-27, is titled 
 “Security of Drones.” 
 Guiding Professors / Mentors 
 Grand Challenge 3 ( Security of Drones) will be guided by the following faculty 
 mentors from the collaborating institutes: 
- Prof. Arnab Maity 
+ 
+Prof. Arnab Maity 
 IIT Bombay – Aerospace Engineering 
 Prof. Arnab Maity is an accomplished aerospace researcher and 
 faculty member at IIT Bombay with strong expertise in dynamics, 
@@ -58,10 +59,10 @@ mission-oriented outcomes.
   
  
 
-
-=== PAGE 3 ===
+--- Page 3 ---
  
- Dr. Faruk Kazi 
+ 
+Dr. Faruk Kazi 
 Professor, VJTI Mumbai; Director – Research and Development Cell, 
 University of Mumbai 
 Dr Faruk Kazi received his Ph.D. degree from IIT Bombay in 2009. 
@@ -95,12 +96,16 @@ What Happens After the Grand Finale?
 The journey does not end with the finale. 
 Prototype Development Support (Build & Test Phase) 
 Selected winning teams (upto 5 teams) will be invited to participate in a 
-dedicated Prototype Development Support Programme, beginning 
+dedicated 
+Prototype 
+Development 
+Support 
+Programme, 
+beginning 
 December 2026 onwards. This post-challenge phase is specifically 
  
 
-
-=== PAGE 4 ===
+--- Page 4 ---
  
 designed to bridge the gap between academic/start-ups innovation and 
 real-world deployment. 
@@ -123,7 +128,8 @@ Note: Teams can participate in either of the Objectives which will be evaluated
 as per the details provided. At the end of the challenge, up to 5 winning teams 
 will be selected for Grand challenge 3. These teams will be considered for further 
 support, funding, mentoring, and access to resources for building and testing 
-their designs in the next phase.                            
+their designs in the next phase.                          ​
+ 
  
 Objective 1: Drone Forensics Toolkit Development 
 1.1 Objective 
@@ -134,8 +140,7 @@ associated components in a forensically sound manner. The toolkit should
 support evidence acquisition from onboard storage, flight controllers, remote 
  
 
-
-=== PAGE 5 ===
+--- Page 5 ---
  
 controllers, removable media, companion mobile applications, and other relevant 
 data sources while ensuring integrity through cryptographic hashing. The 
@@ -169,14 +174,14 @@ forensic capability that can support law enforcement agencies, regulatory bodies
 forensic laboratories, defense organizations, and cybersecurity professionals in 
 conducting efficient and legally defensible drone investigations. 
 1.3 Evaluation Criteria 
-Criterion Weight 
+Criterion 
+Weight 
 Successful forensic acquisition from multiple 
 drone platforms 
 20% 
  
 
-
-=== PAGE 6 ===
+--- Page 6 ---
  
 Evidence integrity using hashing and 
 chain-of-custody 
@@ -184,11 +189,16 @@ chain-of-custody
 Ability to recover logs, telemetry, GPS, media, 
 and configuration files 
 20% 
-Completeness of forensic reporting 15% 
-Automation and usability of forensic toolkit 10% 
-Extensibility to new drone platforms 5% 
-Documentation and reproducibility 5% 
-Future integration potential 5% 
+Completeness of forensic reporting 
+15% 
+Automation and usability of forensic toolkit 
+10% 
+Extensibility to new drone platforms 
+5% 
+Documentation and reproducibility 
+5% 
+Future integration potential 
+5% 
  
 Total: 100% 
 Final evaluation will be based on forensic acquisition, evidence 
@@ -212,8 +222,7 @@ workflow, hardware acquisition interfaces, evidence preservation mechanisms,
 chain-of-custody methodology, cryptographic hashing approach, metadata 
  
 
-
-=== PAGE 7 ===
+--- Page 7 ---
  
 extraction strategy, reporting framework, software architecture, risk assessment, 
 and validation methodology. 
@@ -221,7 +230,8 @@ and validation methodology.
 No financial support will be provided at this stage. The objective of this stage is 
 to identify technically promising teams with strong and feasible solutions. 
 Stage 2: Drone Forensic Toolkit Detailed Design and Prototype 
-Development           
+Development         ​
+ 
 The organizing team will take approximately two weeks to evaluate preliminary 
 designs and shortlist up to 15 teams. These teams will receive Rs. 1 lakh each to 
 develop a complete, detailed design and prototype. 
@@ -247,16 +257,20 @@ The final round will be conducted during IIT Bombay Techfest in December 2026.
 Finalist teams will present their detailed design and prototype before the 
 evaluation committee and respond to technical questions. 
 The final evaluation will be based on: 
-·    Detailed design, prototype and demonstration. 
+·   ​
+Detailed design, prototype and demonstration. 
  
 
-
-=== PAGE 8 ===
+--- Page 8 ---
  
-·    Supported technical evidence. 
-·    Final presentation. 
-·    Viva and technical defence. 
-·    Feasibility of implementation in the next phase. 
+·   ​
+Supported technical evidence. 
+·   ​
+Final presentation. 
+·   ​
+Viva and technical defence. 
+·   ​
+Feasibility of implementation in the next phase. 
 Up to 5 winning teams will be selected for Grand challenge 3. These winners will 
 receive awards or recognition grants and will be considered for further financial 
 support, technical mentoring, and access to resources for prototype development 
@@ -290,8 +304,7 @@ at any stage and their decision in this regard shall be final.
  
  
 
-
-=== PAGE 9 ===
+--- Page 9 ---
  
 Objective 2 Drone Intrusion Detection System (Drone IDS) 
 2.1 Objective 
@@ -322,23 +335,31 @@ defence applications. The challenge focuses on developing an onboard cyber
 defence capability that enhances the resilience, safety, security, and 
 trustworthiness of next-generation UAV platforms. 
 2.3 Evaluation Criteria 
-Criterion Weight 
+Criterion 
+Weight 
 Detection accuracy across attack 
 scenarios 
 20% 
-False Positive Rate (FPR) 20% 
-Distance Covered 10% 
+False Positive Rate (FPR) 
+20% 
+Distance Covered 
+10% 
  
 
-
-=== PAGE 10 ===
+--- Page 10 ---
  
-Detection latency 10% 
-Coverage of multiple attack vectors 15% 
-Computational efficiency 10% 
-Ease of integration 5% 
-Documentation and validation 5% 
-Future deployment potential 5% 
+Detection latency 
+10% 
+Coverage of multiple attack vectors 
+15% 
+Computational efficiency 
+10% 
+Ease of integration 
+5% 
+Documentation and validation 
+5% 
+Future deployment potential 
+5% 
 Total: 100% 
 Final evaluation will be based on live demonstrations, and viva during 
 the Techfest evaluation. 
@@ -361,11 +382,11 @@ strategy, and validation approach.
 No financial support will be provided at this stage. The objective of this stage is 
 to identify technically promising teams for detailed design support. 
 Stage 2: Drone IDS System detail design and prototype Development          
-  
+​
+ 
  
 
-
-=== PAGE 11 ===
+--- Page 11 ---
  
 The organizing team will take approximately two weeks to evaluate preliminary 
 designs and shortlist up to 15 teams. These teams will receive Rs. 1 lakh each to 
@@ -403,8 +424,7 @@ Up to 5 winning teams will be selected for Grand challenge 3. These winners will
 receive awards or recognition grants and will be considered for further financial 
  
 
-
-=== PAGE 12 ===
+--- Page 12 ---
  
 support, technical mentoring, and access to resources for prototype development 
 and testing with IIT Bombay support. 
@@ -429,12 +449,16 @@ at any stage and their decision in this regard shall be final.
  
 Timeline and Key Dates: 
  
-Stage Timeline(s) Participation Brief Prize / Reward / 
+Stage 
+Timeline(s) 
+Participation Brief 
+Prize / Reward / 
 Support 
 Grand 
 Challenge 
 Announcement 
-22 August 2026 PUSHPAK Grand 
+22 August 2026 
+PUSHPAK Grand 
 Challenge 2026 opens 
 for registrations 
 across India. Teams 
@@ -444,8 +468,7 @@ participate.
 None 
  
 
-
-=== PAGE 13 ===
+--- Page 13 ---
  
 Stage 1: 
 Preliminary 
@@ -536,16 +559,15 @@ announcement of
 results at the TechFest 
  
 
-
-=== PAGE 14 ===
+--- Page 14 ---
  
  
 Registration & Submission 
-● Participants must register for the PUSHPAK Grand Challenge on the official 
+●​ Participants must register for the PUSHPAK Grand Challenge on the official 
 Techfest website: techfest.org > Competitions > PUSHPAK Grand 
 Challenge > Register at www.techfest.org/competitions 
  
-● All submissions (Stage 1 and Stage 2) are to be made via email to 
+●​ All submissions (Stage 1 and Stage 2) are to be made via email to 
 [pushpak_gc2026@aero.iitb.ac.in] — no submission links are used; every 
 stage is handled entirely through email correspondence. 
  
@@ -572,8 +594,7 @@ Organizer’s Rights: The organizers reserve the right to modify, extend,
 postpone, suspend, or cancel the Grand Challenge, or any stage thereof, at their 
  
 
-
-=== PAGE 15 ===
+--- Page 15 ---
  
 discretion. Any such changes will be communicated through the official 
 communication channels of the Grand Challenge. 
@@ -615,8 +636,7 @@ Challenge, including development, testing, travel, accommodation, equipment,
 and demonstration-related expenses, shall be borne by the participating teams. 
  
 
-
-=== PAGE 16 ===
+--- Page 16 ---
  
 Liability: The organizers, host institutions, funding agencies, partners, mentors, 
 evaluators, and their respective personnel shall not be liable for any loss, 
@@ -634,5 +654,3 @@ Grand Challenge.
  
  
  
-
-

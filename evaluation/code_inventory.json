@@ -1,0 +1,18 @@
+{
+  "own_lines": 109418,
+  "vendored_lines": 1718,
+  "dirs": {
+    "acquisition": 2009,
+    "analytics": 1924,
+    "cli": 314,
+    "crypto": 526,
+    "custody": 555,
+    "export": 3350,
+    "gui": 82211,
+    "normalize": 184,
+    "parsers": 8522,
+    "reports": 1839,
+    "scripts": 2666,
+    "tests": 5318
+  }
+}

@@ -1,0 +1,559 @@
+{
+  "T01": {
+    "test_id": "T01",
+    "name": "clean_install_verify",
+    "status": "PASS",
+    "duration_sec": 1.5938301086425781,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "req_count": 14,
+      "imports": {
+        "acquisition": "PASS (0.3499s)",
+        "analytics": "PASS (0.0260s)",
+        "cli": "PASS (1.2159s)",
+        "crypto": "PASS (0.0000s)",
+        "custody": "PASS (0.0000s)",
+        "export": "PASS (0.0000s)",
+        "gui": "PASS (0.0010s)",
+        "normalize": "PASS (0.0000s)",
+        "parsers": "PASS (0.0000s)",
+        "reports": "PASS (0.0000s)"
+      }
+    },
+    "log_file": "evaluation\\logs\\T01_clean_install_verify.log"
+  },
+  "T02": {
+    "test_id": "T02",
+    "name": "test_suite_run",
+    "status": "PASS",
+    "duration_sec": 39.811776876449585,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "exit_code": 0,
+      "passed_tests": 171
+    },
+    "log_file": "evaluation\\logs\\T02_test_suite_run.log"
+  },
+  "T03": {
+    "test_id": "T03",
+    "name": "network_leakage_audit",
+    "status": "PASS",
+    "duration_sec": 0.49289417266845703,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "network_hits_count": 26,
+      "has_offline_map": true
+    },
+    "log_file": "evaluation\\logs\\T03_network_leakage_audit.log"
+  },
+  "T04": {
+    "test_id": "T04",
+    "name": "master_verify_script",
+    "status": "PASS",
+    "duration_sec": 45.62166404724121,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "log_file": "evaluation\\logs\\T04_master_verify_script.log"
+  },
+  "T05": {
+    "test_id": "T05",
+    "name": "source_write_protection",
+    "status": "PASS",
+    "duration_sec": 5.2459752559661865,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "unchanged": true,
+      "records_parsed": 1928
+    },
+    "log_file": "evaluation\\logs\\T05_source_write_protection.log"
+  },
+  "T06": {
+    "test_id": "T06",
+    "name": "dual_cryptographic_hashing",
+    "status": "PASS",
+    "duration_sec": 0.11674356460571289,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "files_hashed": 14,
+      "hashes": {
+        "ardupilot_sample.bin": {
+          "size": 3636,
+          "sha256": "f1cec990146754bad121a02dcdc1e8742564207a4ba44eb2bbf79304e9b64050",
+          "blake3": "2402360af233dce2b062b63ba1ecedaab1b33346d2031e5766c9dc7d5b8350f5",
+          "valid": true
+        },
+        "betaflight_corrupt.bfl": {
+          "size": 2497813,
+          "sha256": "2c999a901980c921c7b180befcacb8a5c411f4590903be31a923829aa8a9d7ee",
+          "blake3": "fd724d8a4cc4e40781eefce8512220d590383c58751d7338b4728ba098447a1f",
+          "valid": true
+        },
+        "betaflight_multi.bbl": {
+          "size": 6103040,
+          "sha256": "f68c77269d75f7db1db2a4ff7dce9b484374ed88b961744c241e1da498621e1a",
+          "blake3": "3eb0a3dbdd1a65fb052f44cb8489d321d31db47e259b70811e264dd782cef79f",
+          "valid": true
+        },
+        "betaflight_sample.bfl": {
+          "size": 2497813,
+          "sha256": "36ee8955c4f0cf7052bf57674b7750e6f49351d554d76da9cd2ce710b352b6fb",
+          "blake3": "b88a69a817efc49bccdab7d81462e11b50e56c927d0efc4e1ef5965a9d3e28ca",
+          "valid": true
+        },
+        "dji_flight_record.csv": {
+          "size": 2159567,
+          "sha256": "ac7591e045fc4da134acd6fa6c7b455530265c5a8dd5eb071dcd661811f3ef4b",
+          "blake3": "d4b516a9de08390e2801d4905493d2b0abaa121df30ec0400a7e0756444c1781",
+          "valid": true
+        },
+        "FLY042_DJI_Phantom_4_Pro.DAT": {
+          "size": 22712,
+          "sha256": "e452f99369aa4de044c2968b2223f1d8df14e0372ca0f4d935140adbbe2f16bf",
+          "blake3": "cdba691dec302c692d1edf502613d07cdb593668c272cb2cbd58dc489f6cb7bc",
+          "valid": true
+        },
+        "non-default.params": {
+          "size": 1274,
+          "sha256": "ed2f943f578cbc137bbb01015ffe92a921dcf73189461b42d2f9328eb54635c6",
+          "blake3": "6744f9b98334a8b5d57a99a4380fa462a86cd5d8762ea7902c78a9b4fe6e4994",
+          "valid": true
+        },
+        "parrot_anafi_usa_flight.json": {
+          "size": 26385,
+          "sha256": "fb8774e532cb24e1d7260bcb6ed0525b62a61b8a15a744b85a79b9dbd986b1ca",
+          "blake3": "281cbd32acd45fa0338fc5122c8fa35f72c62746a2f4a05febbcfa744bcb4018",
+          "valid": true
+        },
+        "parrot_bebop_2_flight.json": {
+          "size": 17622,
+          "sha256": "0f0a736ed5128842288b6bbc4691cb111b761c6675cf4f6d94df2168fb0e5fae",
+          "blake3": "d24b388a15da581c984348d4a9a62488a39e9a037c74397affff975d63801e71",
+          "valid": true
+        },
+        "px4_mission_sample.ulg": {
+          "size": 5059648,
+          "sha256": "6041cc151993d842a844742a72eb34bf9a23ca99205cb56aec94fdffeaa93440",
+          "blake3": "49a2d3f5c18aaff6f8bed468e57f606194a7fb1534fb4cca0475f066f709359b",
+          "valid": true
+        },
+        "README.md": {
+          "size": 805,
+          "sha256": "ec993691a7723e1cc6f5612fc0e71833ad40f880c78df790c999fe41a5be00b6",
+          "blake3": "b3e26a732e82722c7864db68742810a80e166f90143065fee6f88905a017ff27",
+          "valid": true
+        },
+        "real_px4_flight.ulg": {
+          "size": 27388166,
+          "sha256": "b8abd99f208de7fd072d2e271524507b761e061e6cda9170685caf85901ca027",
+          "blake3": "f6f26e52465feb6e27339cf256dde2a6469252f44085e80616e1709ac3ff46dc",
+          "valid": true
+        },
+        "secondary_dji_swarm.csv": {
+          "size": 3210,
+          "sha256": "9515afe1cbb94caacea0d345d64186cd6dcf94904a706ea0ddebd92b208b6248",
+          "blake3": "41eee33018bc3a0c27e34d277f6f3f9e8f0997cd885a12e6edb38de27738a33c",
+          "valid": true
+        },
+        "vehicle.params": {
+          "size": 17125,
+          "sha256": "5419b3b40700c9d515c68b5ae7dc96241b3051d1ce31401450a964d9e28a715e",
+          "blake3": "286e15be62d87d5d778c4ceb944f32ee6aa0c45cacd563a3126761b8e262c0db",
+          "valid": true
+        }
+      }
+    },
+    "log_file": "evaluation\\logs\\T06_dual_cryptographic_hashing.log"
+  },
+  "T07": {
+    "test_id": "T07",
+    "name": "evidence_1byte_tamper",
+    "status": "PASS",
+    "duration_sec": 0.1474459171295166,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "detected": true
+    },
+    "log_file": "evaluation\\logs\\T07_evidence_1byte_tamper.log"
+  },
+  "T08": {
+    "test_id": "T08",
+    "name": "custody_log_tamper_detection",
+    "status": "PASS",
+    "duration_sec": 0.060394287109375,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "tests": {
+        "a": true,
+        "b": true,
+        "c": true,
+        "d": true
+      }
+    },
+    "log_file": "evaluation\\logs\\T08_custody_log_tamper_detection.log"
+  },
+  "T09": {
+    "test_id": "T09",
+    "name": "custody_entry_completeness",
+    "status": "PASS",
+    "duration_sec": 0.008370637893676758,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "entry_count": 2
+    },
+    "log_file": "evaluation\\logs\\T09_custody_entry_completeness.log"
+  },
+  "T10": {
+    "test_id": "T10",
+    "name": "corrupt_partial_input_robustness",
+    "status": "PASS",
+    "duration_sec": 5.315262794494629,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "cases_tested": 5
+    },
+    "log_file": "evaluation\\logs\\T10_corrupt_partial_input_robustness.log"
+  },
+  "T11": {
+    "test_id": "T11",
+    "name": "time_source_clock_handling",
+    "status": "PASS",
+    "duration_sec": 0.0020024776458740234,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "events": 2
+    },
+    "log_file": "evaluation\\logs\\T11_time_source_clock_handling.log"
+  },
+  "T12": {
+    "test_id": "T12",
+    "name": "px4_ulog_decoding_ref",
+    "status": "PASS",
+    "duration_sec": 5.346244812011719,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "total_events": 1928,
+      "gps_count": 859
+    },
+    "log_file": "evaluation\\logs\\T12_px4_ulog_decoding_ref.log"
+  },
+  "T13": {
+    "test_id": "T13",
+    "name": "ardupilot_dataflash_ref",
+    "status": "PASS",
+    "duration_sec": 0.0031533241271972656,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "events": 60
+    },
+    "log_file": "evaluation\\logs\\T13_ardupilot_dataflash_ref.log"
+  },
+  "T14": {
+    "test_id": "T14",
+    "name": "dji_dat_decoding_ref",
+    "status": "PASS",
+    "duration_sec": 0.0049970149993896484,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "events": 151
+    },
+    "log_file": "evaluation\\logs\\T14_dji_dat_decoding_ref.log"
+  },
+  "T15": {
+    "test_id": "T15",
+    "name": "dji_csv_betaflight_ref",
+    "status": "PASS",
+    "duration_sec": 1.7063953876495361,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "csv_events": 2496,
+      "bfl_events": 87
+    },
+    "log_file": "evaluation\\logs\\T15_dji_csv_betaflight_ref.log"
+  },
+  "T16": {
+    "test_id": "T16",
+    "name": "autel_parrot_yuneec_ref",
+    "status": "PASS",
+    "duration_sec": 0.0012645721435546875,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "events": 64
+    },
+    "log_file": "evaluation\\logs\\T16_autel_parrot_yuneec_ref.log"
+  },
+  "T17": {
+    "test_id": "T17",
+    "name": "exif_media_extraction",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS"
+    },
+    "log_file": "evaluation\\logs\\T17_exif_media_extraction.log"
+  },
+  "T18": {
+    "test_id": "T18",
+    "name": "source_offset_provenance",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "offsets_verified": 10
+    },
+    "log_file": "evaluation\\logs\\T18_source_offset_provenance.log"
+  },
+  "T19": {
+    "test_id": "T19",
+    "name": "synthetic_labelling_audit",
+    "status": "PASS",
+    "duration_sec": 0.0011191368103027344,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "fields": [
+        "timestamp_utc",
+        "source_platform",
+        "event_type",
+        "source_file",
+        "source_file_sha256",
+        "payload",
+        "latitude",
+        "longitude",
+        "altitude_m",
+        "ground_speed_mps",
+        "heading_deg",
+        "pitch_deg",
+        "roll_deg",
+        "yaw_deg",
+        "satellites_visible",
+        "hdop",
+        "battery_voltage_v",
+        "battery_current_a",
+        "battery_remaining_pct",
+        "flight_mode",
+        "session_id",
+        "byte_offset",
+        "raw_hex_offset",
+        "raw_hex",
+        "record_id"
+      ],
+      "synthetic_fixtures": 4
+    },
+    "log_file": "evaluation\\logs\\T19_synthetic_labelling_audit.log"
+  },
+  "T20": {
+    "test_id": "T20",
+    "name": "carving_raw_disk_image",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS"
+    },
+    "log_file": "evaluation\\logs\\T20_carving_raw_disk_image.log"
+  },
+  "T21": {
+    "test_id": "T21",
+    "name": "cross_source_correlation",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "features": {
+        "analyze": true,
+        "controller": true,
+        "swarm": true
+      }
+    },
+    "log_file": "evaluation\\logs\\T21_cross_source_correlation.log"
+  },
+  "T22": {
+    "test_id": "T22",
+    "name": "telemetry_anomaly_detection",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "anomalies_detected": 1
+    },
+    "log_file": "evaluation\\logs\\T22_telemetry_anomaly_detection.log"
+  },
+  "T23": {
+    "test_id": "T23",
+    "name": "2d_map_schema_validation",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS"
+    },
+    "log_file": "evaluation\\logs\\T23_2d_map_schema_validation.log"
+  },
+  "T24": {
+    "test_id": "T24",
+    "name": "3d_trajectory_playback",
+    "status": "PASS",
+    "duration_sec": 0.0012023448944091797,
+    "error": null,
+    "data": {
+      "status": "PASS"
+    },
+    "log_file": "evaluation\\logs\\T24_3d_trajectory_playback.log"
+  },
+  "T25": {
+    "test_id": "T25",
+    "name": "position_accuracy_error",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "mean_error_m": 0.15323544755104093
+    },
+    "log_file": "evaluation\\logs\\T25_position_accuracy_error.log"
+  },
+  "T26": {
+    "test_id": "T26",
+    "name": "performance_memory_benchmark",
+    "status": "PASS",
+    "duration_sec": 68.8765652179718,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "duration_sec": 68.84289979934692,
+      "peak_mb": 348.5372362136841,
+      "min_per_gb": 44.98262789848725,
+      "events": 1928
+    },
+    "log_file": "evaluation\\logs\\T26_performance_memory_benchmark.log"
+  },
+  "T27": {
+    "test_id": "T27",
+    "name": "determinism_output_diff",
+    "status": "PASS",
+    "duration_sec": 10.390930652618408,
+    "error": null,
+    "data": {
+      "status": "PASS"
+    },
+    "log_file": "evaluation\\logs\\T27_determinism_output_diff.log"
+  },
+  "T28": {
+    "test_id": "T28",
+    "name": "examiner_workflow_steps",
+    "status": "PASS",
+    "duration_sec": 0.0558164119720459,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "steps": 1
+    },
+    "log_file": "evaluation\\logs\\T28_examiner_workflow_steps.log"
+  },
+  "T29": {
+    "test_id": "T29",
+    "name": "batch_mode_cli",
+    "status": "PASS",
+    "duration_sec": 2.324671983718872,
+    "error": null,
+    "data": {
+      "status": "PASS"
+    },
+    "log_file": "evaluation\\logs\\T29_batch_mode_cli.log"
+  },
+  "T30": {
+    "test_id": "T30",
+    "name": "bsa_pdf_report_generation",
+    "status": "PASS",
+    "duration_sec": 5.369544744491577,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "pdf_size": 12047
+    },
+    "log_file": "evaluation\\logs\\T30_bsa_pdf_report_generation.log"
+  },
+  "T31": {
+    "test_id": "T31",
+    "name": "video_demonstration_check",
+    "status": "PASS",
+    "duration_sec": 0.8648993968963623,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "has_docs": true,
+      "video_count": 114
+    },
+    "log_file": "evaluation\\logs\\T31_video_demonstration_check.log"
+  },
+  "T32": {
+    "test_id": "T32",
+    "name": "dependency_licenses_audit",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "licenses": {
+        "reportlab": "BSD-3-Clause",
+        "pywebview": "BSD-3-Clause",
+        "typer": "MIT",
+        "rich": "MIT",
+        "pytest": "MIT",
+        "numpy": "BSD-3-Clause",
+        "matplotlib": "PSF / BSD",
+        "pypdf": "BSD-3-Clause",
+        "pymupdf": "AGPL / Commercial",
+        "three.js": "MIT",
+        "leaflet": "BSD-2-Clause"
+      }
+    },
+    "log_file": "evaluation\\logs\\T32_dependency_licenses_audit.log"
+  },
+  "T33": {
+    "test_id": "T33",
+    "name": "extensibility_stub_parser",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS"
+    },
+    "log_file": "evaluation\\logs\\T33_extensibility_stub_parser.log"
+  },
+  "T34": {
+    "test_id": "T34",
+    "name": "claims_traceability_verification",
+    "status": "PASS",
+    "duration_sec": 0.0,
+    "error": null,
+    "data": {
+      "status": "PASS",
+      "total_claims": 20,
+      "verified": 20
+    },
+    "log_file": "evaluation\\logs\\T34_claims_traceability_verification.log"
+  }
+}

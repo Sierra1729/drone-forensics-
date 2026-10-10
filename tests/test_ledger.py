@@ -19,7 +19,9 @@ def test_record_and_verify_clean_chain(tmp_path):
     ok, broken_at = ledger.verify_chain()
     assert ok is True
     assert broken_at is None
+    # 2 recorded entries
     assert len(ledger) == 2
+
 
 
 def test_recorded_hash_matches_independent_hash(tmp_path):
@@ -37,23 +39,24 @@ def test_tampering_with_ledger_is_detected(tmp_path):
     evidence = tmp_path / "flight1.bin"
     evidence.write_bytes(b"fake flight controller dump")
     ledger_path = tmp_path / "custody.jsonl"
-    ledger = ChainOfCustodyLedger(ledger_path)
+    session_key = b"FIXED_TEST_SESSION_KEY_32BYTES_!"
+    ledger = ChainOfCustodyLedger(ledger_path, session_key=session_key)
 
     ledger.record(actor="investigator_1", action="ACQUIRE", target_path=evidence)
     ledger.record(actor="investigator_1", action="PARSE", target_path=evidence)
     ledger.record(actor="investigator_1", action="EXPORT", target_path=evidence)
 
-    # Simulate an insider quietly editing the middle entry's actor field.
+    # Simulate an insider quietly editing a middle entry's actor field.
     lines = ledger_path.read_text().splitlines()
-    tampered = json.loads(lines[1])
+    tampered = json.loads(lines[2])
     tampered["actor"] = "someone_else"
-    lines[1] = json.dumps(tampered, sort_keys=True)
+    lines[2] = json.dumps(tampered, sort_keys=True)
     ledger_path.write_text("\n".join(lines) + "\n")
 
-    reloaded = ChainOfCustodyLedger(ledger_path)
+    reloaded = ChainOfCustodyLedger(ledger_path, session_key=session_key)
     ok, broken_at = reloaded.verify_chain()
     assert ok is False
-    assert broken_at == 1
+    assert broken_at == 2
 
 
 def test_missing_ledger_starts_clean(tmp_path):
@@ -62,3 +65,4 @@ def test_missing_ledger_starts_clean(tmp_path):
     ok, broken_at = ledger.verify_chain()
     assert ok is True
     assert broken_at is None
+

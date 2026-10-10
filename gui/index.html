@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PUSHPAK Indigenous Drone Forensics Toolkit</title>
+<title>Garud FX — Indigenous Drone Forensics Workstation</title>
 <!-- Google Fonts: Space Mono -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2478,7 +2478,7 @@ table.forensic-table tr:hover {
 <!-- Header with Clean Minimalist Layout & Expandable Active Case Chip -->
 <header>
   <div class="logo-title" onclick="switchTab('tabMap')">
-    <span class="logo-badge">PUSHPAK</span>
+    <span class="logo-badge">GARUD FX</span>
   </div>
 
   <!-- Expandable Active Case Folder Button (Minimized) -->
@@ -2713,6 +2713,14 @@ table.forensic-table tr:hover {
       <input type="text" id="decryptionKeyInput" placeholder="Auto-detect / Enter key or mask" />
     </div>
 
+    <div class="form-group" id="singleParamFileGroup">
+      <label>GCS Parameter File (.param / .params) (Optional)</label>
+      <div style="display: flex; gap: 4px;">
+        <input type="text" id="paramFilePathInput" placeholder="Auto-correlate / Select .param file" readonly style="flex:1; cursor:pointer;" onclick="selectParamFile()" />
+        <button type="button" class="btn-secondary" style="padding: 4px 8px; font-size: 10px;" onclick="selectParamFile()">📂 Browse</button>
+      </div>
+    </div>
+
     <button class="btn-primary" id="analyzeBtn" onclick="startAnalysis()">▶ START FORENSIC ANALYSIS</button>
 
     <div style="border-top: 1px solid var(--panel-border); margin-top: 6px; padding-top: 8px;">
@@ -2757,7 +2765,7 @@ table.forensic-table tr:hover {
     <div id="tabMap" class="tab-content active">
       <main class="center-view">
         <div id="map"></div>
-        <iframe id="view3dIframe" style="display:none; width:100%; height:100%; border:none; background:#060911;" allow="fullscreen"></iframe>
+        <iframe id="view3dIframe" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; right:0; bottom:0; border:none; background:#060911; z-index:2;" allow="fullscreen"></iframe>
 
         <!-- Floating Multi-Drone Tactical Selector & Overlay Bar (Top Center) -->
         <div class="drone-selector-strip" id="droneSelectorStrip" style="display: none;">
@@ -3712,22 +3720,27 @@ table.forensic-table tr:hover {
 
         <!-- Discovered Flight Logs Table Card -->
         <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <div style="font-size:12.5px; font-weight:700; color:#38bdf8;">
-              📂 Discovered Flight Records in Extracted Dump
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#38bdf8;">
+                📂 Discovered Flight Records in Extracted Dump
+              </div>
+              <div style="font-size:10.5px; color:#94a3b8;">
+                Click any log to view/load, download individual logs, or compile a consolidated forensic report
+              </div>
             </div>
-            <div style="font-size:10.5px; color:#94a3b8;">
-              Click any log to load as active exhibit for 3D trajectory & anomaly analysis
-            </div>
+            <button class="btn-primary" style="font-size:11px; padding:5px 12px; background:#0284c7; border-color:#0284c7; color:#ffffff; font-weight:700;" onclick="generateConsolidatedLogsReport()" title="Compile all discovered GCS app logs into a consolidated PDF/Text report">
+              📑 Consolidated Log Report
+            </button>
           </div>
           <div class="table-scroll" style="max-height: 250px;">
             <table class="forensic-table" style="font-size:11px;">
               <thead>
                 <tr>
                   <th style="width:40px;">#</th>
-                  <th style="width:180px;">Filename</th>
+                  <th style="width:170px;">Filename</th>
                   <th>Full Path in Extracted Evidence</th>
-                  <th style="width:140px;">Action</th>
+                  <th style="width:230px;">Action</th>
                 </tr>
               </thead>
               <tbody id="gcsDiscoveredLogsTableBody">
@@ -4630,30 +4643,28 @@ function initMap() {
   map = L.map('map', { zoomControl: true }).setView([20.5937, 78.9629], 5);
 
   baseLayers = {
-    streets: new CachedTileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors | PUSHPAK Offline Engine',
-      maxZoom: 19,
-      subdomains: 'abc'
+    streets: new CachedTileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China, TomTom | Garud FX',
+      maxZoom: 19
     }),
     offline: new MBTilesTileLayer('', {
-      attribution: 'PUSHPAK Local MBTiles Cartography (Air-Gapped)',
+      attribution: 'Garud FX Local MBTiles Cartography (Air-Gapped)',
       maxZoom: 18
     }),
     satellite: new CachedTileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
       maxZoom: 19
     }),
-    dark: new CachedTileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors | PUSHPAK Tactical Cartography',
-      maxZoom: 19,
-      subdomains: 'abc'
+    dark: new CachedTileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri — Esri, DeLorme, NAVTEQ | Garud FX Tactical Cartography',
+      maxZoom: 19
     }),
     topo: new CachedTileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap, © OpenTopoMap (CC-BY-SA)',
       maxZoom: 17
     }),
     grid: new TacticalGridLayer({
-      attribution: 'PUSHPAK Air-Gapped Forensic Tactical Grid (Offline)',
+      attribution: 'Garud FX Air-Gapped Forensic Tactical Grid (Offline)',
       maxZoom: 22
     })
   };
@@ -6008,15 +6019,65 @@ function updateAndroidGcsTabUI(res, targetPath) {
               📥 Load into Telemetry
              </button>`;
 
+        const downloadBtn = `<button class="btn-secondary" style="font-size:10px; padding:3px 8px; border-color:#059669; color:#34d399; margin-left:4px;" onclick="downloadDiscoveredLog('${safePath.replace(/'/g, "\\'")}')" title="Export this log file to system disk">
+            💾 Download Log
+           </button>`;
+
         return `
           <tr>
             <td><strong>#${idx + 1}</strong></td>
             <td style="font-weight:700; color:${isCacheLog ? '#facc15' : '#38bdf8'};">${escapeHtml(fn)}</td>
             <td style="font-family:var(--font-mono); font-size:10px; color:#94a3b8; word-break:break-all;">${escPath}</td>
-            <td>${actionBtn}</td>
+            <td style="display:flex; gap:4px; align-items:center;">${actionBtn}${downloadBtn}</td>
           </tr>
         `;
       }).join('');
+    }
+  }
+}
+
+async function downloadDiscoveredLog(filePath) {
+  try {
+    let res = null;
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.export_carved_file === 'function') {
+      res = await window.pywebview.api.export_carved_file(filePath);
+    } else {
+      res = await callApi('export_carved_file', { file_path_in_evidence: filePath });
+    }
+    if (res && (res.status === 'ok' || res.exported_path)) {
+      alert(`✓ Log File Downloaded Successfully!\n\nSaved to: ${res.exported_path || res.message}\n\n(Opened automatically in File Explorer)`);
+    } else {
+      alert(`⚠️ Download Error: ${res ? res.message : 'Could not export log file'}`);
+    }
+  } catch(e) {
+    alert("⚠️ Error downloading log file: " + e.message);
+  }
+}
+
+async function generateConsolidatedLogsReport() {
+  const caseId = currentCaseId || (document.getElementById('caseIdInput') && document.getElementById('caseIdInput').value) || "CASE-2026-MEITY-001";
+  try {
+    let res = null;
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.generate_consolidated_gcs_logs_report === 'function') {
+      res = await window.pywebview.api.generate_consolidated_gcs_logs_report(caseId);
+    } else {
+      res = await callApi('generate_consolidated_gcs_logs_report', { case_id: caseId });
+    }
+
+    // Open report modal immediately in GUI
+    if (typeof openReportPreviewModal === 'function') {
+      openReportPreviewModal(caseId);
+    }
+
+    if (res && res.status === 'ok') {
+      console.log("Consolidated Report generated:", res);
+    } else if (res && res.message) {
+      alert(`⚠️ Note: ${res.message}`);
+    }
+  } catch(e) {
+    // Fallback: Open report preview modal directly
+    if (typeof openReportPreviewModal === 'function') {
+      openReportPreviewModal(caseId);
     }
   }
 }
@@ -6213,26 +6274,66 @@ function copySha256() {
   }
 }
 
+function applySelectedFile(file) {
+  if (!file) return;
+  selectedFilePath = file;
+  const lbl = document.getElementById('filePathLabel');
+  if (lbl) {
+    lbl.innerText = file;
+    lbl.classList.add('selected');
+  }
+
+  const caseInput = document.getElementById('caseIdInput');
+  if (caseInput) {
+    const rawBase = file.split(/[\\/]/).pop().replace(/\.[^/.]+$/, "");
+    const cleanBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, "_").toUpperCase().substring(0, 18);
+    if (!caseInput.value || caseInput.value === "CASE-2026-MEITY-001" || caseInput.value === "CASE-DESKTOP-001") {
+      const dateTag = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      caseInput.value = `CASE-${cleanBase}-${dateTag}`;
+      syncCaseIdChip(caseInput.value);
+    }
+  }
+}
+
 async function selectFile() {
+  let file = null;
+  try {
+    if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.select_file === 'function') {
+      file = await window.pywebview.api.select_file();
+    }
+  } catch(e) {
+    console.error("select_file API error:", e);
+  }
+
+  if (file) {
+    applySelectedFile(file);
+  } else {
+    let fallback = document.getElementById('globalFallbackFileInput');
+    if (!fallback) {
+      fallback = document.createElement('input');
+      fallback.type = 'file';
+      fallback.id = 'globalFallbackFileInput';
+      fallback.style.display = 'none';
+      fallback.accept = ".ulg,.ugl,.bin,.txt,.dat,.json,.tlog,.csv,.bbl,.bfl,.log,.pud,.param,.params,.kmz,.gpx,.jpg,.jpeg,.dng,.srt,.zip,.dd,.img,.raw,.e01";
+      fallback.onchange = function() {
+        if (this.files && this.files.length > 0) {
+          const f = this.files[0];
+          applySelectedFile(f.path || f.name);
+        }
+      };
+      document.body.appendChild(fallback);
+    }
+    fallback.click();
+  }
+}
+
+async function selectParamFile() {
   try {
     if (window.pywebview && window.pywebview.api) {
       const file = await window.pywebview.api.select_file();
       if (file) {
-        selectedFilePath = file;
-        const lbl = document.getElementById('filePathLabel');
-        lbl.innerText = file;
-        lbl.classList.add('selected');
-
-        const caseInput = document.getElementById('caseIdInput');
-        if (caseInput) {
-          const rawBase = file.split(/[\\/]/).pop().replace(/\.[^/.]+$/, "");
-          const cleanBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, "_").toUpperCase().substring(0, 18);
-          if (!caseInput.value || caseInput.value === "CASE-2026-MEITY-001" || caseInput.value === "CASE-DESKTOP-001") {
-            const dateTag = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-            caseInput.value = `CASE-${cleanBase}-${dateTag}`;
-            syncCaseIdChip(caseInput.value);
-          }
-        }
+        const input = document.getElementById('paramFilePathInput');
+        if (input) input.value = file;
       }
     }
   } catch(e) {
@@ -7150,6 +7251,13 @@ async function switchMapDimension(dim) {
       if (!iframeElem.src || !iframeElem.src.includes(caseId)) {
         iframeElem.src = targetSrc;
       }
+      setTimeout(() => {
+        try {
+          if (iframeElem && iframeElem.contentWindow && typeof iframeElem.contentWindow.onResize === 'function') {
+            iframeElem.contentWindow.onResize();
+          }
+        } catch(e) {}
+      }, 150);
     }
   } else {
     if (btn2D) btn2D.classList.add('active');
@@ -8399,6 +8507,9 @@ async function callApi(method, params = {}) {
     'export_sealed_case_archive': { path: '/api/export_archive', method: 'POST' },
     'open_case_folder': { path: '/api/open_case_folder', method: 'POST' },
     'rebuild_pdf_report': { path: '/api/sync_exhibits', method: 'POST' },
+    'export_carved_file': { path: '/api/export_carved_file', method: 'POST' },
+    'generate_consolidated_gcs_logs_report': { path: '/api/generate_consolidated_gcs_logs_report', method: 'POST' },
+    'read_app_log': { path: '/api/read_app_log', method: 'POST' },
   };
 
   const ep = endpointMap[method];
@@ -8825,7 +8936,7 @@ Marked Visual Exhibits: ${lastAuditResult.exhibits_verified} of ${lastAuditResul
 Statutory Declaration:  ${lastAuditResult.admissibility}
 Timestamp (UTC):        ${new Date().toISOString()}
 ================================================================================
-CERTIFIED BY PUSHPAK FORENSIC EXAMINATION ENGINE
+CERTIFIED BY GARUD FX FORENSIC EXAMINATION ENGINE
 `.trim();
 
   navigator.clipboard.writeText(certText).then(() => {

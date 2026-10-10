@@ -1,5 +1,5 @@
-# PUSHPAK Indigenous Drone Digital Forensics Workstation
-### Grand Challenge 3: "Security of Drones" — Objective 1: Drone Forensics Toolkit
+# Garud FX — Indigenous Drone Digital Forensics Workstation
+### PUSHPAK Grand Challenge 3: "Security of Drones" — Objective 1: Drone Forensics Toolkit
 **Organizers:** IIT Bombay & VJTI Mumbai | **Funding Agency:** Ministry of Electronics & IT (MeitY)  
 **Standards Compliance:** ISO/IEC 27037:2012, NIST SP 800-86, Section 63 Bharatiya Sakshya Adhiniyam (BSA) 2023 / Section 65B Indian Evidence Act (IEA)
 
@@ -7,9 +7,9 @@
 
 ## 📋 Overview
 
-**PUSHPAK Drone Forensics Workstation** is an indigenous, multi-platform UAV digital forensics investigation platform engineered to acquire, normalize, correlate, and analyze flight logs, ground control station (GCS) telemetry, and multimedia metadata across commercial, open-source, FPV, and custom multi-rotor and fixed-wing drones.
+**Garud FX** is an enterprise-grade, indigenous multi-platform UAV digital forensics investigation workstation engineered to acquire, normalize, correlate, and analyze flight logs, ground control station (GCS) telemetry, and multimedia metadata across commercial, open-source, FPV, and custom multi-rotor and fixed-wing drones.
 
-Designed specifically for Indian Law Enforcement Agencies (State Cyber Crime Police, NIA, IB, BSF, CISF, CFSLs) and defense forensic investigators, PUSHPAK operates in 100% air-gapped, offline laboratory environments to produce legally admissible, tamper-evident forensic reports certified under Section 63 of the Bharatiya Sakshya Adhiniyam (BSA), 2023.
+Designed specifically for Indian Law Enforcement Agencies (State Cyber Crime Police, NIA, IB, BSF, CISF, CFSLs) and defense forensic investigators, **Garud FX** operates in 100% air-gapped, offline laboratory environments to produce legally admissible, tamper-evident forensic reports certified under Section 63 of the Bharatiya Sakshya Adhiniyam (BSA), 2023.
 
 ---
 

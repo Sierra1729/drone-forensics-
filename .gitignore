@@ -81,3 +81,10 @@ cases/.geocache.json
 *.obb
 mtdblock*
 *.DAT
+
+# Temporary evaluation rendered images and scratch scripts
+evaluation/rendered_template/
+evaluation/tamper_test/
+evaluation/corrupt_inputs/
+evaluation/*.png
+scratch/

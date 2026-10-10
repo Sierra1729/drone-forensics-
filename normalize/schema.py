@@ -78,6 +78,7 @@ class NormalizedEvent:
     flight_mode: Optional[str] = None
     session_id: Optional[str] = None
     byte_offset: Optional[str] = None   # Hex byte offset in binary evidence (e.g. 0x00014B20)
+    raw_hex_offset: Optional[str] = None # Physical byte offset formatted as 0x[HexValue]
     raw_hex: Optional[str] = None       # Hex representation of raw binary record
     record_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -92,9 +93,22 @@ class NormalizedEvent:
             )
         self.timestamp_utc = self.timestamp_utc.astimezone(timezone.utc)
 
+        # Normalize physical hex byte offset
+        if not self.raw_hex_offset:
+            if self.byte_offset:
+                self.raw_hex_offset = self.byte_offset if self.byte_offset.startswith("0x") else f"0x{self.byte_offset}"
+            else:
+                self.raw_hex_offset = "0x00000000"
+        elif not self.raw_hex_offset.startswith("0x"):
+            self.raw_hex_offset = f"0x{self.raw_hex_offset}"
+
+        if not self.byte_offset:
+            self.byte_offset = self.raw_hex_offset
+
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["timestamp_utc"] = self.timestamp_utc.isoformat()
+        d["raw_hex_offset"] = self.raw_hex_offset or self.byte_offset or "0x00000000"
         return d
 
     def to_json(self) -> str:
@@ -104,6 +118,8 @@ class NormalizedEvent:
     def from_dict(cls, d: dict[str, Any]) -> "NormalizedEvent":
         d = dict(d)
         d["timestamp_utc"] = datetime.fromisoformat(d["timestamp_utc"])
+        if "raw_hex_offset" in d and "byte_offset" not in d:
+            d["byte_offset"] = d["raw_hex_offset"]
         return cls(**d)
 
 

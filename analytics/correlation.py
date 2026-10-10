@@ -615,3 +615,155 @@ class ForensicCorrelationEngine:
 
         return sorted(key_events, key=lambda k: k.timestamp_utc)
 
+
+# ---------------------------------------------------------------------------
+# Swarm Multi-Drone Kinetic Collision & Proximity Engine
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SwarmProximityResult:
+    """Forensic report for multi-drone spatial proximity correlation."""
+    minimum_separation_m: float
+    time_of_closest_approach_utc: Optional[datetime]
+    near_miss_count: int
+    collision_warning_count: int
+    participating_drones: list[str]
+    anomalies: list[ForensicAnomaly] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        d = asdict(self)
+        if self.time_of_closest_approach_utc:
+            d["time_of_closest_approach_utc"] = self.time_of_closest_approach_utc.isoformat()
+        return d
+
+
+class SwarmKinematicEngine:
+    """Multi-UAV trajectory spatial-temporal correlation and collision detector."""
+
+    def __init__(self, near_miss_threshold_m: float = 10.0, collision_threshold_m: float = 3.0) -> None:
+        self.near_miss_threshold_m = near_miss_threshold_m
+        self.collision_threshold_m = collision_threshold_m
+
+    def analyze_swarm_proximity(
+        self,
+        drone_tracks: dict[str, list[NormalizedEvent]],
+    ) -> SwarmProximityResult:
+        """Compute 3D Haversine + altitude spatial proximity across multi-drone swarm flight paths."""
+        if len(drone_tracks) < 2:
+            return SwarmProximityResult(
+                minimum_separation_m=float("inf"),
+                time_of_closest_approach_utc=None,
+                near_miss_count=0,
+                collision_warning_count=0,
+                participating_drones=list(drone_tracks.keys()),
+                anomalies=[],
+            )
+
+        anomalies: list[ForensicAnomaly] = []
+        min_sep_m = float("inf")
+        tca_utc: Optional[datetime] = None
+        near_miss_count = 0
+        collision_count = 0
+
+        # Build 1-second binned spatial indexes for each drone
+        drone_bins: dict[str, dict[int, tuple[float, float, float, NormalizedEvent]]] = {}
+        for drone_id, events in drone_tracks.items():
+            dbin: dict[int, tuple[float, float, float, NormalizedEvent]] = {}
+            for ev in events:
+                if (
+                    ev.latitude is not None
+                    and ev.longitude is not None
+                    and not (abs(ev.latitude) < 0.0001 and abs(ev.longitude) < 0.0001)
+                ):
+                    t_sec = int(ev.timestamp_utc.timestamp())
+                    alt = ev.altitude_m or 0.0
+                    dbin[t_sec] = (ev.latitude, ev.longitude, alt, ev)
+            drone_bins[drone_id] = dbin
+
+        drone_ids = list(drone_tracks.keys())
+        for i in range(len(drone_ids)):
+            for j in range(i + 1, len(drone_ids)):
+                id1, id2 = drone_ids[i], drone_ids[j]
+                bin1, bin2 = drone_bins[id1], drone_bins[id2]
+                common_timestamps = set(bin1.keys()) & set(bin2.keys())
+
+                for t_sec in sorted(common_timestamps):
+                    lat1, lon1, alt1, ev1 = bin1[t_sec]
+                    lat2, lon2, alt2, ev2 = bin2[t_sec]
+
+                    d2d = haversine_distance_m(lat1, lon1, lat2, lon2)
+                    d_vert = abs(alt1 - alt2)
+                    d3d = math.sqrt(d2d**2 + d_vert**2)
+
+                    if d3d < min_sep_m:
+                        min_sep_m = d3d
+                        tca_utc = ev1.timestamp_utc
+
+                    if d3d <= self.collision_threshold_m:
+                        collision_count += 1
+                        anomalies.append(
+                            ForensicAnomaly(
+                                anomaly_type=AnomalyType.IMPACT_OR_CRASH.value,
+                                severity="CRITICAL",
+                                timestamp_utc=ev1.timestamp_utc,
+                                latitude=lat1,
+                                longitude=lon1,
+                                altitude_m=alt1,
+                                trigger_event_id=ev1.record_id,
+                                description=(
+                                    f"SWARM COLLISION TRAJECTORY BREACH: {id1} and {id2} "
+                                    f"3D separation collapsed to {d3d:.2f}m (vertical delta: {d_vert:.2f}m)"
+                                ),
+                                evidence_context={
+                                    "drone_alpha": id1,
+                                    "drone_bravo": id2,
+                                    "separation_3d_meters": round(d3d, 2),
+                                    "ground_distance_meters": round(d2d, 2),
+                                    "altitude_delta_meters": round(d_vert, 2),
+                                },
+                            )
+                        )
+                    elif d3d <= self.near_miss_threshold_m:
+                        near_miss_count += 1
+                        anomalies.append(
+                            ForensicAnomaly(
+                                anomaly_type=AnomalyType.KINEMATIC_ANOMALY.value,
+                                severity="HIGH",
+                                timestamp_utc=ev1.timestamp_utc,
+                                latitude=lat1,
+                                longitude=lon1,
+                                altitude_m=alt1,
+                                trigger_event_id=ev1.record_id,
+                                description=(
+                                    f"SWARM NEAR-MISS PROXIMITY: {id1} and {id2} "
+                                    f"passed within {d3d:.2f}m at {ev1.timestamp_utc.isoformat()}"
+                                ),
+                                evidence_context={
+                                    "drone_alpha": id1,
+                                    "drone_bravo": id2,
+                                    "separation_3d_meters": round(d3d, 2),
+                                    "ground_distance_meters": round(d2d, 2),
+                                    "altitude_delta_meters": round(d_vert, 2),
+                                },
+                            )
+                        )
+
+        return SwarmProximityResult(
+            minimum_separation_m=round(min_sep_m, 2) if min_sep_m != float("inf") else float("inf"),
+            time_of_closest_approach_utc=tca_utc,
+            near_miss_count=near_miss_count,
+            collision_warning_count=collision_count,
+            participating_drones=drone_ids,
+            anomalies=anomalies,
+        )
+
+
+def compute_swarm_spatial_proximity(
+    drone_tracks: dict[str, list[NormalizedEvent]],
+    near_miss_threshold_m: float = 10.0,
+) -> SwarmProximityResult:
+    """Convenience helper to compute multi-drone spatial proximity metrics."""
+    engine = SwarmKinematicEngine(near_miss_threshold_m=near_miss_threshold_m)
+    return engine.analyze_swarm_proximity(drone_tracks)
+
+

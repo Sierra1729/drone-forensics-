@@ -1,0 +1,128 @@
+[
+  {
+    "filename": "ardupilot_sample.bin",
+    "path": "sample_evidence\\ardupilot_sample.bin",
+    "size_bytes": 3636,
+    "sha256": "f1cec990146754bad121a02dcdc1e8742564207a4ba44eb2bbf79304e9b64050",
+    "format": ".bin",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "betaflight_corrupt.bfl",
+    "path": "sample_evidence\\betaflight_corrupt.bfl",
+    "size_bytes": 2497813,
+    "sha256": "2c999a901980c921c7b180befcacb8a5c411f4590903be31a923829aa8a9d7ee",
+    "format": ".bfl",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "betaflight_multi.bbl",
+    "path": "sample_evidence\\betaflight_multi.bbl",
+    "size_bytes": 6103040,
+    "sha256": "f68c77269d75f7db1db2a4ff7dce9b484374ed88b961744c241e1da498621e1a",
+    "format": ".bbl",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "betaflight_sample.bfl",
+    "path": "sample_evidence\\betaflight_sample.bfl",
+    "size_bytes": 2497813,
+    "sha256": "36ee8955c4f0cf7052bf57674b7750e6f49351d554d76da9cd2ce710b352b6fb",
+    "format": ".bfl",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "dji_flight_record.csv",
+    "path": "sample_evidence\\dji_flight_record.csv",
+    "size_bytes": 2159567,
+    "sha256": "ac7591e045fc4da134acd6fa6c7b455530265c5a8dd5eb071dcd661811f3ef4b",
+    "format": ".csv",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "FLY042_DJI_Phantom_4_Pro.DAT",
+    "path": "sample_evidence\\FLY042_DJI_Phantom_4_Pro.DAT",
+    "size_bytes": 22712,
+    "sha256": "e452f99369aa4de044c2968b2223f1d8df14e0372ca0f4d935140adbbe2f16bf",
+    "format": ".DAT",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "non-default.params",
+    "path": "sample_evidence\\non-default.params",
+    "size_bytes": 1274,
+    "sha256": "ed2f943f578cbc137bbb01015ffe92a921dcf73189461b42d2f9328eb54635c6",
+    "format": ".params",
+    "classification": "Synthetic",
+    "reasoning": "Artificially generated parameter file or injected multi-drone swarm log"
+  },
+  {
+    "filename": "parrot_anafi_usa_flight.json",
+    "path": "sample_evidence\\parrot_anafi_usa_flight.json",
+    "size_bytes": 26385,
+    "sha256": "fb8774e532cb24e1d7260bcb6ed0525b62a61b8a15a744b85a79b9dbd986b1ca",
+    "format": ".json",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "parrot_bebop_2_flight.json",
+    "path": "sample_evidence\\parrot_bebop_2_flight.json",
+    "size_bytes": 17622,
+    "sha256": "0f0a736ed5128842288b6bbc4691cb111b761c6675cf4f6d94df2168fb0e5fae",
+    "format": ".json",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "px4_mission_sample.ulg",
+    "path": "sample_evidence\\px4_mission_sample.ulg",
+    "size_bytes": 5059648,
+    "sha256": "6041cc151993d842a844742a72eb34bf9a23ca99205cb56aec94fdffeaa93440",
+    "format": ".ulg",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "README.md",
+    "path": "sample_evidence\\README.md",
+    "size_bytes": 805,
+    "sha256": "ec993691a7723e1cc6f5612fc0e71833ad40f880c78df790c999fe41a5be00b6",
+    "format": ".md",
+    "classification": "Real",
+    "reasoning": "Evidence corpus documentation markdown"
+  },
+  {
+    "filename": "real_px4_flight.ulg",
+    "path": "sample_evidence\\real_px4_flight.ulg",
+    "size_bytes": 27388166,
+    "sha256": "b8abd99f208de7fd072d2e271524507b761e061e6cda9170685caf85901ca027",
+    "format": ".ulg",
+    "classification": "Real",
+    "reasoning": "Authentic binary or telemetry log with realistic flight sensor curves"
+  },
+  {
+    "filename": "secondary_dji_swarm.csv",
+    "path": "sample_evidence\\secondary_dji_swarm.csv",
+    "size_bytes": 3210,
+    "sha256": "9515afe1cbb94caacea0d345d64186cd6dcf94904a706ea0ddebd92b208b6248",
+    "format": ".csv",
+    "classification": "Synthetic",
+    "reasoning": "Artificially generated parameter file or injected multi-drone swarm log"
+  },
+  {
+    "filename": "vehicle.params",
+    "path": "sample_evidence\\vehicle.params",
+    "size_bytes": 17125,
+    "sha256": "5419b3b40700c9d515c68b5ae7dc96241b3051d1ce31401450a964d9e28a715e",
+    "format": ".params",
+    "classification": "Real",
+    "reasoning": "Text parameter configuration dump"
+  }
+]

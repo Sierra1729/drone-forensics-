@@ -1,7 +1,7 @@
-# PUSHPAK DRONE FORENSICS WORKSTATION
+# Garud FX — Indigenous Drone Forensics Workstation
 ## Comprehensive Installation, Deployment & Evaluation Guide
 
-**Grand Challenge 3: "Security of Drones" — Objective 1: Drone Forensics Toolkit**  
+**PUSHPAK Grand Challenge 3: "Security of Drones" — Objective 1: Drone Forensics Toolkit**  
 **Organizers:** IIT Bombay & VJTI Mumbai | **Funding Agency:** Ministry of Electronics & IT (MeitY)  
 **Standards Compliance:** ISO/IEC 27037:2012, NIST SP 800-86, Section 63 Bharatiya Sakshya Adhiniyam (BSA) 2023 / Section 65B Indian Evidence Act (IEA)
 

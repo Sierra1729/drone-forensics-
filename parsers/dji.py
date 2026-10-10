@@ -22,6 +22,8 @@ from typing import Any, Optional
 
 from normalize.schema import NormalizedEvent, EventType
 from parsers.base import BaseParser, register_parser
+from crypto.protected_data import DJIKeyManager, decrypt_dji_payload
+
 
 # DJI Frame Sync Delimiters
 DJI_HEADER_MAGIC = b"DJI_LOG_V"
@@ -268,7 +270,40 @@ class DJIFlightLogParser(BaseParser):
             )
         )
 
+        # Key-Store lookup and Hardware-Assisted AES Decryption pipeline
+        key_mgr = DJIKeyManager()
+        dji_aes_key = key_mgr.get_key(aircraft_model)
+
+        if raw_bytes.startswith(b"DJI_LOG_ENC") or raw_bytes.startswith(b"ENC_"):
+            if dji_aes_key:
+                try:
+                    iv = raw_bytes[16:32] if len(raw_bytes) >= 32 else b"\x00" * 16
+                    ciphertext = raw_bytes[32:] if len(raw_bytes) >= 32 else raw_bytes
+                    dec_data = decrypt_dji_payload(ciphertext, dji_aes_key, iv)
+                    if dec_data and len(dec_data) > 16:
+                        raw_bytes = dec_data
+                        file_len = len(raw_bytes)
+                except Exception:
+                    pass
+            else:
+                events.append(
+                    NormalizedEvent(
+                        timestamp_utc=start_time_utc,
+                        source_platform="dji",
+                        event_type=EventType.RAW.value,
+                        source_file=str(file_path),
+                        source_file_sha256=file_sha256,
+                        payload={
+                            "is_encrypted": True,
+                            "raw_hex_offset": "0x00000000",
+                            "aircraft_model": aircraft_model,
+                            "notes": "Proprietary firmware payload encrypted; raw hex offset mapped for offline Stage 2 key recovery.",
+                        },
+                    )
+                )
+
         offset = data_start_offset
+
         current_mode: Optional[str] = None
         last_gps_tick: Optional[int] = None
         prev_gps_lat: Optional[float] = None

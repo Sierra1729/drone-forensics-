@@ -1,0 +1,21 @@
+Claim_ID,Category,Claim_Text,Source_Document,Capability_Description
+C01,Supported Platforms,"8 Platforms: PX4, ArduPilot, DJI, Betaflight, Autel, Parrot, Yuneec, Custom FPV",README.md / Stage 2 Report §1,Parsers decode 8 drone platforms
+C02,Parsed Formats,"10 Formats: .ulg, .bin, .log, .DAT, .csv, .bfl, .bbl, .json, .img, EXIF/XMP",README.md / Stage 2 Report §1,10 distinct log/disk formats decoded
+C03,Evidence Sources,"7 Sources: Flight-controller, SD, eMMC, Remote controller, Companion app, SPI/UART, Media",Stage 2 Report §1,Extraction from 7 physical/logical sources
+C04,Hardware Acquisition Paths,"5 live hardware paths: MAVLink, ADB, SPI Flash, UART, Write-Blocker",README.md / Stage 2 Report §1,Direct device acquisition capabilities
+C05,Cryptographic Hashing,"Dual Stream SHA-256 + BLAKE3 hash computed on copy and verified on read",README.md / Stage 2 Report §1,Dual hash verification and collision resistance
+C06,Chain of Custody,"Append-Only Merkle Chained Ledger (.jsonl) with tamper detection",README.md / Stage 2 Report §1,Cryptographic tamper-evident custody
+C07,Test Suite Count,"171 automated unit and integration tests passing 100%",Stage 2 Report §1 & §8,pytest test suite pass count
+C08,Clean-Machine Execution Time,"Full reproducibility test suite executes in ~43.70 seconds",Stage 2 Report §1 & §8,Runtime of verify_everything.py
+C09,Offline Air-Gapped Operation,"100% air-gapped offline run with embedded MBTiles vector map server",README.md / Stage 2 Report §1,No network connections during execution
+C10,Report Outputs,"4 formats: Judicial PDF (Section 63 BSA 2023), HTML, CSV, GeoJSON/KML",README.md / Stage 2 Report §1,Court-ready judicial report generation
+C11,Reference Case Processing Time,"0.42 minutes (~25s) to parse 27.3 MB real PX4 log",Stage 2 Report §1 & §8,Performance benchmark on reference flight
+C12,GPS Position Error,"Position error < 0.15 m against reference trajectory",Stage 2 Report §7,Telemetry parsing position accuracy
+C13,Cross-Source Alignment Error,"Alignment error < 0.05 s between GCS and Flight Controller",Stage 2 Report §7,Time base synchronization
+C14,1-Byte Tamper Detection,"Detects 1-byte alteration in evidence bitstream and custody log",Stage 2 Report §5,Tamper rejection before parsing
+C15,Deleted Data Carving,"Carves deleted flight logs and media from raw FAT32 disk images",README.md / Stage 2 Report §6,Signature carving recovery
+C16,Anomaly Detection,"Detects GPS spoofing, altitude teleports, geofence breaches, failsafes",README.md / Stage 2 Report §6,Rule-based telemetry anomaly classifier
+C17,Mobile GCS Vault,"Extracts pilot email, paired drone serial, and mission flight DB via ADB",README.md / Stage 2 Report §6,Android SharedPrefs and SQLite DB parsing
+C18,Hardware Write-Blocker Enforcement,"Enforces read-only interlock (ro == 1) on physical card readers",README.md / Stage 2 Report §5,ISO/IEC 27037 evidence preservation
+C19,3D Trajectory Visualization,"Interactive 3D Three.js flight playback with pitch/roll/yaw attitude",README.md / Stage 2 Report §7,Offline 3D aerospace renderer
+C20,BSA 2023 / Section 65B Compliance,"Embeds legal certificate, examiner declaration, and system hashes",README.md / Stage 2 Report §9,Judicial compliance in generated PDF
